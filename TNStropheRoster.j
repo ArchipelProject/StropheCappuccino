@@ -125,8 +125,6 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
 
 - (BOOL)handleStatusResponse:(id)aStanza
 {
-    [logger log:"roster entry of jid "+ [self jid] + " has received a stanza"];
-    
     // update resource
     [self setFullJID:aStanza.getAttribute("from")];
     [self setResource:aStanza.getAttribute("from").split('/')[1]];
@@ -149,7 +147,6 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
     
     if (show)
     {
-        [logger log:"Status show for user  " + self + " is " + $(show).text()];
         if ($(show).text() == TNStropheRosterStatusBusy) 
         {
             [self setValue:TNStropheRosterStatusBusy forKey:@"status"];
@@ -214,7 +211,6 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
 
 - (void)_handleAskGetRosterNotification:(CPNotification)aNotification 
 {
-    console.log("asking reload");
     [self reload];
 }
 
@@ -228,7 +224,6 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
 
 - (BOOL)presenceSubscriptionRequestHandler:(id)requestStanza 
 {
-    [logger log:"Presence request received stanza"];
     if ([[self delegate] respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
         [[self delegate] performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
 
@@ -272,15 +267,12 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
     	[tnEntry registerHandlers];
         [tnEntry getStatus];
        	[[self entries] addObject:tnEntry];
-        
-    	[logger log:"adding entry " + tnEntry + " in group " + [tnEntry group]];
     }
     
     //announce complete roster retrieved
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
     
-    console.log("TOTO");
     return YES;
 }
 
@@ -308,7 +300,6 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
 - (TNStropheRosterEntry) getContactFromJID:(CPString)aJid {
     
     for (i = 0; i < [[self entries] count]; i++) {
-        //console.log("is " + aJid + " == " + [[[self entries] objectAtIndex:i] jid])
         if ([[[self entries] objectAtIndex:i] jid] == aJid)
             return [[self entries] objectAtIndex:i];
     }

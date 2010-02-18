@@ -27,11 +27,7 @@
 {    
     CPString        jid                     @accessors; 
     CPString        password                @accessors; 
-    id              connectionDelegate      @accessors; 
-    id              IqDelegate              @accessors; 
-    id              messageDelegate         @accessors; 
-    id              presenceDelegate        @accessors; 
-
+    id              delegate                @accessors; 
     CPString        _boshService;
     id              _connection;
 
@@ -81,37 +77,36 @@
     {
         if (status == Strophe.Status.CONNECTING)
         {
-            if ([[self connectionDelegate] respondsToSelector:@selector(onStropheConnecting:)])
-    	        [[self connectionDelegate] onStropheConnecting:self];        
+            if ([[self delegate] respondsToSelector:@selector(onStropheConnecting:)])
+    	        [[self delegate] onStropheConnecting:self];        
         } 
         else if (status == Strophe.Status.CONNFAIL) 
         {
-            if ([[self connectionDelegate] respondsToSelector:@selector(onStropheConnectFail:)])
-    	        [[self connectionDelegate] onStropheConnectFail:self];      
+            if ([[self delegate] respondsToSelector:@selector(onStropheConnectFail:)])
+    	        [[self delegate] onStropheConnectFail:self];      
         } 
         else if (status == Strophe.Status.DISCONNECTING) 
         {
-    	    if ([[self connectionDelegate] respondsToSelector:@selector(onStropheDisconnecting:)])
-    	        [[self connectionDelegate] onStropheDisconnecting:self];   
+    	    if ([[self delegate] respondsToSelector:@selector(onStropheDisconnecting:)])
+    	        [[self delegate] onStropheDisconnecting:self];   
         } 
         else if (status == Strophe.Status.DISCONNECTED) 
         {
-    	    if ([[self connectionDelegate] respondsToSelector:@selector(onStropheDisconnected:)])
-    	        [[self connectionDelegate] onStropheDisconnected:self];
+    	    if ([[self delegate] respondsToSelector:@selector(onStropheDisconnected:)])
+    	        [[self delegate] onStropheDisconnected:self];
         } 
         else if (status == Strophe.Status.CONNECTED)
         {    
     	    _connection.send($pres().tree());
     	    
-    	    if ([[self connectionDelegate] respondsToSelector:@selector(onStropheConnected:)])
-    	        [[self connectionDelegate] onStropheConnected:self];
+    	    if ([[self delegate] respondsToSelector:@selector(onStropheConnected:)])
+    	        [[self delegate] onStropheConnected:self];
         }
     });
 }
 
 - (void)disconnect 
 {
-    [logger log:"disconnection started"];
     _connection.disconnect("logout");
 }
 
@@ -136,8 +131,6 @@
 // handlers
 - (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
 {    
-    [logger log:"registring a selector " + anObject + " listen only from " + [aDict valueForKey:@"from"]];
-    
     _connection.addHandler(function(stanza) {
                 return [anObject performSelector:aSelector withObject:stanza]; 
             }, 
