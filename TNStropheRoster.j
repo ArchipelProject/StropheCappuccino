@@ -74,6 +74,7 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
     CPString            group           @accessors;
     CPString            type            @accessors;
     CPString            fullJID         @accessors;
+    CPString            vCard           @accessors;
     TNStropheConnection connection      @accessors;
 }
 
@@ -107,19 +108,18 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
     return [self nickname];
 }
 
-- (void)registerHandlers
+
+- (void)getStatus
 {
+    var probe = [TNStropheStanza presenceWithAttributes:{"from": [connection jid], "type": "probe", "to": [self jid]}];
     var params = [[CPDictionary alloc] init];
+    
     [params setValue:@"presence" forKey:@"name"];
     [params setValue:[self jid] forKey:@"from"];
     [params setValue:{"matchBare": true} forKey:@"options"];
     
     [connection registerSelector:@selector(handleStatusResponse:) ofObject:self withDict:params];
-}
-
-- (void)getStatus
-{
-    var probe = [TNStropheStanza presenceWithAttributes:{"from": [connection jid], "type": "probe", "to": [self jid]}];
+    
     [[self connection] send:[probe stanza]];
 }
 
@@ -168,6 +168,28 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
     [center postNotificationName:TNStropheRosterPresenceUpdated object:self];
     
     return YES;
+}
+
+- (void)getVCard
+{
+    var uid = [connection getUniqueId];
+    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection jid], "to": [self jid], "type": "get", "id": uid}];
+    [vcard_stanza addChildName:@"vCard" withAttributes:{'xmlns': "vcard-temp"}];
+    
+    var params = [[CPDictionary alloc] init];
+    [params setValue:uid forKey:@"id"];
+
+    [connection registerSelector:@selector(handleVCardResponse:) ofObject:self withDict:params];
+    [connection send:[vcard_stanza tree]];
+}
+
+- (BOOL)handleVCardResponse:(id)aStanza
+{
+    var vCard = aStanza.getElementsByTagName("vCard")[0];
+    
+    [self setVCard:vCard];
+    
+    return NO;
 }
 
 @end
@@ -264,8 +286,9 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
             
     	var tnEntry = [TNStropheRosterEntry rosterEntryWithConnection:_connection jid:items[i].getAttribute('jid') group:theGroup];
         [tnEntry setNickname:nickname];
-    	[tnEntry registerHandlers];
+
         [tnEntry getStatus];
+        [tnEntry getVCard];
        	[[self entries] addObject:tnEntry];
     }
     
