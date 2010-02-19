@@ -300,6 +300,7 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
 - (TNStropheRosterEntry) getContactFromJID:(CPString)aJid {
     
     for (i = 0; i < [[self entries] count]; i++) {
+        //console.log("matching " + aJid +  " with " + [[[self entries] objectAtIndex:i] jid])
         if ([[[self entries] objectAtIndex:i] jid] == aJid)
             return [[self entries] objectAtIndex:i];
     }
@@ -341,13 +342,26 @@ TNStropheRosterRetrievedNotification    = @"TNStropheRosterRetrievedNotification
 {
     var addReq = [TNStropheStanza iqWithAttributes:{"type": "set"}];
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [addReq addChildName:@"item" withAttributes:{"jid": aJid, "name": aJid}];
+    [addReq addChildName:@"item" withAttributes:{"jid": aJid, "name": [[self getContactFromJID:aJid] nickname]}];
     [addReq addChildName:@"group" withAttributes:nil];
     [addReq addTextNode:aGroup];
     
     [_connection send:[addReq tree]];
     [self reload]; 
 }
+
+- (void) changeNickname:(CPString)aName forJID:(CPString)aJid
+{
+    var addReq = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [addReq addChildName:@"item" withAttributes:{"jid": aJid, "name":aName}];
+    [addReq addChildName:@"group" withAttributes:nil];
+    [addReq addTextNode:[[self getContactFromJID:aJid] group]];
+    
+    [_connection send:[addReq tree]];
+    [self reload]; 
+}
+
 
 
 // contact management
