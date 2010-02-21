@@ -33,7 +33,9 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 
 
-// this is an implementation of a basic XMPP Roster
+/*! @ingroup strophecappuccino
+    this is an implementation of a basic XMPP Roster
+*/
 @implementation TNStropheRoster : CPObject 
 {
     CPMutableArray          contacts        @accessors;

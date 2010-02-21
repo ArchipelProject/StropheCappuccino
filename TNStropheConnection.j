@@ -21,13 +21,15 @@
 @import "TNStropheStanza.j"
 
 
-/*! this class is a Objective-J Cappuccino wrapper for the Strophe library
+/*! @ingroup strophecappuccino
+    this is an implementation of an XMPP connection
 */
 @implementation TNStropheConnection: CPObject 
 {    
     CPString        jid                     @accessors; 
     CPString        password                @accessors; 
     id              delegate                @accessors; 
+
     CPString        _boshService;
     id              _connection;
 

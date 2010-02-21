@@ -1,21 +1,23 @@
-<h2>StropheCappuccino</h2>
-------------------
+** Strophe Cappuccino **
 
-<h3>What is StropheCappuccino ?</h3>
----------------------------
-<p>StropheCappuccino is a set of classes uses to bind the pure Javascript library 
-Strophe Library. This allows to use realtime XMPP in Cappuccino web 
-application. This Library is used by Archipel Project. 
-This library is released under AGPL license. Feel 
-free to use it or improve it.</p>
 
-<h3>Quick Start</h3>
------------
-<p>Simply include the StropheCappuccino framework in your Frameworks directory and include StropheCappuccino.js</p>
+== What is StropheCappuccino ? ==
+This is a set of classes uses to bind the pure Javascript library Strophe Library. This allows to use realtime XMPP in Cappuccino web application. This Library is used by Archipel Project, which is not public at this time. This library is released under AGPL license. Feel free to use it or improve it.
 
-@import <StropheCappuccino/StropheCappuccino.j>
+== Quick Start ==
 
-<h3>Documentation</h3>
-<p>To generate the documentation execute the following :</p>
+In order to use StropeCappuccino, you'll need a copy of Strophe.js and a copy or JQuery. Then you'll have to include this JS in the index.html of your Cappuccino application (It may exists a better way to do this...) :
+
+&lt;head&gt;
+&lt;script type='text/javascript' src='Resources/Strophe/JQuery/jquery.min.js'&gt;&lt;/script&gt;
+&lt;script type='text/javascript' src='Resources/Strophe/strophe.js'&gt;&lt;/script&gt;
+&lt;/head&gt;
+
+And then import in your application the classes :
+
+@import "StropheCappuccino/TNStrophe.j"
+
+== Documentation ==
+To generate the documentation execute the following :
 
 # doxygen StropheCappuccino.doxygen

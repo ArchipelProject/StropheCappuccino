@@ -21,3 +21,19 @@
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
+
+
+/*! @mainpage
+    StropheCappuccino is distributed under the @ref license "AGPL".
+
+    @htmlonly <pre>@endhtmlonly
+    @htmlinclude README
+    @htmlonly </pre>@endhtmlonly
+
+    @page license License
+    @htmlonly <pre>@endhtmlonly
+    @htmlinclude LICENSE
+    @htmlonly </pre>@endhtmlonly
+
+    @defgroup strophecappuccino StropheCappuccino
+*/

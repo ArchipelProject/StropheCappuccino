@@ -19,7 +19,9 @@
 
 @import <Foundation/Foundation.j>
 
-
+/*! @ingroup strophecappuccino
+    this is an implementation of a basic XMPP Stanza
+*/
 @implementation TNStropheStanza: CPObject
 {   
     id          _stanza     @accessors(readonly, getter=stanza);

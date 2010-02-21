@@ -18,7 +18,9 @@
 
 @import <Foundation/Foundation.j>
 
-
+/*! @ingroup strophecappuccino
+    this is an implementation of a basic XMPP Group
+*/
 @implementation TNStropheGroup: CPObject 
 {
     CPArray     contacts    @accessors;
