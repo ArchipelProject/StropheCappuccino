@@ -17,228 +17,26 @@
  */
 
 @import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
 
 @import "TNStropheConnection.j";
 @import "TNStropheStanza.j";
-
-TNStropheRosterStatusAway       = @"away";
-TNStropheRosterStatusBusy       = @"xa";
-TNStropheRosterStatusDND        = @"dnd";
-TNStropheRosterStatusOffline    = @"offline";
-TNStropheRosterStatusOnline     = @"online";
-
-
-TNStropheContactNicknameUpdated         = @"TNStropheContactNicknameUpdated";
-TNStropheContactGroupUpdated            = @"TNStropheContactGroupUpdated";
-TNStropheContactPresenceUpdated         = @"TNStropheContactPresenceUpdated";
-
-TNStropheRosterAskRetrieving            = @"TNStropheRosterAskRetrieving";
-TNStropheRosterRetrieved                = @"TNStropheRosterRetrieved";
-TNStropheRosterAddedContact             = @"TNStropheRosterAddedContact";
-TNStropheRosterRemovedContact           = @"TNStropheRosterRemovedContact";
-TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
-
-@implementation TNStropheRosterGroup: CPObject 
-{
-    CPArray     entries     @accessors;
-    CPString    name        @accessors;
-    CPString    type        @accessors;
-}
-
-- (id)init
-{
-    if (self = [super init])
-    {
-        [self setType:@"group"];
-        [self setEntries:[[CPArray alloc] init]];
-    }
-    
-    return self;
-}
-
-- (CPString)description
-{
-    return [self name];
-}
-
-@end
+@import "TNStropheGroup.j"
+@import "TNStropheContact.j"
 
 
 
-
-// this is the implementation of an contact in roster
-@implementation TNStropheRosterEntry: CPObject
-{
-    CPString            jid             @accessors;
-    CPString            domain          @accessors;
-    CPString            nickname        @accessors;
-    CPString            resource        @accessors;
-    CPString            status          @accessors;
-    CPImage             statusIcon      @accessors;
-    CPString            group           @accessors;
-    CPString            type            @accessors;
-    CPString            fullJID         @accessors;
-    CPString            vCard           @accessors;
-    TNStropheConnection connection      @accessors;
-}
-
-+ (TNStropheRosterEntry)rosterEntryWithConnection:(TNStropheConnection)aConnection jid:(CPString)aJid group:(CPString)aGroup
-{
-    var entry = [[TNStropheRosterEntry alloc] initWithConnection:aConnection];
-    [entry setGroup:aGroup];
-	[entry setJid:aJid];
-	[entry setNickname:aJid.split('@')[0]];
-	[entry setResource: aJid.split('/')[1]];
-	[entry setDomain: aJid.split('/')[0].split('@')[1]];
-    return entry;
-}
-
-- (id)initWithConnection:(TNStropheConnection)aConnection
-{
-    if (self = [super init])
-    {
-        [self setType:@"contact"];
-        [self setStatusIcon:[[CPImage alloc] initWithContentsOfFile:@"Resources/StatusIcons/Offline.jpg" size:CGSizeMake(16, 16)]];
-        [self setValue:@"Resources/StatusIcons/Offline.png" forKeyPath:@"statusIcon.filename"];
-        [self setStatus:TNStropheRosterStatusOffline];
-
-        [self setConnection:aConnection]   
-    }
-    
-    return self;
-}
-
-- (CPString)description
-{
-    return [self nickname];
-}
-
-- (void)getStatus
-{
-    var probe = [TNStropheStanza presenceWithAttributes:{"from": [connection jid], "type": "probe", "to": [self jid]}];
-    var params = [[CPDictionary alloc] init];
-    
-    [params setValue:@"presence" forKey:@"name"];
-    [params setValue:[self jid] forKey:@"from"];
-    [params setValue:{"matchBare": true} forKey:@"options"];
-    
-    [connection registerSelector:@selector(handleStatusResponse:) ofObject:self withDict:params];
-    
-    [[self connection] send:[probe stanza]];
-}
-
-- (BOOL)handleStatusResponse:(id)aStanza
-{
-    // update resource
-    [self setFullJID:aStanza.getAttribute("from")];
-    [self setResource:aStanza.getAttribute("from").split('/')[1]];
-    
-    if (aStanza.getAttribute("type") == "unavailable") 
-    {   
-        [self setValue:TNStropheRosterStatusOffline forKey:@"status"];
-        [self setValue:@"Resources/StatusIcons/Offline.png" forKeyPath:@"statusIcon.filename"];
-    }
-    else
-    {
-        show = aStanza.getElementsByTagName("show")[0];
-
-        [self setValue:TNStropheRosterStatusOnline forKey:@"status"];
-        [self setValue:@"Resources/StatusIcons/Available.png" forKeyPath:@"statusIcon.filename"];
-
-        if (show)
-        {
-            if ($(show).text() == TNStropheRosterStatusBusy) 
-            {
-                [self setValue:TNStropheRosterStatusBusy forKey:@"status"];
-                [self setValue:@"Resources/StatusIcons/Away.png" forKeyPath:@"statusIcon.filename"];
-            }
-            else if ($(show).text() == TNStropheRosterStatusAway) 
-            {
-                [self setValue:TNStropheRosterStatusAway forKey:@"status"];
-                [self setValue:@"Resources/StatusIcons/Idle.png" forKeyPath:@"statusIcon.filename"];
-            }
-            else if ($(show).text() == TNStropheRosterStatusDND) 
-            {
-                [self setValue:TNStropheRosterStatusDND forKey:@"status"];
-                [self setValue:@"Resources/StatusIcons/Blocked.png" forKeyPath:@"statusIcon.filename"];
-            }
-        }
-    }
-
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheContactPresenceUpdated object:self];
-    
-    return YES;
-}
-
-- (void)getVCard
-{
-    var uid = [connection getUniqueId];
-    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection jid], "to": [self jid], "type": "get", "id": uid}];
-    [vcard_stanza addChildName:@"vCard" withAttributes:{'xmlns': "vcard-temp"}];
-    
-    var params = [[CPDictionary alloc] init];
-    [params setValue:uid forKey:@"id"];
-
-    [connection registerSelector:@selector(handleVCardResponse:) ofObject:self withDict:params];
-    [connection send:[vcard_stanza tree]];
-}
-
-- (BOOL)handleVCardResponse:(id)aStanza
-{
-    var vCard = aStanza.getElementsByTagName("vCard");
-    
-    if (vCard)
-    {
-        [self setVCard:vCard[0]];
-    }
-    
-    
-    return NO;
-}
-
-- (void)changeNickname:(CPString)newNickname
-{
-    [self setNickname:newNickname];
-    
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"jid": [self jid], "name": newNickname}];
-    [stanza addChildName:@"group" withAttributes:nil];
-    [stanza addTextNode:[self group]];
-
-    [[self connection] send:[stanza tree]];
-   
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheContactNicknameUpdated object:self];
-}
-
-- (void)changeGroup:(CPString)newGroupName
-{
-    [self setGroup:newGroupName];
-    
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"jid": [self jid], "name": [self nickname]}];
-    [stanza addChildName:@"group" withAttributes:nil];
-    [stanza addTextNode:newGroupName];
-    
-    [[self connection] send:[stanza tree]];
-    
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheContactGroupUpdated object:self];
-}
-
-@end
-
+//TNStropheRosterAskRetrievingNotification            = @"TNStropheRosterAskRetrievingNotification";
+TNStropheRosterRetrievedNotification                = @"TNStropheRosterRetrievedNotification";
+TNStropheRosterAddedContactNotification             = @"TNStropheRosterAddedContactNotification";
+TNStropheRosterRemovedContactNotification           = @"TNStropheRosterRemovedContactNotification";
+TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGroupNotification";
 
 
 
 // this is an implementation of a basic XMPP Roster
 @implementation TNStropheRoster : CPObject 
 {
-    CPMutableArray          entries         @accessors;
+    CPMutableArray          contacts        @accessors;
     CPMutableArray          groups          @accessors;
     id                      delegate        @accessors;
     
@@ -251,7 +49,7 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
     if (self = [super init])
     {
         _connection= aConnection;
-        [self setEntries:[[CPMutableArray alloc] init]];
+        [self setContacts:[[CPMutableArray alloc] init]];
         [self setGroups:[[CPMutableArray alloc] init]];
 
         var params = [[CPDictionary alloc] init];
@@ -293,43 +91,44 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
     var query = aStanza.getElementsByTagName('query')[0];
     var items = query.getElementsByTagName('item');
     var i;
-    
+
     for (i = 0; i < items.length; i++)
     {
-        if (items[i].getAttribute('name'))
-            var nickname = items[i].getAttribute('name');
+        var item = items[i];
         
-        if (![self doesRosterContainsJID:items[i].getAttribute('jid')])
+        if (item.getAttribute('name'))
+            var nickname = item.getAttribute('name');
+        
+        if (![self doesRosterContainsJID:item.getAttribute('jid')])
         {
-            var theGroup = (items[i].getElementsByTagName('group')[0] != null) ? $(items[i].getElementsByTagName('group')[0]).text() : "General";
+            var theGroup = (item.getElementsByTagName('group')[0] != null) ? $(item.getElementsByTagName('group')[0]).text() : "General";
             [self addGroupIfNotExists:theGroup];
 
-        	var tnEntry = [TNStropheRosterEntry rosterEntryWithConnection:_connection jid:items[i].getAttribute('jid') group:theGroup];
-            [tnEntry setNickname:nickname];
+        	var contact = [TNStropheContact contactWithConnection:_connection jid:item.getAttribute('jid') group:theGroup];
+            [contact setNickname:nickname];
 
-            [tnEntry getStatus];
-            [tnEntry getVCard];
-           	[[self entries] addObject:tnEntry];
+            [contact getStatus];
+            [contact getVCard];
+           	[[self contacts] addObject:contact];
         }
     	
     }
     
     //announce complete roster retrieved
     var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheRosterRetrieved object:self];
+    [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
     
     return YES;
 }
 
 
 // Contact management
-- (TNStropheRosterEntry) getContactFromJID:(CPString)aJid
+- (TNStropheContact) getContactFromJID:(CPString)aJid
 {
-    
-    for (i = 0; i < [[self entries] count]; i++) {
-        //console.log("matching " + aJid +  " with " + [[[self entries] objectAtIndex:i] jid])
-        if ([[[self entries] objectAtIndex:i] jid] == aJid)
-            return [[self entries] objectAtIndex:i];
+    @each (var contact in [self contacts])
+    {
+        if ([contact jid] == aJid)
+            return contact;
     }
     
     return nil; 
@@ -337,9 +136,11 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
 
 - (BOOL)doesRosterContainsJID:(CPString)aJid
 {
-    for (i = 0; i < [[self entries] count]; i++)
-        if ([[[self entries] objectAtIndex:i] jid] == aJid)
+    @each (var contact in [self contacts])
+    {
+        if ([contact jid] == aJid)
             return YES;
+    }
     return NO;
 }
 
@@ -362,24 +163,24 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
     
     [_connection send:[addReq tree]];
     
-    var tnEntry = [TNStropheRosterEntry rosterEntryWithConnection:_connection jid:aJid group:aGroup];
-    [tnEntry setNickname:aName];
-    [tnEntry getStatus];
-    [tnEntry getVCard];
+    var contact = [TNStropheContact contactWithConnection:_connection jid:aJid group:aGroup];
+    [contact setNickname:aName];
+    [contact getStatus];
+    [contact getVCard];
     
     [[self addGroupIfNotExists:aGroup]]
-   	[[self entries] addObject:tnEntry];
+   	[[self contacts] addObject:contact];
    	
     var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheRosterAddedContact object:tnEntry];
+    [center postNotificationName:TNStropheRosterAddedContactNotification object:contact];
 }
 
 - (BOOL)removeContact:(CPString)aJid 
 {
-    var entry = [self getContactFromJID:aJid];
-    if (entry) 
+    var contact = [self getContactFromJID:aJid];
+    if (contact) 
     {
-        [[self entries] removeObject:entry];
+        [[self contacts] removeObject:contact];
         
         var uid = [_connection getUniqueId];
         var params = [[CPDictionary alloc] init];
@@ -391,7 +192,7 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
         [_connection send:[removeReq tree]];
         
         var center = [CPNotificationCenter defaultCenter];
-        [center postNotificationName:TNStropheRosterRemovedContact object:entry];
+        [center postNotificationName:TNStropheRosterRemovedContactNotification object:contact];
     }
     
     return NO;
@@ -404,48 +205,47 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
 }
 
 - (void) changeGroup:(CPString)aGroup forJID:(CPString)aJid
-{
-    
+{   
     var contact = [self getContactFromJID:aJid];
     [contact changeGroup:aGroup];
 }
 
 
 // group management
-- (TNStropheRosterGroup)getGroupFromName:(CPString)aGroupName
+- (TNStropheGroup)getGroupFromName:(CPString)aGroupName
 {
-    for (i = 0; i < [[self groups] count]; i++) {
-        if ([[[self groups] objectAtIndex:i] name] == aGroupName)
-        return [[self groups] objectAtIndex:i];
+    @each (var group in [self groups])
+    {
+        if ([group name] == aGroupName)
+        return group;
     }
     return nil;
 }
 
 - (BOOL)doesRosterContainsGroup:(CPString)aGroup
 {
-    var i;
-    
-    for (i = 0; i < [[self groups] count]; i++)
-        if ([[self groups][i] name] == aGroup)
+    @each (var group in [self groups])
+    {
+        if ([group name] == aGroup)
             return YES;
-            
+    }   
     return NO;
 }
 
-- (TNStropheRosterGroup) addGroup:(CPString)groupName
+- (TNStropheGroup) addGroup:(CPString)groupName
 {
-    var newGroup = [[TNStropheRosterGroup alloc] init];
+    var newGroup = [[TNStropheGroup alloc] init];
 
     [newGroup setName:groupName];
     [[self groups] addObject:newGroup];
     
     var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheRosterAddedGroup object:newGroup];
+    [center postNotificationName:TNStropheRosterAddedGroupNotification object:newGroup];
     
     return newGroup;
 }
 
-- (TNStropheRosterGroup) addGroupIfNotExists:(CPString)groupName
+- (TNStropheGroup) addGroupIfNotExists:(CPString)groupName
 {
     if (![self doesRosterContainsGroup:groupName])
         return [self addGroup:groupName];
@@ -457,15 +257,14 @@ TNStropheRosterAddedGroup               = @"TNStropheRosterAddedGroup";
     // TODO
 }
 
-- (CPArray)getEntriesInGroup:(TNStropheRosterGroup)aGroup
+- (CPArray)getContactsInGroup:(TNStropheGroup)aGroup
 {
     var ret = [[CPArray alloc] init];
-    var i;
-    
-    for (i = 0; i < [[self entries] count]; i++)
+
+    @each (var contact in [self contacts])
     {
-        if ([[[self entries] objectAtIndex:i] group] == aGroup)
-            [ret addObject:[[self entries] objectAtIndex:i]];
+        if ([contact group] == aGroup)
+            [ret addObject:contact];
     }
     return ret;
 }

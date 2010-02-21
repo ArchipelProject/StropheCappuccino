@@ -1,5 +1,5 @@
 /*  
- * TNStropheGroup.j
+ * TNStrophe.j
  *    
  * Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
  * This program is free software: you can redistribute it and/or modify
@@ -16,30 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import <Foundation/Foundation.j>
-
-
-@implementation TNStropheGroup: CPObject 
-{
-    CPArray     contacts    @accessors;
-    CPString    name        @accessors;
-    CPString    type        @accessors;
-}
-
-- (id)init
-{
-    if (self = [super init])
-    {
-        [self setType:@"group"];
-        [self setContacts:[[CPArray alloc] init]];
-    }
-
-    return self;
-}
-
-- (CPString)description
-{
-    return [self name];
-}
-
-@end
+@import "TNStropheStanza.j"
+@import "TNStropheGroup.j"
+@import "TNStropheConnection.j"
+@import "TNStropheContact.j"
+@import "TNStropheRoster.j"
