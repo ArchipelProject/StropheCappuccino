@@ -34,7 +34,9 @@ TNStropheContactGroupUpdatedNotification     = @"TNStropheContactGroupUpdatedNot
 TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdatedNotification";
 
 
-
+/*! @ingroup strophecappuccino
+    this is an implementation of a basic XMPP Contact
+*/
 @implementation TNStropheContact: CPObject
 {
     CPString            jid             @accessors;
