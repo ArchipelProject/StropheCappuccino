@@ -68,7 +68,7 @@ TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdated
     if (self = [super init])
     {
         [self setType:@"contact"];
-        [self setStatusIcon:[[CPImage alloc] initWithContentsOfFile:@"Resources/StatusIcons/Offline.jpg" size:CGSizeMake(16, 16)]];
+        [self setStatusIcon:[[CPImage alloc] initWithContentsOfFile:@"Resources/StatusIcons/Offline.png" size:CGSizeMake(16, 16)]];
         [self setValue:@"Resources/StatusIcons/Offline.png" forKeyPath:@"statusIcon.filename"];
         [self setStatus:TNStropheContactStatusOffline];
 
