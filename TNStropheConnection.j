@@ -72,9 +72,8 @@
 
 // connection management
 - (void)connect
-{
+{   
     _connection = new Strophe.Connection(_boshService);
-    
     _connection.connect([self jid], [self password], function (status) 
     {
         if (status == Strophe.Status.CONNECTING)
