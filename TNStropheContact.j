@@ -67,9 +67,11 @@ TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdated
 {
     if (self = [super init])
     {
+        var bundle = [CPBundle bundleForClass:self];
+        
         [self setType:@"contact"];
-        [self setStatusIcon:[[CPImage alloc] initWithContentsOfFile:@"Resources/StatusIcons/Offline.png" size:CGSizeMake(16, 16)]];
-        [self setValue:@"Resources/StatusIcons/Offline.png" forKeyPath:@"statusIcon.filename"];
+        [self setStatusIcon:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"StatusIcons/Offline.png"] size:CGSizeMake(16, 16)]];
+        [self setValue:[bundle pathForResource:@"StatusIcons/Offline.png"] forKeyPath:@"statusIcon.filename"];
         [self setStatus:TNStropheContactStatusOffline];
 
         [self setConnection:aConnection]   
@@ -103,34 +105,36 @@ TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdated
     [self setFullJID:aStanza.getAttribute("from")];
     [self setResource:aStanza.getAttribute("from").split('/')[1]];
     
+    var bundle = [CPBundle bundleForClass:self];
+    
     if (aStanza.getAttribute("type") == "unavailable") 
     {   
         [self setValue:TNStropheContactStatusOffline forKey:@"status"];
-        [self setValue:@"Resources/StatusIcons/Offline.png" forKeyPath:@"statusIcon.filename"];
+        [self setValue:[bundle pathForResource:@"StatusIcons/Offline.png"] forKeyPath:@"statusIcon.filename"];
     }
     else
     {
         show = aStanza.getElementsByTagName("show")[0];
 
         [self setValue:TNStropheContactStatusOnline forKey:@"status"];
-        [self setValue:@"Resources/StatusIcons/Available.png" forKeyPath:@"statusIcon.filename"];
+        [self setValue:[bundle pathForResource:@"StatusIcons/Available.png"] forKeyPath:@"statusIcon.filename"];
 
         if (show)
         {
             if ($(show).text() == TNStropheContactStatusBusy) 
             {
                 [self setValue:TNStropheContactStatusBusy forKey:@"status"];
-                [self setValue:@"Resources/StatusIcons/Away.png" forKeyPath:@"statusIcon.filename"];
+                [self setValue:[bundle pathForResource:@"StatusIcons/Away.png"] forKeyPath:@"statusIcon.filename"];
             }
             else if ($(show).text() == TNStropheContactStatusAway) 
             {
                 [self setValue:TNStropheContactStatusAway forKey:@"status"];
-                [self setValue:@"Resources/StatusIcons/Idle.png" forKeyPath:@"statusIcon.filename"];
+                [self setValue:[bundle pathForResource:@"StatusIcons/Idle.png"] forKeyPath:@"statusIcon.filename"];
             }
             else if ($(show).text() == TNStropheContactStatusDND) 
             {
                 [self setValue:TNStropheContactStatusDND forKey:@"status"];
-                [self setValue:@"Resources/StatusIcons/Blocked.png" forKeyPath:@"statusIcon.filename"];
+                [self setValue:[bundle pathForResource:@"StatusIcons/Blocked.png"] forKeyPath:@"statusIcon.filename"];
             }
         }
     }
