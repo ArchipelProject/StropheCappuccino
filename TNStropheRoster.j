@@ -127,8 +127,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 // Contact management
 - (TNStropheContact) getContactFromJID:(CPString)aJid
 {
-    @each (var contact in [self contacts])
+    //@each (var contact in [self contacts])
+    for(var i = 0; i < [[self contacts] count]; i++)
     {
+        var contact = [[self contacts] objectAtIndex:i];
         if ([contact jid] == aJid)
             return contact;
     }
@@ -138,8 +140,11 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 - (BOOL)doesRosterContainsJID:(CPString)aJid
 {
-    @each (var contact in [self contacts])
+    //@each (var contact in [self contacts])
+    for(var i = 0; i < [[self contacts] count]; i++)
     {
+        var contact = [[self contacts] objectAtIndex:i];
+        
         if ([contact jid] == aJid)
             return YES;
     }
@@ -216,8 +221,11 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 // group management
 - (TNStropheGroup)getGroupFromName:(CPString)aGroupName
 {
-    @each (var group in [self groups])
+    //@each (var group in [self groups])
+    for(var i = 0; i < [[self groups] count]; i++)
     {
+        var group = [[self groups] objectAtIndex:i];
+        
         if ([group name] == aGroupName)
         return group;
     }
@@ -226,8 +234,11 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 - (BOOL)doesRosterContainsGroup:(CPString)aGroup
 {
-    @each (var group in [self groups])
+    //@each (var group in [self groups])
+    for(var i = 0; i < [[self groups] count]; i++)
     {
+        var group = [[self groups] objectAtIndex:i];
+        
         if ([group name] == aGroup)
             return YES;
     }   
@@ -263,8 +274,11 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 {
     var ret = [[CPArray alloc] init];
 
-    @each (var contact in [self contacts])
+    //@each (var contact in [self contacts])
+    for(var i = 0; i < [[self contacts] count]; i++)
     {
+        var contact = [[self contacts] objectAtIndex:i];
+        
         if ([contact group] == aGroup)
             [ret addObject:contact];
     }
