@@ -40,6 +40,7 @@ TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdated
 @implementation TNStropheContact: CPObject
 {
     CPString            jid             @accessors;
+    CPString            nodeName        @accessors;
     CPString            domain          @accessors;
     CPString            nickname        @accessors;
     CPString            resource        @accessors;
@@ -57,6 +58,7 @@ TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdated
     var contact = [[TNStropheContact alloc] initWithConnection:aConnection];
     [contact setGroup:aGroup];
 	[contact setJid:aJid];
+	[contact setNodeName:aJid.split('@')[0]];
 	[contact setNickname:aJid.split('@')[0]];
 	[contact setResource: aJid.split('/')[1]];
 	[contact setDomain: aJid.split('/')[0].split('@')[1]];
