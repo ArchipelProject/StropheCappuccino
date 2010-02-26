@@ -68,6 +68,11 @@
     _stanza = _stanza.c(aTagName, attributes);
 }
 
+- (void)addChildName:(CPString)aTagName
+{
+    _stanza = _stanza.c(aTagName, {});
+}
+
 - (void)addTextNode:(CPString)aText
 {
     _stanza = _stanza.t(aText);
