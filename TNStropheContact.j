@@ -29,11 +29,12 @@ TNStropheContactStatusOffline    = @"offline";
 TNStropheContactStatusOnline     = @"online";
 
 // Contact updates notification
-TNStropheContactNicknameUpdatedNotification  = @"TNStropheContactNicknameUpdatedNotification";
-TNStropheContactGroupUpdatedNotification     = @"TNStropheContactGroupUpdatedNotification";
-TNStropheContactPresenceUpdatedNotification  = @"TNStropheContactPresenceUpdatedNotification";
-TNStropheContactMessageReceivedNotification  = @"TNStropheContactMessageReceivedNotification";
-TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNotification";
+TNStropheContactNicknameUpdatedNotification = @"TNStropheContactNicknameUpdatedNotification";
+TNStropheContactGroupUpdatedNotification    = @"TNStropheContactGroupUpdatedNotification";
+TNStropheContactPresenceUpdatedNotification = @"TNStropheContactPresenceUpdatedNotification";
+TNStropheContactMessageReceivedNotification = @"TNStropheContactMessageReceivedNotification";
+TNStropheContactMessageTreatedNotification  = @"TNStropheContactMessageTreatedNotification";
+TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotification";
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Contact
@@ -53,6 +54,13 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
     CPImage             statusIcon      @accessors;
     CPArray             messagesQueue   @accessors;
     TNStropheConnection connection      @accessors;
+    
+    CPImage             _imageOffline;
+    CPImage             _imageOnline;
+    CPImage             _imageAway;
+    CPImage             _imageNewMessage;
+    CPImage             _imageNewMessage;
+    CPImage             _statusReminder;
 }
 
 + (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection jid:(CPString)aJid group:(CPString)aGroup
@@ -73,10 +81,16 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
     if (self = [super init])
     {
         var bundle = [CPBundle bundleForClass:[self class]];
+        console.log("BINDE" + [bundle pathForResource:@"Offline.png"]);
+        _imageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Offline.png"]];
+        _imageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Available.png"]];
+        _imageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Away.png"]];
+        _imageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Idle.png"]];
+        _imageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Blocked.png"]];
+        _imageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"NewMessage.png"]];
         
         [self setType:@"contact"];
-        [self setStatusIcon:[[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"StatusIcons/Offline.png"] size:CGSizeMake(16, 16)]];
-        [self setValue:[bundle pathForResource:@"StatusIcons/Offline.png"] forKeyPath:@"statusIcon.filename"];
+        [self setValue:_imageOffline forKeyPath:@"statusIcon"];
         [self setStatus:TNStropheContactStatusOffline];
 
         [self setConnection:aConnection];
@@ -116,31 +130,31 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
     if (aStanza.getAttribute("type") == "unavailable") 
     {   
         [self setValue:TNStropheContactStatusOffline forKey:@"status"];
-        [self setValue:[bundle pathForResource:@"StatusIcons/Offline.png"] forKeyPath:@"statusIcon.filename"];
+        [self setValue:_imageOffline forKeyPath:@"statusIcon"];
     }
     else
     {
         show = aStanza.getElementsByTagName("show")[0];
 
         [self setValue:TNStropheContactStatusOnline forKey:@"status"];
-        [self setValue:[bundle pathForResource:@"StatusIcons/Available.png"] forKeyPath:@"statusIcon.filename"];
+        [self setValue:_imageOnline forKeyPath:@"statusIcon"];
 
         if (show)
         {
             if ($(show).text() == TNStropheContactStatusBusy) 
             {
                 [self setValue:TNStropheContactStatusBusy forKey:@"status"];
-                [self setValue:[bundle pathForResource:@"StatusIcons/Away.png"] forKeyPath:@"statusIcon.filename"];
+                [self setValue:_imageBusy forKeyPath:@"statusIcon"];
             }
             else if ($(show).text() == TNStropheContactStatusAway) 
             {
                 [self setValue:TNStropheContactStatusAway forKey:@"status"];
-                [self setValue:[bundle pathForResource:@"StatusIcons/Idle.png"] forKeyPath:@"statusIcon.filename"];
+                [self setValue:_imageAway forKeyPath:@"statusIcon"];
             }
             else if ($(show).text() == TNStropheContactStatusDND) 
             {
                 [self setValue:TNStropheContactStatusDND forKey:@"status"];
-                [self setValue:[bundle pathForResource:@"StatusIcons/Blocked.png"] forKeyPath:@"statusIcon.filename"];
+                [self setValue:_imageDND forKeyPath:@"statusIcon"];
             }
         }
     }
@@ -193,8 +207,13 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
     var stanza = [[TNStropheStanza alloc] initFromStropheStanza:aStanza];
     var center = [CPNotificationCenter defaultCenter];
     
-    [center postNotificationName:TNStropheContactMessageReceivedNotification object:stanza];
     [[self messagesQueue] addObject:stanza];
+    
+    _statusReminder = [self statusIcon];
+    [self setValue:_imageNewMessage forKeyPath:@"statusIcon"]
+    
+    [center postNotificationName:TNStropheContactMessageReceivedNotification object:self];
+    
     
     return YES;
 }
@@ -202,7 +221,7 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
 - (void)sendMessage:(CPString)aMessage
 {
     var uid             = [connection getUniqueId];
-    var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self fullJID], "from": [[self connection] jid], "type": "chat"}];
+    var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self jid], "from": [[self connection] jid], "type": "chat"}];
     var params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
     
     [messageStanza addChildName:@"body"];
@@ -217,7 +236,7 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
     var stanza = [[TNStropheStanza alloc] initFromStropheStanza:aStanza];
     var center = [CPNotificationCenter defaultCenter];
     
-    [center postNotificationName:TNStropheContactMessageSentNotification object:stanza];
+    [center postNotificationName:TNStropheContactMessageSentNotification object:self];
     
     return NO;
 }
@@ -258,12 +277,21 @@ TNStropheContactMessageSentNotification      = @"TNStropheContactMessageSentNoti
 {
     var lastMessage = [[self messagesQueue] lastObject];
     
+    if (_statusReminder)
+    {
+        [self setValue:_statusReminder forKeyPath:@"statusIcon"]
+        _statusReminder = Nil;
+        
+        var center = [CPNotificationCenter defaultCenter];
+        [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
+    }
+    
     [[self messagesQueue] removeLastObject];
     
     return lastMessage;
 }
 
-- (void)freeMessageQueue
+- (void)freeMessagesQueue
 {
     [[self messagesQueue] removeAllObjects];
 }
