@@ -102,5 +102,20 @@
 {
     return [self stringValue];
 }
+
+- (CPString)getValueForAttribute:(CPString)anAttribute
+{
+    return _stanza.getAttribute(anAttribute);
+}
+
+- (CPArray)getChildrenWithName:(CPString)aName
+{
+    return _stanza.getElementsByTagName(aName);
+}
+
+- (CPArray)getFirstChildrenWithName:(CPString)aName
+{
+    return _stanza.getElementsByTagName(aName)[0];
+}
 @end
 

@@ -111,6 +111,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
             [contact getStatus];
             [contact getVCard];
+            [contact getMessages];
            	[[self contacts] addObject:contact];
         }
     	
@@ -174,6 +175,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [contact setNickname:aName];
     [contact getStatus];
     [contact getVCard];
+    [contact getMessages];
     
     [[self addGroupIfNotExists:aGroup]]
    	[[self contacts] addObject:contact];
