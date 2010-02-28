@@ -85,23 +85,23 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [params setValue:uid forKey:@"id"];
     [_connection registerSelector:@selector(_didRosterReceived:) ofObject:self withDict:params];
     
-    [_connection send:[rosteriq tree]];
+    [_connection send:rosteriq];
 }
 
-- (BOOL)_didRosterReceived:(id) aStanza 
+- (BOOL)_didRosterReceived:(id)aStanza 
 {
-    var query = aStanza.getElementsByTagName('query')[0];
-    var items = query.getElementsByTagName('item');
-    var i;
+    var stanza  = [TNStropheStanza stanzaWithStanza:aStanza];
+    var query   = [stanza getFirstChildWithName:@"query"];
+    var items   = [query getChildrenWithName:@"item"]; //query.getElementsByTagName('item');
 
-    for (i = 0; i < items.length; i++)
+    for (var i = 0; i < [items count]; i++)
     {
-        var item = items[i];
+        var item = [items objectAtIndex:i];
         
-        if (item.getAttribute('name'))
-            var nickname = item.getAttribute('name');
+        if ([item getValueForAttribute:@"name"])
+            var nickname = [item getValueForAttribute:@"name"];
         
-        if (![self doesRosterContainsJID:item.getAttribute('jid')])
+        if (![self doesRosterContainsJID:[item getValueForAttribute:@"jid"]])
         {
             var theGroup = (item.getElementsByTagName('group')[0] != null) ? $(item.getElementsByTagName('group')[0]).text() : "General";
             [self addGroupIfNotExists:theGroup];
@@ -169,7 +169,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [addReq addChildName:@"group" withAttributes:nil];
     [addReq addTextNode:aGroup];
     
-    [_connection send:[addReq tree]];
+    [_connection send:addReq];
     
     var contact = [TNStropheContact contactWithConnection:_connection jid:aJid group:aGroup];
     [contact setNickname:aName];
@@ -198,7 +198,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
         [removeReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
         [removeReq addChildName:@"item" withAttributes:{'jid': aJid, 'subscription':"remove" }];
         
-        [_connection send:[removeReq tree]];
+        [_connection send:removeReq];
         
         var center = [CPNotificationCenter defaultCenter];
         [center postNotificationName:TNStropheRosterRemovedContactNotification object:contact];
@@ -292,24 +292,25 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 - (void)authorizeJID:(CPString)aJid 
 {
     var resp = [TNStropheStanza presenceWithAttributes:{"from": [_connection jid], "type": "subscribed", "to": aJid}];
-    [_connection send:[resp stanza]];
+    [_connection send:resp];
 }
 
 - (void)unauthorizeJID:(CPString)aJid
 {
     var resp = [TNStropheStanza presenceWithAttributes:{"from": [_connection jid], "type": "unsubscribed", "to": aJid}];
-    [_connection send:[resp stanza]];
+    [_connection send:resp];
 }
 
 - (void)askAuthorizationTo:(CPString)aJid
 {
     var auth = [TNStropheStanza presenceWithAttributes:{"from": [_connection jid], "type": "subscribe", "to": aJid}];
-    [_connection send:[auth stanza]];
+    [_connection send:auth];
 }
 
 - (void)answerAuthorizationRequest:(id)aStanza answer:(BOOL)theAnswer
 {
-    var requester = aStanza.getAttribute("from");
+    var stanza      = [TNStropheStanza stanzaWithStanza:aStanza];
+    var requester   = [stanza getFrom];
     
     if (theAnswer == YES)
     {

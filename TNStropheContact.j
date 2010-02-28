@@ -81,7 +81,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     if (self = [super init])
     {
         var bundle = [CPBundle bundleForClass:[self class]];
-        console.log("BINDE" + [bundle pathForResource:@"Offline.png"]);
+
         _imageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Offline.png"]];
         _imageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Available.png"]];
         _imageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Away.png"]];
@@ -116,42 +116,47 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     
     [connection registerSelector:@selector(didReceivedStatus:) ofObject:self withDict:params];
     
-    [[self connection] send:[probe stanza]];
+    [[self connection] send:probe];
 }
 
 - (BOOL)didReceivedStatus:(id)aStanza
 {
-    // update resource
-    [self setFullJID:aStanza.getAttribute("from")];
-    [self setResource:aStanza.getAttribute("from").split('/')[1]];
+    var stanza          = [TNStropheStanza stanzaWithStanza:aStanza];
+    var bundle          = [CPBundle bundleForClass:self];
+    var fromJID         = [stanza getFrom];
+    var resource        = [stanza getFromResource];
+    var presenceType    = [stanza getType];
     
-    var bundle = [CPBundle bundleForClass:self];
+    [self setFullJID:fromJID];
+    [self setResource:resource];
     
-    if (aStanza.getAttribute("type") == "unavailable") 
+
+    if (presenceType == "unavailable") 
     {   
         [self setValue:TNStropheContactStatusOffline forKey:@"status"];
         [self setValue:_imageOffline forKeyPath:@"statusIcon"];
     }
     else
     {
-        show = aStanza.getElementsByTagName("show")[0];
+        show = [stanza getFirstChildWithName:@"show"];
 
         [self setValue:TNStropheContactStatusOnline forKey:@"status"];
         [self setValue:_imageOnline forKeyPath:@"statusIcon"];
 
         if (show)
         {
-            if ($(show).text() == TNStropheContactStatusBusy) 
+            var textValue = $(show).text();
+            if ( textValue == TNStropheContactStatusBusy) 
             {
                 [self setValue:TNStropheContactStatusBusy forKey:@"status"];
                 [self setValue:_imageBusy forKeyPath:@"statusIcon"];
             }
-            else if ($(show).text() == TNStropheContactStatusAway) 
+            else if (textValue == TNStropheContactStatusAway) 
             {
                 [self setValue:TNStropheContactStatusAway forKey:@"status"];
                 [self setValue:_imageAway forKeyPath:@"statusIcon"];
             }
-            else if ($(show).text() == TNStropheContactStatusDND) 
+            else if (textValue == TNStropheContactStatusDND) 
             {
                 [self setValue:TNStropheContactStatusDND forKey:@"status"];
                 [self setValue:_imageDND forKeyPath:@"statusIcon"];
@@ -175,18 +180,18 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     [params setValue:uid forKey:@"id"];
 
     [connection registerSelector:@selector(didReceivedVCard:) ofObject:self withDict:params];
-    [connection send:[vcard_stanza tree]];
+    [connection send:vcard_stanza];
 }
 
 - (BOOL)didReceivedVCard:(id)aStanza
 {
-    var vCard = aStanza.getElementsByTagName("vCard");
+    var stanza  = [TNStropheStanza stanzaWithStanza:aStanza];
+    var vCard   = [stanza getFirstChildWithName:@"vCard"];
     
     if (vCard)
     {
-        [self setVCard:vCard[0]];
+        [self setVCard:vCard];
     }
-    
     
     return NO;
 }
@@ -204,15 +209,16 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (BOOL)didReceivedMessage:(id)aStanza
 {
-    var stanza = [[TNStropheStanza alloc] initFromStropheStanza:aStanza];
-    var center = [CPNotificationCenter defaultCenter];
+    var stanza      = [[TNStropheStanza alloc] initWithStanza:aStanza];
+    var center      = [CPNotificationCenter defaultCenter];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:stanza, @"stanza"];
     
     [[self messagesQueue] addObject:stanza];
     
     _statusReminder = [self statusIcon];
     [self setValue:_imageNewMessage forKeyPath:@"statusIcon"]
     
-    [center postNotificationName:TNStropheContactMessageReceivedNotification object:self];
+    [center postNotificationName:TNStropheContactMessageReceivedNotification object:self userInfo:userInfo];
     
     
     return YES;
@@ -228,15 +234,16 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     [messageStanza addTextNode:aMessage];
     
     [[self connection] registerSelector:@selector(didSentMessage:) ofObject:self withDict:params];
-    [[self connection] send:[messageStanza tree]];
+    [[self connection] send:messageStanza];
 }
 
 - (BOOL)didSentMessage:(id)aStanza
 {
-    var stanza = [[TNStropheStanza alloc] initFromStropheStanza:aStanza];
-    var center = [CPNotificationCenter defaultCenter];
+    var stanza      = [[TNStropheStanza alloc] initWithStanza:aStanza];
+    var center      = [CPNotificationCenter defaultCenter];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:stanza, @"stanza"];
     
-    [center postNotificationName:TNStropheContactMessageSentNotification object:self];
+    [center postNotificationName:TNStropheContactMessageSentNotification object:self userInfo:userInfo];
     
     return NO;
 }
@@ -251,7 +258,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     [stanza addChildName:@"group" withAttributes:nil];
     [stanza addTextNode:[self group]];
 
-    [[self connection] send:[stanza tree]];
+    [[self connection] send:stanza];
    
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
@@ -267,7 +274,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     [stanza addChildName:@"group" withAttributes:nil];
     [stanza addTextNode:newGroupName];
     
-    [[self connection] send:[stanza tree]];
+    [[self connection] send:stanza];
     
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];

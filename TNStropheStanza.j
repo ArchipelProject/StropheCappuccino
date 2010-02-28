@@ -19,10 +19,66 @@
 
 @import <Foundation/Foundation.j>
 
+
+@implementation TNXMLNode : CPObject
+{
+    XMLElement  _xmlNode;
+}
+
++ (TNXMLNode)nodeWithXMLNode:(id)aNode
+{
+    return [[TNXMLNode alloc] initWithNode:aNode];
+}
+
+- (void)initWithNode:(id)aNode
+{
+    if (self == [super init])
+    {
+        _xmlNode = aNode;
+    }
+    
+    return self;
+}
+
+- (CPString)getValueForAttribute:(CPString)anAttribute
+{
+    return _xmlNode.getAttribute(anAttribute);
+}
+
+- (CPArray)getChildrenWithName:(CPString)aName
+{
+    var nodes   = [[CPArray alloc] init];
+    var temp    = _xmlNode.getElementsByTagName(aName);
+    
+    for (var i = 0; i < temp.length; i++)
+        [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
+
+    return nodes;
+}
+
+- (CPArray)getFirstChildWithName:(CPString)aName
+{
+    var elements = _xmlNode.getElementsByTagName(aName);
+
+    if (elements.length >  0) 
+        return [TNXMLNode nodeWithXMLNode:elements[0]];
+    else
+        return nil;
+}
+
+- (CPString)text
+{
+    return $(_xmlNode).text();
+}
+@end
+
+
+
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Stanza
 */
-@implementation TNStropheStanza: CPObject
+@implementation TNStropheStanza: TNXMLNode
 {   
     id          _stanza     @accessors(readonly, getter=stanza);
 }
@@ -47,18 +103,29 @@
     return [[TNStropheStanza alloc] initWithName:@"message" andAttributes:attributes];
 }
 
++ (TNStropheStanza)stanzaWithStanza:(id)aStanza
+{
+    return [[TNStropheStanza alloc] initWithStanza:aStanza];
+}
+
 - (id)initWithName:(CPString)aName andAttributes:(CPDictionary)attributes
 {
     if (self = [super init])
+    {
         _stanza = new Strophe.Builder(aName, attributes);
+        _xmlNode = _stanza.tree();
+    }
     
     return self;
 }
 
-- (id)initFromStropheStanza:(id)aStanza
+- (id)initWithStanza:(id)aStanza
 {    
     if (self = [super init])
+    {
         _stanza = aStanza;
+        _xmlNode = aStanza;
+    }
 
     return self;
 }
@@ -66,16 +133,19 @@
 - (void)addChildName:(CPString)aTagName withAttributes:(CPDictionary)attributes 
 {
     _stanza = _stanza.c(aTagName, attributes);
+    _xmlNode = _stanza.tree();
 }
 
 - (void)addChildName:(CPString)aTagName
 {
     _stanza = _stanza.c(aTagName, {});
+    _xmlNode = _stanza.tree();
 }
 
 - (void)addTextNode:(CPString)aText
 {
     _stanza = _stanza.t(aText);
+    _xmlNode = _stanza.tree();
 }
 
 - (id)tree
@@ -103,19 +173,53 @@
     return [self stringValue];
 }
 
-- (CPString)getValueForAttribute:(CPString)anAttribute
+- (CPString)getFrom
 {
-    return _stanza.getAttribute(anAttribute);
+    return [self getValueForAttribute:@"from"];
 }
 
-- (CPArray)getChildrenWithName:(CPString)aName
+- (CPString)getTo
 {
-    return _stanza.getElementsByTagName(aName);
+    return [self getValueForAttribute:@"to"];
 }
 
-- (CPArray)getFirstChildrenWithName:(CPString)aName
+- (CPString)getType
 {
-    return _stanza.getElementsByTagName(aName)[0];
+    return [self getValueForAttribute:@"type"];
 }
+
+- (CPString)getNamespace
+{
+    return [self getValueForAttribute:@"xmlns"];
+}
+
+- (CPString)getID
+{
+    return [self getValueForAttribute:@"id"];
+}
+
+-(CPString)getFromResource
+{
+    return [[[self getFrom] componentsSeparatedByString:@"/"] objectAtIndex:1];
+}
+
+// - (CPString)getValueForAttribute:(CPString)anAttribute
+// {
+//     var node = [TNXMLNode nodeWithXMLNode:_stanza.tree()];
+//     
+//     return [node getValueForAttribute:]
+// }
+// 
+// - (CPArray)getChildrenWithName:(CPString)aName
+// {
+//     return _stanza.getElementsByTagName(aName);
+// }
+// 
+// - (CPArray)getFirstChildWithName:(CPString)aName
+// {
+//     var elements = _stanza.getElementsByTagName(aName);
+//     
+//     return (elements.length >  0) ? _stanza.getElementsByTagName(aName)[0] : nil;
+// }
 @end
 
