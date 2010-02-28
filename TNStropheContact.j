@@ -70,7 +70,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 	[contact setJid:aJid];
 	[contact setNodeName:aJid.split('@')[0]];
 	[contact setNickname:aJid.split('@')[0]];
-	[contact setResource: aJid.split('/')[1]];
+	[contact setResource:aJid.split('/')[1]];
 	[contact setDomain: aJid.split('/')[0].split('@')[1]];
 	
     return contact;
