@@ -20,17 +20,29 @@
 @import <Foundation/Foundation.j>
 
 
+/*! @ingroup strophecappuccino
+    This is an implémentation of an XML node 
+*/
 @implementation TNXMLNode : CPObject
 {
     XMLElement  _xmlNode     @accessors(readonly, getter=xmlNode);
 }
 
+/*! create an instance of a TNXMLNode from a pure javascript Node
+    @param aNode a pure Javascript DOM Element
+    @return an instance of TNXMLNode initialized with aNode
+*/
 + (TNXMLNode)nodeWithXMLNode:(id)aNode
 {
     return [[TNXMLNode alloc] initWithNode:aNode];
 }
 
-- (void)initWithNode:(id)aNode
+
+/*! initialize an instance of a TNXMLNode from a pure javascript Node
+    @param aNode a pure Javascript DOM Element
+    @return an instance of TNXMLNode initialized with aNode
+*/
+- (TNXMLNode)initWithNode:(id)aNode
 {
     if (self == [super init])
     {
@@ -40,7 +52,12 @@
     return self;
 }
 
-- (id)initWithName:(CPString)aName andAttributes:(CPDictionary)attributes
+/*! initialize an instance of a TNXMLNode with root node and attributes
+    @param aName name of the root tag
+    @param attributes CPDictionary contains all attributes
+    @return an instance of TNXMLNode initialized
+*/
+- (TNXMLNode)initWithName:(CPString)aName andAttributes:(CPDictionary)attributes
 {
     if (self = [super init])
     {
@@ -50,42 +67,67 @@
     return self;
 }
 
+/*! Add a children to the current seletected node
+    @param aTagName name of the new tag
+    @param attributes CPDictionary contains all attributes
+*/
 - (void)addChildName:(CPString)aTagName withAttributes:(CPDictionary)attributes 
 {
     _xmlNode = _xmlNode.c(aTagName, attributes);
 }
 
+/*! Add a children to the current seletected node
+    @param aTagName name of the new tag
+*/
 - (void)addChildName:(CPString)aTagName
 {
     _xmlNode = _xmlNode.c(aTagName, {});
 }
 
+/*! Add text value to the current seletected node
+    @param aText name of the new tag
+*/
 - (void)addTextNode:(CPString)aText
 {
     _xmlNode = _xmlNode.t(aText);
 }
 
+/*! return a DOM Element of the TNXMLNode
+    @return an DOM Element
+*/
 - (id)tree
 {
     return _xmlNode.tree();
 }
 
+/*! convert the TNXMLNode into its string representation
+    @return string representation of the TNXMLNode
+*/
 - (CPString)stringValue
 {
     return _xmlNode.toString();
 }
 
+/*! Move the pointer to the parent of the current node
+*/
 - (void)up
 {
     _xmlNode = _xmlNode.up();
 }
 
-
+/*! get value of an attribute of the current node
+    @param anAttribute the attribute
+    @return the value of anAttribute
+*/
 - (CPString)getValueForAttribute:(CPString)anAttribute
 {
     return _xmlNode.getAttribute(anAttribute);
 }
 
+/*! get an CPArray of TNXMLNode with matching tag name
+    @param aName the name tags should match
+    @return CPArray of TNXMLNode
+*/
 - (CPArray)getChildrenWithName:(CPString)aName
 {
     var nodes   = [[CPArray alloc] init];
@@ -97,6 +139,10 @@
     return nodes;
 }
 
+/*! get the first TNXMLNode that matching tag name
+    @param aName the name tags should match
+    @return the first mayching TNXMLNode
+*/
 - (CPArray)getFirstChildWithName:(CPString)aName
 {
     var elements = _xmlNode.getElementsByTagName(aName);
@@ -107,6 +153,9 @@
         return nil;
 }
 
+/*! get the text node value 
+    @return CPString of the content of node
+*/
 - (CPString)text
 {
     return $(_xmlNode).text();
@@ -128,35 +177,50 @@
 {   
 }
 
+/*! instanciate a TNStropheStanza
+    @param aName the root name 
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
 + (TNStropheStanza)stanzaWithName:(CPString)aName andAttributes:(CPDictionary)attributes
 {
     return [[TNStropheStanza alloc] initWithName:aName andAttributes:attributes];
 }
 
+/*! instanciate a TNStropheStanza with name IQ
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
 + (TNStropheStanza)iqWithAttributes:(CPDictionary)attributes
 {
     return [[TNStropheStanza alloc] initWithName:@"iq" andAttributes:attributes];
 }
 
+/*! instanciate a TNStropheStanza with name presence
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
 + (TNStropheStanza)presenceWithAttributes:(CPDictionary)attributes
 {
     return [[TNStropheStanza alloc] initWithName:@"presence" andAttributes:attributes];
 }
 
+/*! instanciate a TNStropheStanza with name message
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
 + (TNStropheStanza)messageWithAttributes:(CPDictionary)attributes
 {
     return [[TNStropheStanza alloc] initWithName:@"message" andAttributes:attributes];
 }
 
+/*! instanciate a TNStropheStanza from a Pure XML Dom Element
+    @param aStanza XML Element
+    @return instance of TNStropheStanza
+*/
 + (TNStropheStanza)stanzaWithStanza:(id)aStanza
 {
     return [[TNStropheStanza alloc] initWithNode:aStanza];
-}
-
-
-- (CPString)getType
-{
-    return [self getValueForAttribute:@"type"];
 }
 
 - (CPString)description
@@ -164,31 +228,49 @@
     return [self stringValue];
 }
 
+/*! get the from field of the stanza
+    @return from field of stanza
+*/
 - (CPString)getFrom
 {
     return [self getValueForAttribute:@"from"];
 }
 
+/*! get the to field of the stanza
+    @return to field of stanza
+*/
 - (CPString)getTo
 {
     return [self getValueForAttribute:@"to"];
 }
 
+/*! get the type field of the stanza
+    @return type field of stanza
+*/
 - (CPString)getType
 {
     return [self getValueForAttribute:@"type"];
 }
 
+/*! get the xmlns field of the stanza
+    @return xmlns field of stanza
+*/
 - (CPString)getNamespace
 {
     return [self getValueForAttribute:@"xmlns"];
 }
 
+/*! get the id field of the stanza
+    @return id field of stanza
+*/
 - (CPString)getID
 {
     return [self getValueForAttribute:@"id"];
 }
 
+/*! get the resource part of the from field of the stanza
+    @return resource of from field
+*/
 -(CPString)getFromResource
 {
     return [[[self getFrom] componentsSeparatedByString:@"/"] objectAtIndex:1];
