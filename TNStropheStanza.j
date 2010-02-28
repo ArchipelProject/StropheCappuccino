@@ -22,7 +22,7 @@
 
 @implementation TNXMLNode : CPObject
 {
-    XMLElement  _xmlNode;
+    XMLElement  _xmlNode     @accessors(readonly, getter=xmlNode);
 }
 
 + (TNXMLNode)nodeWithXMLNode:(id)aNode
@@ -39,6 +39,47 @@
     
     return self;
 }
+
+- (id)initWithName:(CPString)aName andAttributes:(CPDictionary)attributes
+{
+    if (self = [super init])
+    {
+        _xmlNode = new Strophe.Builder(aName, attributes);
+    }
+    
+    return self;
+}
+
+- (void)addChildName:(CPString)aTagName withAttributes:(CPDictionary)attributes 
+{
+    _xmlNode = _xmlNode.c(aTagName, attributes);
+}
+
+- (void)addChildName:(CPString)aTagName
+{
+    _xmlNode = _xmlNode.c(aTagName, {});
+}
+
+- (void)addTextNode:(CPString)aText
+{
+    _xmlNode = _xmlNode.t(aText);
+}
+
+- (id)tree
+{
+    return _xmlNode.tree();
+}
+
+- (CPString)stringValue
+{
+    return _xmlNode.toString();
+}
+
+- (void)up
+{
+    _xmlNode = _xmlNode.up();
+}
+
 
 - (CPString)getValueForAttribute:(CPString)anAttribute
 {
@@ -70,6 +111,11 @@
 {
     return $(_xmlNode).text();
 }
+
+- (CPString)description
+{
+    return _xmlNode;
+}
 @end
 
 
@@ -80,7 +126,6 @@
 */
 @implementation TNStropheStanza: TNXMLNode
 {   
-    id          _stanza     @accessors(readonly, getter=stanza);
 }
 
 + (TNStropheStanza)stanzaWithName:(CPString)aName andAttributes:(CPDictionary)attributes
@@ -105,67 +150,13 @@
 
 + (TNStropheStanza)stanzaWithStanza:(id)aStanza
 {
-    return [[TNStropheStanza alloc] initWithStanza:aStanza];
+    return [[TNStropheStanza alloc] initWithNode:aStanza];
 }
 
-- (id)initWithName:(CPString)aName andAttributes:(CPDictionary)attributes
-{
-    if (self = [super init])
-    {
-        _stanza = new Strophe.Builder(aName, attributes);
-        _xmlNode = _stanza.tree();
-    }
-    
-    return self;
-}
-
-- (id)initWithStanza:(id)aStanza
-{    
-    if (self = [super init])
-    {
-        _stanza = aStanza;
-        _xmlNode = aStanza;
-    }
-
-    return self;
-}
-
-- (void)addChildName:(CPString)aTagName withAttributes:(CPDictionary)attributes 
-{
-    _stanza = _stanza.c(aTagName, attributes);
-    _xmlNode = _stanza.tree();
-}
-
-- (void)addChildName:(CPString)aTagName
-{
-    _stanza = _stanza.c(aTagName, {});
-    _xmlNode = _stanza.tree();
-}
-
-- (void)addTextNode:(CPString)aText
-{
-    _stanza = _stanza.t(aText);
-    _xmlNode = _stanza.tree();
-}
-
-- (id)tree
-{
-    return _stanza.tree();
-}
-
-- (CPString)stringValue
-{
-    return _stanza.toString();
-}
-
-- (void)up
-{
-    _stanza = _stanza.up();
-}
 
 - (CPString)getType
 {
-    return _stanza.getAttribute("type");
+    return [self getValueForAttribute:@"type"];
 }
 
 - (CPString)description
@@ -202,24 +193,5 @@
 {
     return [[[self getFrom] componentsSeparatedByString:@"/"] objectAtIndex:1];
 }
-
-// - (CPString)getValueForAttribute:(CPString)anAttribute
-// {
-//     var node = [TNXMLNode nodeWithXMLNode:_stanza.tree()];
-//     
-//     return [node getValueForAttribute:]
-// }
-// 
-// - (CPArray)getChildrenWithName:(CPString)aName
-// {
-//     return _stanza.getElementsByTagName(aName);
-// }
-// 
-// - (CPArray)getFirstChildWithName:(CPString)aName
-// {
-//     var elements = _stanza.getElementsByTagName(aName);
-//     
-//     return (elements.length >  0) ? _stanza.getElementsByTagName(aName)[0] : nil;
-// }
 @end
 

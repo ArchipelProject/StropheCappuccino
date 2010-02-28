@@ -221,7 +221,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 */
 - (void)send:(TNStropheStanza)aStanza
 {
-    _connection.send([aStanza stanza]);
+    _connection.send([aStanza tree]);
 }
 
 /*! generates an unique identifier 
