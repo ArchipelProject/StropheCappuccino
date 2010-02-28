@@ -145,7 +145,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
         if (show)
         {
-            var textValue = $(show).text();
+            var textValue = [show text];
             if ( textValue == TNStropheContactStatusBusy) 
             {
                 [self setValue:TNStropheContactStatusBusy forKey:@"status"];
@@ -209,7 +209,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (BOOL)didReceivedMessage:(id)aStanza
 {
-    var stanza      = [[TNStropheStanza alloc] initWithStanza:aStanza];
+    var stanza      = [TNStropheStanza stanzaWithStanza:aStanza];
     var center      = [CPNotificationCenter defaultCenter];
     var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:stanza, @"stanza"];
     
@@ -239,7 +239,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (BOOL)didSentMessage:(id)aStanza
 {
-    var stanza      = [[TNStropheStanza alloc] initWithStanza:aStanza];
+    var stanza      = [TNStropheStanza stanzaWithStanza:aStanza];
     var center      = [CPNotificationCenter defaultCenter];
     var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:stanza, @"stanza"];
     

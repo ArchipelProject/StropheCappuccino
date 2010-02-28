@@ -101,12 +101,14 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
         if ([item getValueForAttribute:@"name"])
             var nickname = [item getValueForAttribute:@"name"];
         
-        if (![self doesRosterContainsJID:[item getValueForAttribute:@"jid"]])
+        var theJid = [item getValueForAttribute:@"jid"];
+        
+        if (![self doesRosterContainsJID:theJid])
         {
-            var theGroup = (item.getElementsByTagName('group')[0] != null) ? $(item.getElementsByTagName('group')[0]).text() : "General";
+            var theGroup = ([item getFirstChildWithName:@"group"] != null) ? [[item getFirstChildWithName:@"group"] text] : "General";
             [self addGroupIfNotExists:theGroup];
 
-        	var contact = [TNStropheContact contactWithConnection:_connection jid:item.getAttribute('jid') group:theGroup];
+        	var contact = [TNStropheContact contactWithConnection:_connection jid:theJid group:theGroup];
             [contact setNickname:nickname];
 
             [contact getStatus];
