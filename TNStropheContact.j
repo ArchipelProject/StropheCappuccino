@@ -112,7 +112,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     
     [params setValue:@"presence" forKey:@"name"];
     [params setValue:[self jid] forKey:@"from"];
-    [params setValue:{"matchBare": true} forKey:@"options"];
+    [params setValue:{"matchBare": YES} forKey:@"options"];
     
     [connection registerSelector:@selector(didReceivedStatus:) ofObject:self withDict:params];
     
@@ -120,12 +120,11 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 }
 
 - (BOOL)didReceivedStatus:(id)aStanza
-{
-    var stanza          = [TNStropheStanza stanzaWithStanza:aStanza];
+{   
     var bundle          = [CPBundle bundleForClass:self];
-    var fromJID         = [stanza getFrom];
-    var resource        = [stanza getFromResource];
-    var presenceType    = [stanza getType];
+    var fromJID         = [aStanza getFrom];
+    var resource        = [aStanza getFromResource];
+    var presenceType    = [aStanza getType];
     
     [self setFullJID:fromJID];
     [self setResource:resource];
@@ -138,7 +137,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     }
     else
     {
-        show = [stanza getFirstChildWithName:@"show"];
+        show = [aStanza firstChildWithName:@"show"];
 
         [self setValue:TNStropheContactStatusOnline forKey:@"status"];
         [self setValue:_imageOnline forKeyPath:@"statusIcon"];
@@ -163,7 +162,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
             }
         }
     }
-
+    
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
     
@@ -185,8 +184,7 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (BOOL)didReceivedVCard:(id)aStanza
 {
-    var stanza  = [TNStropheStanza stanzaWithStanza:aStanza];
-    var vCard   = [stanza getFirstChildWithName:@"vCard"];
+    var vCard   = [aStanza firstChildWithName:@"vCard"];
     
     if (vCard)
     {
@@ -202,18 +200,17 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
     [params setValue:@"message" forKey:@"name"];
     [params setValue:[self jid] forKey:@"from"];
-    [params setValue:{"matchBare": true} forKey:@"options"];
+    [params setValue:{"matchBare": YES} forKey:@"options"];
     
     [[self connection] registerSelector:@selector(didReceivedMessage:) ofObject:self withDict:params];
 }
 
 - (BOOL)didReceivedMessage:(id)aStanza
 {
-    var stanza      = [TNStropheStanza stanzaWithStanza:aStanza];
     var center      = [CPNotificationCenter defaultCenter];
-    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:stanza, @"stanza"];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
     
-    [[self messagesQueue] addObject:stanza];
+    [[self messagesQueue] addObject:aStanza];
     
     _statusReminder = [self statusIcon];
     [self setValue:_imageNewMessage forKeyPath:@"statusIcon"]
@@ -239,9 +236,8 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (BOOL)didSentMessage:(id)aStanza
 {
-    var stanza      = [TNStropheStanza stanzaWithStanza:aStanza];
     var center      = [CPNotificationCenter defaultCenter];
-    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:stanza, @"stanza"];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
     
     [center postNotificationName:TNStropheContactMessageSentNotification object:self userInfo:userInfo];
     
