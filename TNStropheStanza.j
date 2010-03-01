@@ -119,7 +119,7 @@
     @param anAttribute the attribute
     @return the value of anAttribute
 */
-- (CPString)getValueForAttribute:(CPString)anAttribute
+- (CPString)valueForAttribute:(CPString)anAttribute
 {
     return _xmlNode.getAttribute(anAttribute);
 }
@@ -128,7 +128,7 @@
     @param aName the name tags should match
     @return CPArray of TNXMLNode
 */
-- (CPArray)getChildrenWithName:(CPString)aName
+- (CPArray)childrenWithName:(CPString)aName
 {
     var nodes   = [[CPArray alloc] init];
     var temp    = _xmlNode.getElementsByTagName(aName);
@@ -143,7 +143,7 @@
     @param aName the name tags should match
     @return the first mayching TNXMLNode
 */
-- (CPArray)getFirstChildWithName:(CPString)aName
+- (CPArray)firstChildWithName:(CPString)aName
 {
     var elements = _xmlNode.getElementsByTagName(aName);
 
@@ -233,7 +233,7 @@
 */
 - (CPString)getFrom
 {
-    return [self getValueForAttribute:@"from"];
+    return [self valueForAttribute:@"from"];
 }
 
 /*! get the to field of the stanza
@@ -241,7 +241,7 @@
 */
 - (CPString)getTo
 {
-    return [self getValueForAttribute:@"to"];
+    return [self valueForAttribute:@"to"];
 }
 
 /*! get the type field of the stanza
@@ -249,7 +249,7 @@
 */
 - (CPString)getType
 {
-    return [self getValueForAttribute:@"type"];
+    return [self valueForAttribute:@"type"];
 }
 
 /*! get the xmlns field of the stanza
@@ -257,7 +257,7 @@
 */
 - (CPString)getNamespace
 {
-    return [self getValueForAttribute:@"xmlns"];
+    return [self valueForAttribute:@"xmlns"];
 }
 
 /*! get the id field of the stanza
@@ -265,7 +265,7 @@
 */
 - (CPString)getID
 {
-    return [self getValueForAttribute:@"id"];
+    return [self valueForAttribute:@"id"];
 }
 
 /*! get the resource part of the from field of the stanza

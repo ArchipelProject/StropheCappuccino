@@ -90,22 +90,21 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 - (BOOL)_didRosterReceived:(id)aStanza 
 {
-    var stanza  = [TNStropheStanza stanzaWithStanza:aStanza];
-    var query   = [stanza getFirstChildWithName:@"query"];
-    var items   = [query getChildrenWithName:@"item"]; //query.getElementsByTagName('item');
-
+    var query   = [aStanza firstChildWithName:@"query"];
+    var items   = [query childrenWithName:@"item"];
+    
     for (var i = 0; i < [items count]; i++)
     {
         var item = [items objectAtIndex:i];
         
-        if ([item getValueForAttribute:@"name"])
-            var nickname = [item getValueForAttribute:@"name"];
+        if ([item valueForAttribute:@"name"])
+            var nickname = [item valueForAttribute:@"name"];
         
-        var theJid = [item getValueForAttribute:@"jid"];
+        var theJid = [item valueForAttribute:@"jid"];
         
         if (![self doesRosterContainsJID:theJid])
         {
-            var theGroup = ([item getFirstChildWithName:@"group"] != null) ? [[item getFirstChildWithName:@"group"] text] : "General";
+            var theGroup = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General";
             [self addGroupIfNotExists:theGroup];
 
         	var contact = [TNStropheContact contactWithConnection:_connection jid:theJid group:theGroup];
@@ -148,7 +147,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     {
         var contact = [[self contacts] objectAtIndex:i];
         
-        if ([contact jid] == aJid)
+        if ([[contact jid] lowercaseString] == [aJid lowercaseString])
             return YES;
     }
     return NO;
@@ -216,7 +215,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 - (void) changeGroup:(CPString)aGroup forJID:(CPString)aJid
-{   
+{
     var contact = [self getContactFromJID:aJid];
     [contact changeGroup:aGroup];
 }
@@ -249,7 +248,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return NO;
 }
 
-- (TNStropheGroup) addGroup:(CPString)groupName
+- (TNStropheGroup)addGroup:(CPString)groupName
 {
     var newGroup = [[TNStropheGroup alloc] init];
 
@@ -311,8 +310,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 - (void)answerAuthorizationRequest:(id)aStanza answer:(BOOL)theAnswer
 {
-    var stanza      = [TNStropheStanza stanzaWithStanza:aStanza];
-    var requester   = [stanza getFrom];
+    var requester   = [aStanza getFrom];
     
     if (theAnswer == YES)
     {
@@ -324,6 +322,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     
     if (![self doesRosterContainsJID:requester])
         [self addContact:requester withName:requester inGroup:nil]; 
+        
 }
 
 
