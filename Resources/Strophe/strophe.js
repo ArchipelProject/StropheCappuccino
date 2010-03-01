@@ -542,7 +542,7 @@ Strophe = {
      *  The version of the Strophe library. Unreleased builds will have
      *  a version of head-HASH where HASH is a partial revision.
      */
-    VERSION: "",
+    VERSION: "1.0.1",
 
     /** Constants: XMPP Namespace Constants
      *  Common namespace constants from the XMPP RFCs and XEPs.
@@ -740,15 +740,22 @@ Strophe = {
      *  Create an XML DOM element.
      *
      *  This function creates an XML DOM element correctly across all
-     *  implementations. Note that these are not HTML DOM elements, which
-     *  aren't appropriate for XMPP stanzas.
+     *  implementations. Specifically the Microsoft implementation of
+     *  document.createElement makes DOM elements with 43+ default attributes
+     *  unless elements are created with the ActiveX object Microsoft.XMLDOM.
+     *
+     *  Most DOMs force element names to lowercase, so we use the
+     *  _realname attribute on the created element to store the case
+     *  sensitive name.  This is required to generate proper XML for
+     *  things like vCard avatars (XEP 153).  This attribute is stripped
+     *  out before being sent over the wire or serialized, but you may
+     *  notice it during debugging.
      *
      *  Parameters:
      *    (String) name - The name for the element.
-     *    (Array|Object) attrs - An optional array or object containing
-     *      key/value pairs to use as element attributes. The object should
-     *      be in the format {'key': 'value'} or {key: 'value'}. The array
-     *      should have the format [['key1', 'value1'], ['key2', 'value2']].
+     *    (Array) attrs - An optional array of key/value pairs to use as
+     *      element attributes in the following format [['key1', 'value1'],
+     *      ['key2', 'value2']]
      *    (String) text - The text child data for the element.
      *
      *  Returns:
@@ -1004,7 +1011,7 @@ Strophe = {
      */
     getBareJidFromJid: function (jid)
     {
-        return jid ? jid.split("/")[0] : null;
+        return jid.split("/")[0];
     },
 
     /** Function: log
@@ -1185,7 +1192,7 @@ Strophe = {
  *  DOM element easily and rapidly.  All the functions except for toString()
  *  and tree() return the object, so calls can be chained.  Here's an
  *  example using the $iq() builder helper.
- *  > $iq({to: 'you', from: 'me', type: 'get', id: '1'})
+ *  > $iq({to: 'you': from: 'me': type: 'get', id: '1'})
  *  >     .c('query', {xmlns: 'strophe:example'})
  *  >     .c('example')
  *  >     .toString()
@@ -1414,7 +1421,7 @@ Strophe.Handler = function (handler, ns, name, type, id, from, options)
     }
 
     if (this.options.matchBare) {
-        this.from = from ? Strophe.getBareJidFromJid(from) : null;
+        this.from = Strophe.getBareJidFromJid(from);
     } else {
         this.from = from;
     }
@@ -1448,9 +1455,9 @@ Strophe.Handler.prototype = {
         if (!this.ns) {
             nsMatch = true;
         } else {
-            var that = this;
+            var self = this;
             Strophe.forEachChild(elem, null, function (elem) {
-                if (elem.getAttribute("xmlns") == that.ns) {
+                if (elem.getAttribute("xmlns") == self.ns) {
                     nsMatch = true;
                 }
             });
@@ -1460,9 +1467,9 @@ Strophe.Handler.prototype = {
 
         if (nsMatch &&
             (!this.name || Strophe.isTagEqual(elem, this.name)) &&
-            (!this.type || elem.getAttribute("type") == this.type) &&
-            (!this.id || elem.getAttribute("id") == this.id) &&
-            (!this.from || from == this.from)) {
+            (!this.type || elem.getAttribute("type") === this.type) &&
+            (!this.id || elem.getAttribute("id") === this.id) &&
+            (!this.from || from === this.from)) {
                 return true;
         }
 
@@ -2139,11 +2146,11 @@ Strophe.Connection.prototype = {
             }
 
             var iqtype = stanza.getAttribute('type');
-	    if (iqtype == 'result') {
+	    if (iqtype === 'result') {
 		if (callback) {
                     callback(stanza);
                 }
-	    } else if (iqtype == 'error') {
+	    } else if (iqtype === 'error') {
 		if (errback) {
                     errback(stanza);
                 }
@@ -2778,21 +2785,21 @@ Strophe.Connection.prototype = {
         }
 
         // send each incoming stanza through the handler chain
-        var that = this;
+        var self = this;
         Strophe.forEachChild(elem, null, function (child) {
             var i, newList;
             // process handlers
-            newList = that.handlers;
-            that.handlers = [];
+            newList = self.handlers;
+            self.handlers = [];
             for (i = 0; i < newList.length; i++) {
                 var hand = newList[i];
                 if (hand.isMatch(child) &&
-                    (that.authenticated || !hand.user)) {
+                    (self.authenticated || !hand.user)) {
                     if (hand.run(child)) {
-                        that.handlers.push(hand);
+                        self.handlers.push(hand);
                     }
                 } else {
-                    that.handlers.push(hand);
+                    self.handlers.push(hand);
                 }
             }
         });
@@ -3477,7 +3484,7 @@ Strophe.Connection.prototype = {
             body = this._buildBody();
             for (i = 0; i < this._data.length; i++) {
                 if (this._data[i] !== null) {
-                    if (this._data[i] == "restart") {
+                    if (this._data[i] === "restart") {
                         body.attrs({
                             to: this.domain,
                             "xml:lang": "en",
