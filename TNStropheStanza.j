@@ -273,7 +273,9 @@
 */
 -(CPString)getFromResource
 {
-    return [[[self getFrom] componentsSeparatedByString:@"/"] objectAtIndex:1];
+    if ([[[self getFrom] componentsSeparatedByString:@"/"] count] > 1)
+        return [[[self getFrom] componentsSeparatedByString:@"/"] objectAtIndex:1];
+    return nil;
 }
 @end
 
