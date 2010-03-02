@@ -115,7 +115,6 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     [params setValue:{"matchBare": YES} forKey:@"options"];
     
     [connection registerSelector:@selector(didReceivedStatus:) ofObject:self withDict:params];
-    
     [[self connection] send:probe];
 }
 
@@ -137,15 +136,14 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     }
     else
     {
-        show = [aStanza firstChildWithName:@"show"];
-
         [self setValue:TNStropheContactStatusOnline forKey:@"status"];
         [self setValue:_imageOnline forKeyPath:@"statusIcon"];
-
+        
+        show = [aStanza firstChildWithName:@"show"];
         if (show)
         {
             var textValue = [show text];
-            if ( textValue == TNStropheContactStatusBusy) 
+            if (textValue == TNStropheContactStatusBusy) 
             {
                 [self setValue:TNStropheContactStatusBusy forKey:@"status"];
                 [self setValue:_imageBusy forKeyPath:@"statusIcon"];
