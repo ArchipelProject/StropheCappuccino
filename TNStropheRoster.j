@@ -111,7 +111,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
             [contact setNickname:nickname];
 
             [contact getStatus];
-            [contact getVCard];
             [contact getMessages];
            	[[self contacts] addObject:contact];
         }
@@ -161,9 +160,9 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     if (!aGroup)
            aGroup = "General";
     
-    var uid = [_connection getUniqueId];
-    var params = [[CPDictionary alloc] init];
-    var addReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+    var uid     = [_connection getUniqueId];
+    var params  = [[CPDictionary alloc] init];
+    var addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
     
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [addReq addChildName:@"item" withAttributes:{"jid": aJid, "name": aName}];
@@ -175,7 +174,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     var contact = [TNStropheContact contactWithConnection:_connection jid:aJid group:aGroup];
     [contact setNickname:aName];
     [contact getStatus];
-    [contact getVCard];
     [contact getMessages];
     
     [[self addGroupIfNotExists:aGroup]]

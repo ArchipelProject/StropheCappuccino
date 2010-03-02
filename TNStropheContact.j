@@ -163,6 +163,8 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
         }
     }
     
+    [self getVCard];
+    
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
     
