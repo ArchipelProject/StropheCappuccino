@@ -98,6 +98,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     
     CPString        _boshService;
     id              _connection;
+    CPDictionary    _registredHandlerDict;
 }
 
 /*! instanciate a TNStropheConnection object
@@ -133,7 +134,8 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 {
     if (self = [super init])
     {
-        _boshService = aService;   
+        _boshService = aService;
+        _registredHandlerDict = [[CPDictionary alloc] init];
     }
     
     return self;
@@ -240,6 +242,30 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     return _connection.getUniqueId(prefix);
 }
 
+/*! Reset the current connection
+*/
+- (void)reset
+{
+    if (_connection)
+        _connection.reset();
+}
+
+/*! pause the current connection
+*/
+- (void)reset
+{
+    if (_connection)
+        _connection.pause();
+}
+
+/*! resume the current connection if paused
+*/
+- (void)resume
+{
+    if (_connection)
+        _connection.pause();
+}
+
 
 /*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictonnary parameter.
     The dictionnary should contains zero to many of the followings :
@@ -257,10 +283,12 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     @param aSelector the selector to be performed
     @param anObject the receiver of the selector
     @param aDict a dictionnary of parameters
+    
+    @return an id of the handler registration used to remove it
 */
-- (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
 {    
-    _connection.addHandler(function(stanza) {
+   var handlerId =  _connection.addHandler(function(stanza) {
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -269,6 +297,50 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
             [aDict valueForKey:@"id"], 
             [aDict valueForKey:@"from"],
             [aDict valueForKey:@"options"]);
+            
+    return handlerId;
+}
+
+/*! same than registerSelector:ofObject:withDict but with a timeout
+    
+    @param aSelector the selector to be performed
+    @param anObject the receiver of the selector
+    @param aDict a dictionnary of parameters
+    @timeout CPNumber timeout of the handler
+    
+    @return an id of the handler registration used to remove it
+*/
+- (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
+{    
+    var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
+                return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
+            }, 
+            [aDict valueForKey:@"namespace"], 
+            [aDict valueForKey:@"name"], 
+            [aDict valueForKey:@"type"], 
+            [aDict valueForKey:@"id"], 
+            [aDict valueForKey:@"from"],
+            [aDict valueForKey:@"options"]);
+    
+    return handlerId;
+}
+
+/*! delete an registred selector
+    
+    @param aHandlerId the handler id to remove
+*/
+- (void)deleteRegistredSelector:(id)aHandlerId
+{
+    _connection.deleteHandler(handlerId)
+}
+
+/*! delete an registred timed selector
+    
+    @param aHandlerId the handler id to remove
+*/
+- (void)deleteRegistredTimedSelector:(id)aTimedHandlerId
+{
+    _connection.deleteTimedHandler(aTimedHandlerId)
 }
 
 @end
