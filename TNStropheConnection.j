@@ -164,49 +164,58 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 */
 - (void)connect
 {   
-    _connection = new Strophe.Connection(_boshService);
-    _connection.connect([self jid], [self password], function (status) 
+    try
     {
-        var center = [CPNotificationCenter defaultCenter];
-        
-        if (status == Strophe.Status.CONNECTING)
+        _connection = new Strophe.Connection(_boshService);
+        _connection.connect([self jid], [self password], function (status, errorCond) 
         {
-            if ([[self delegate] respondsToSelector:@selector(onStropheConnecting:)])
-    	        [[self delegate] onStropheConnecting:self];
-    	    
-    	    [center postNotification:TNStropheConnectionStatusConnecting]; 
-        } 
-        else if (status == Strophe.Status.CONNFAIL) 
-        {
-            if ([[self delegate] respondsToSelector:@selector(onStropheConnectFail:)])
-    	        [[self delegate] onStropheConnectFail:self];
-    	    
-    	    [center postNotification:TNStropheConnectionStatusFailure];
-        } 
-        else if (status == Strophe.Status.DISCONNECTING) 
-        {
-    	    if ([[self delegate] respondsToSelector:@selector(onStropheDisconnecting:)])
-    	        [[self delegate] onStropheDisconnecting:self];
-    	        
-    	    [center postNotification:TNStropheConnectionStatusDisconnecting];
-        } 
-        else if (status == Strophe.Status.DISCONNECTED) 
-        {
-    	    if ([[self delegate] respondsToSelector:@selector(onStropheDisconnected:)])
-    	        [[self delegate] onStropheDisconnected:self];
-    	        
-    	    [center postNotification:TNStropheConnectionStatusDisconnected];
-        } 
-        else if (status == Strophe.Status.CONNECTED)
-        {    
-    	    _connection.send($pres().tree());
-    	    
-    	    if ([[self delegate] respondsToSelector:@selector(onStropheConnected:)])
-    	        [[self delegate] onStropheConnected:self];
-    	        
-            [center postNotification:TNStropheConnectionStatusConnected];
-        }
-    });
+            console.log("Something happens... whoooooooooOOo");
+
+            var center = [CPNotificationCenter defaultCenter];
+
+            if (status == Strophe.Status.CONNECTING)
+            {
+                if ([[self delegate] respondsToSelector:@selector(onStropheConnecting:)])
+       	            [[self delegate] onStropheConnecting:self];
+
+       	        [center postNotification:TNStropheConnectionStatusConnecting]; 
+            } 
+            else if (status == Strophe.Status.CONNFAIL) 
+            {
+                if ([[self delegate] respondsToSelector:@selector(onStropheConnectFail:)])
+       	            [[self delegate] onStropheConnectFail:self];
+
+       	        [center postNotification:TNStropheConnectionStatusFailure];
+            } 
+            else if (status == Strophe.Status.DISCONNECTING) 
+            {
+       	        if ([[self delegate] respondsToSelector:@selector(onStropheDisconnecting:)])
+       	            [[self delegate] onStropheDisconnecting:self];
+
+       	        [center postNotification:TNStropheConnectionStatusDisconnecting];
+            } 
+            else if (status == Strophe.Status.DISCONNECTED) 
+            {
+       	        if ([[self delegate] respondsToSelector:@selector(onStropheDisconnected:)])
+       	            [[self delegate] onStropheDisconnected:self];
+
+       	        [center postNotification:TNStropheConnectionStatusDisconnected];
+            } 
+            else if (status == Strophe.Status.CONNECTED)
+            {    
+       	        _connection.send($pres().tree());
+
+       	        if ([[self delegate] respondsToSelector:@selector(onStropheConnected:)])
+       	            [[self delegate] onStropheConnected:self];
+
+                [center postNotification:TNStropheConnectionStatusConnected];
+            }
+        });
+    }
+    catch(ex)
+    {
+        alert(ex);
+    }
 }
 
 /*! this disconnect the XMPP connection
