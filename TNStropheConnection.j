@@ -169,8 +169,6 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
         _connection = new Strophe.Connection(_boshService);
         _connection.connect([self jid], [self password], function (status, errorCond) 
         {
-            console.log("Something happens... whoooooooooOOo");
-
             var center = [CPNotificationCenter defaultCenter];
 
             if (status == Strophe.Status.CONNECTING)
