@@ -350,6 +350,15 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     _connection.deleteTimedHandler(aTimedHandlerId)
 }
 
+
+/*! Immediately send any pending outgoing data.
+    
+*/
+- (void)flush
+{
+    _connection.flush();
+}
+
 @end
 
 
