@@ -296,6 +296,14 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (void)freeMessagesQueue
 {
+    if (_statusReminder)
+    {
+        [self setValue:_statusReminder forKeyPath:@"statusIcon"]
+        _statusReminder = Nil;
+        
+        var center = [CPNotificationCenter defaultCenter];
+        [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
+    }
     [[self messagesQueue] removeAllObjects];
 }
 
