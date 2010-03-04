@@ -133,11 +133,13 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     {   
         [self setValue:TNStropheContactStatusOffline forKey:@"status"];
         [self setValue:_imageOffline forKeyPath:@"statusIcon"];
+        _statusReminder = _imageOffline;
     }
     else
     {
         [self setValue:TNStropheContactStatusOnline forKey:@"status"];
         [self setValue:_imageOnline forKeyPath:@"statusIcon"];
+        _statusReminder = _imageOnline;
         
         show = [aStanza firstChildWithName:@"show"];
         if (show)
@@ -147,16 +149,19 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
             {
                 [self setValue:TNStropheContactStatusBusy forKey:@"status"];
                 [self setValue:_imageBusy forKeyPath:@"statusIcon"];
+                _statusReminder = _imageBusy;
             }
             else if (textValue == TNStropheContactStatusAway) 
             {
                 [self setValue:TNStropheContactStatusAway forKey:@"status"];
                 [self setValue:_imageAway forKeyPath:@"statusIcon"];
+                _statusReminder = _imageAway;
             }
             else if (textValue == TNStropheContactStatusDND) 
             {
                 [self setValue:TNStropheContactStatusDND forKey:@"status"];
                 [self setValue:_imageDND forKeyPath:@"statusIcon"];
+                _statusReminder = _imageDND;
             }
         }
     }
@@ -212,12 +217,12 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
     
     [[self messagesQueue] addObject:aStanza];
     
-    _statusReminder = [self statusIcon];
-    [self setValue:_imageNewMessage forKeyPath:@"statusIcon"]
+    [self setStatusIcon:_imageNewMessage];
     
     [center postNotificationName:TNStropheContactMessageReceivedNotification object:self userInfo:userInfo];
-    
-    
+
+    [[self connection] playReceivedSound];
+
     return YES;
 }
 
@@ -278,33 +283,32 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 
 - (TNStropheStanza)popMessagesQueue
 {
-    var lastMessage = [[self messagesQueue] lastObject];
-    
-    if (_statusReminder)
-    {
-        [self setValue:_statusReminder forKeyPath:@"statusIcon"]
-        _statusReminder = Nil;
+    if ([[self messagesQueue] count] == 0)
+        return Nil;
         
-        var center = [CPNotificationCenter defaultCenter];
-        [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
-    }
+    var lastMessage = [[self messagesQueue] objectAtIndex:0];
+    var center = [CPNotificationCenter defaultCenter];
     
-    [[self messagesQueue] removeLastObject];
+    
+    [self setStatusIcon:_statusReminder];
+    
+    [[self messagesQueue] removeObjectAtIndex:0];
+    
+    [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
     
     return lastMessage;
 }
 
 - (void)freeMessagesQueue
 {
-    if (_statusReminder)
-    {
-        [self setValue:_statusReminder forKeyPath:@"statusIcon"]
-        _statusReminder = Nil;
-        
-        var center = [CPNotificationCenter defaultCenter];
-        [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
-    }
+    var center = [CPNotificationCenter defaultCenter];
+
+
+    [self setStatusIcon:_statusReminder];
+    
     [[self messagesQueue] removeAllObjects];
+    
+    [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
 }
 
 

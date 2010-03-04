@@ -93,12 +93,16 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 @implementation TNStropheConnection: CPObject 
 {    
     CPString        jid                     @accessors(); 
+    CPString        resource                @accessors(); 
     CPString        password                @accessors(); 
     id              delegate                @accessors();
+    
     
     CPString        _boshService;
     id              _connection;
     CPDictionary    _registredHandlerDict;
+    
+    id                      _audioTagReceive;
 }
 
 /*! instanciate a TNStropheConnection object
@@ -125,6 +129,11 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     return [[TNStropheConnection alloc] initWithService:aService jid:aJid password:aPassword];
 }
 
++ (TNStropheConnection)connectionWithService:(CPString)aService jid:(CPString)aJid resource:(CPString)aResource password:(CPString)aPassword 
+{
+    return [[TNStropheConnection alloc] initWithService:aService jid:aJid resource:aResource password:aPassword];
+}
+
 
 /*! initialize the TNStropheConnection
 
@@ -136,6 +145,15 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     {
         _boshService = aService;
         _registredHandlerDict = [[CPDictionary alloc] init];
+        resource = @"controller";
+        
+        var bundle  = [CPBundle bundleForClass:[self class]];
+        var sound   = [bundle pathForResource:@"Receive.mp3"];
+
+        _audioTagReceive = document.createElement('audio');
+        _audioTagReceive.setAttribute("src", sound);
+        document.body.appendChild(_audioTagReceive);
+
     }
     
     return self;
@@ -158,6 +176,18 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     return self;
 }
 
+- (id)initWithService:(CPString)aService jid:(CPString)aJid  resource:(CPString)aResource password:(CPString)aPassword
+{
+    if (self = [self initWithService:aService])
+    {
+        [self setJid:aJid];
+        [self setPassword:aPassword];
+        [self setResource:aResource];
+    }
+    
+    return self;
+}
+
 
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 
@@ -167,7 +197,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     try
     {
         _connection = new Strophe.Connection(_boshService);
-        _connection.connect([self jid], [self password], function (status, errorCond) 
+        _connection.connect([self jid] + @"/controller", [self password], function (status, errorCond) 
         {
             var center = [CPNotificationCenter defaultCenter];
 
@@ -359,6 +389,11 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     _connection.flush();
 }
 
+
+- (void)playReceivedSound
+{
+    _audioTagReceive.play();
+}
 @end
 
 
