@@ -35,6 +35,11 @@ TNStropheContactPresenceUpdatedNotification = @"TNStropheContactPresenceUpdatedN
 TNStropheContactMessageReceivedNotification = @"TNStropheContactMessageReceivedNotification";
 TNStropheContactMessageTreatedNotification  = @"TNStropheContactMessageTreatedNotification";
 TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotification";
+TNStropheContactMessageComposing            = @"TNStropheContactMessageComposing";
+TNStropheContactMessagePaused               = @"TNStropheContactMessagePaused";
+TNStropheContactMessageActive               = @"TNStropheContactMessageActive";
+TNStropheContactMessageInactive             = @"TNStropheContactMessageInactive";
+TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Contact
@@ -213,16 +218,33 @@ TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotif
 - (BOOL)didReceivedMessage:(id)aStanza
 {
     var center      = [CPNotificationCenter defaultCenter];
-    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
-    
-    [[self messagesQueue] addObject:aStanza];
-    
-    [self setStatusIcon:_imageNewMessage];
-    
-    [center postNotificationName:TNStropheContactMessageReceivedNotification object:self userInfo:userInfo];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", [CPDate date], @"date"];
 
-    [[self connection] playReceivedSound];
+    if ([aStanza containsChildrenWithName:@"composing"])
+        [center postNotificationName:TNStropheContactMessageComposing object:self userInfo:userInfo];
+    
+    if ([aStanza containsChildrenWithName:@"pause"])
+        [center postNotificationName:TNStropheContactMessagePaused object:self userInfo:userInfo];
+        
+    if ([aStanza containsChildrenWithName:@"active"])
+        [center postNotificationName:TNStropheContactMessageActive object:self userInfo:userInfo];
+    
+    if ([aStanza containsChildrenWithName:@"inactive"])
+        [center postNotificationName:TNStropheContactMessageInactive object:self userInfo:userInfo];
+    
+    if ([aStanza containsChildrenWithName:@"gone"])
+        [center postNotificationName:TNStropheContactMessageGone object:self userInfo:userInfo];
 
+    if ([aStanza containsChildrenWithName:@"body"])
+    {
+        [self setStatusIcon:_imageNewMessage];
+        [[self messagesQueue] addObject:aStanza];
+        [[self connection] playReceivedSound];
+        
+        [center postNotificationName:TNStropheContactMessageReceivedNotification object:self userInfo:userInfo];
+        
+    }
+    
     return YES;
 }
 
