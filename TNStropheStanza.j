@@ -147,10 +147,15 @@
 {
     var elements = _xmlNode.getElementsByTagName(aName);
 
-    if (elements.length >  0) 
+    if (elements && (elements.length >  0)) 
         return [TNXMLNode nodeWithXMLNode:elements[0]];
     else
         return nil;
+}
+
+- (BOOL)containsChildrenWithName:(CPString)aName
+{
+    return ([self firstChildWithName:aName]) ? YES : NO;
 }
 
 /*! get the text node value 

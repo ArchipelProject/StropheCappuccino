@@ -96,6 +96,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     CPString        resource                @accessors(); 
     CPString        password                @accessors(); 
     id              delegate                @accessors();
+    BOOL            isSoundEnabled          @accessors(getter=isSoudEnabled, setter=setSoundEnabled:);
     
     
     CPString        _boshService;
@@ -146,12 +147,14 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
         _boshService = aService;
         _registredHandlerDict = [[CPDictionary alloc] init];
         resource = @"controller";
+        [self setSoundEnabled:YES];
         
         var bundle  = [CPBundle bundleForClass:[self class]];
         var sound   = [bundle pathForResource:@"Receive.mp3"];
 
         _audioTagReceive = document.createElement('audio');
         _audioTagReceive.setAttribute("src", sound);
+        _audioTagReceive.setAttribute("autobuffer", "autobuffer");
         document.body.appendChild(_audioTagReceive);
 
     }
@@ -326,6 +329,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
+                console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -392,7 +396,11 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 
 - (void)playReceivedSound
 {
-    _audioTagReceive.play();
+    if ([self isSoudEnabled])
+    {
+        _audioTagReceive.play();
+    }
+    
 }
 @end
 
