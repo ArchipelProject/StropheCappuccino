@@ -52,7 +52,12 @@ TNStropheConnectionStatusDisconnecting    = @"TNStropheConnectionStatusDisconnec
 */
 TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnected";
 
-
+/*! 
+    @global
+    @group TNStropheConnectionDebug
+    If set to true, all stanza received are written in the console.
+*/
+TNStropheConnectionDebugModeIsEnabled    = NO;
 
 
 /*! @ingroup strophecappuccino
@@ -329,7 +334,8 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
-                //console.log(stanza);
+                if (TNStropheConnectionDebugModeIsEnabled)
+                    console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -354,6 +360,8 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 - (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
+                if (TNStropheConnectionDebugModeIsEnabled)
+                    console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 

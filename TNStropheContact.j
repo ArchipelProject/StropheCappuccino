@@ -66,6 +66,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPImage             _imageNewMessage;
     CPImage             _imageNewMessage;
     CPImage             _statusReminder;
+    BOOL                _isComposing;
 }
 
 + (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection jid:(CPString)aJid group:(CPString)aGroup
@@ -100,6 +101,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
         [self setConnection:aConnection];
         [self setMessagesQueue:[[CPArray alloc] init]];
+        
+        _isComposing = NO;
     }
     
     return self;
@@ -223,7 +226,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     if ([aStanza containsChildrenWithName:@"composing"])
         [center postNotificationName:TNStropheContactMessageComposing object:self userInfo:userInfo];
     
-    if ([aStanza containsChildrenWithName:@"pause"])
+    if ([aStanza containsChildrenWithName:@"paused"])
         [center postNotificationName:TNStropheContactMessagePaused object:self userInfo:userInfo];
         
     if ([aStanza containsChildrenWithName:@"active"])
@@ -269,6 +272,37 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [center postNotificationName:TNStropheContactMessageSentNotification object:self userInfo:userInfo];
     
     return NO;
+}
+
+- (void)sendComposing
+{
+    if (!_isComposing)
+    {
+        var uid             = [connection getUniqueId];
+        var composingStanza = [TNStropheStanza messageWithAttributes:{"to":  [self jid], "from": [[self connection] jid], "type": "chat"}];
+        var params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
+
+
+        [composingStanza addChildName:@"composing" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
+
+        [[self connection] registerSelector:@selector(didSentMessage:) ofObject:self withDict:params];
+        [[self connection] send:composingStanza];
+        _isComposing = YES;
+    }
+}
+
+- (void)sendComposePaused
+{
+    var uid             = [connection getUniqueId];
+    var pausedStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self jid], "from": [[self connection] jid], "type": "chat"}];
+    var params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
+    
+    [pausedStanza addChildName:@"paused" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
+    
+    [[self connection] registerSelector:@selector(didSentMessage:) ofObject:self withDict:params];
+    [[self connection] send:pausedStanza];
+
+    _isComposing = NO;
 }
 
 - (void)changeNickname:(CPString)newNickname
