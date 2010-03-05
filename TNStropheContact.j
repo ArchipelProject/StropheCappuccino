@@ -58,6 +58,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPString            vCard           @accessors;
     CPImage             statusIcon      @accessors;
     CPArray             messagesQueue   @accessors;
+    CPNumber            numberOfEvents  @accessors;
     TNStropheConnection connection      @accessors;
     
     CPImage             _imageOffline;
@@ -67,6 +68,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPImage             _imageNewMessage;
     CPImage             _statusReminder;
     BOOL                _isComposing;
+    
 }
 
 + (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection jid:(CPString)aJid group:(CPString)aGroup
@@ -101,6 +103,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
         [self setConnection:aConnection];
         [self setMessagesQueue:[[CPArray alloc] init]];
+        [self setNumberOfEvents:0];
         
         _isComposing = NO;
     }
@@ -244,8 +247,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         [[self messagesQueue] addObject:aStanza];
         [[self connection] playReceivedSound];
         
+        numberOfEvents++;
         [center postNotificationName:TNStropheContactMessageReceivedNotification object:self userInfo:userInfo];
-        
     }
     
     return YES;
@@ -344,7 +347,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         
     var lastMessage = [[self messagesQueue] objectAtIndex:0];
     var center = [CPNotificationCenter defaultCenter];
-    
+    numberOfEvents--;
     
     [self setStatusIcon:_statusReminder];
     
@@ -352,13 +355,15 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
     
+    
+    
     return lastMessage;
 }
 
 - (void)freeMessagesQueue
 {
     var center = [CPNotificationCenter defaultCenter];
-
+    numberOfEvents = 0;
 
     [self setStatusIcon:_statusReminder];
     
