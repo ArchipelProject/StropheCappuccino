@@ -57,7 +57,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     @group TNStropheConnectionDebug
     If set to true, all stanza received are written in the console.
 */
-TNStropheConnectionDebugModeIsEnabled    = YES;
+TNStropheConnectionDebugModeIsEnabled    = NO;
 
 
 /*! @ingroup strophecappuccino
