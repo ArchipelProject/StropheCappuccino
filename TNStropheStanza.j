@@ -141,7 +141,7 @@
 
 /*! get the first TNXMLNode that matching tag name
     @param aName the name tags should match
-    @return the first mayching TNXMLNode
+    @return the first matching TNXMLNode
 */
 - (CPArray)firstChildWithName:(CPString)aName
 {
@@ -151,6 +151,20 @@
         return [TNXMLNode nodeWithXMLNode:elements[0]];
     else
         return nil;
+}
+
+/*! get all the children of the current element
+    @return array of TNXMLNode children
+*/
+- (CPArray)children
+{
+    var nodes   = [[CPArray alloc] init];
+    var temp    = _xmlNode.childNodes;
+    
+    for (var i = 0; i < temp.length; i++)
+        [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
+
+    return nodes;
 }
 
 - (BOOL)containsChildrenWithName:(CPString)aName
@@ -169,6 +183,26 @@
 - (CPString)description
 {
     return _xmlNode;
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+       // _xmlNode = [aCoder decodeObjectForKey:@"_xmlNode"];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // if ([super respondsToSelector:@selector(encodeWithCoder:)])
+    //     [super encodeWithCoder:aCoder];
+    
+    //[aCoder encodeObject:_xmlNode forKey:@"_xmlNode"];
 }
 @end
 

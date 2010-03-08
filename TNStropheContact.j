@@ -373,4 +373,51 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 }
 
 
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        [self setConnection:[aCoder decodeObjectForKey:@"connection"]];
+        [self setJid:[aCoder decodeObjectForKey:@"jid"]];
+        [self setNodeName:[aCoder decodeObjectForKey:@"nodeName"]];
+        [self setDomain:[aCoder decodeObjectForKey:@"domain"]];
+        [self setNickname:[aCoder decodeObjectForKey:@"nickname"]];
+        [self setResource:[aCoder decodeObjectForKey:@"resource"]];
+        [self setStatus:[aCoder decodeObjectForKey:@"status"]];
+        [self setStatusIcon:[aCoder decodeObjectForKey:@"statusIcon"]];
+        [self setGroup:[aCoder decodeObjectForKey:@"group"]];
+        [self setType:[aCoder decodeObjectForKey:@"type"]];
+        [self setFullJID:[aCoder decodeObjectForKey:@"fullJID"]];
+        [self setVCard:[aCoder decodeObjectForKey:@"vCard"]];
+        [self setMessageQueue:[aCoder decodeObjectForKey:@"messagesQueue"]];
+        [self setNumberOfEvents:[aCoder decodeObjectForKey:@"numberOfEvents"]];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // if ([super respondsToSelector:@selector(encodeWithCoder:)])
+    //     [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeObject:connection forKey:@"connection"];
+    [aCoder encodeObject:jid forKey:@"jid"];
+    [aCoder encodeObject:nodeName forKey:@"nodeName"];
+    [aCoder encodeObject:domain forKey:@"domain"];
+    [aCoder encodeObject:nickname forKey:@"nickname"];
+    [aCoder encodeObject:resource forKey:@"resource"];
+    [aCoder encodeObject:status forKey:@"status"];
+    [aCoder encodeObject:group forKey:@"group"];
+    [aCoder encodeObject:type forKey:@"type"];
+    [aCoder encodeObject:fullJID forKey:@"fullJID"];
+    [aCoder encodeObject:vCard forKey:@"vCard"];
+    [aCoder encodeObject:statusIcon forKey:@"statusIcon"];
+    [aCoder encodeObject:messagesQueue forKey:@"messagesQueue"];
+    [aCoder encodeObject:numberOfEvents forKey:@"numberOfEvents"];
+}
+
+
 @end
