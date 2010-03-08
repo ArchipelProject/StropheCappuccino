@@ -380,7 +380,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 */
 - (void)deleteRegistredSelector:(id)aHandlerId
 {
-    _connection.deleteHandler(handlerId)
+    _connection.deleteHandler(aHandlerId)
 }
 
 /*! delete an registred timed selector
@@ -409,6 +409,40 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
         _audioTagReceive.play();
     }
     
+}
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        [self setJid:[aCoder decodeObjectForKey:@"jid"]];
+        [self setPassword:[aCoder decodeObjectForKey:@"password"]];
+        [self setResource:[aCoder decodeObjectForKey:@"resource"]];
+        [self setDelegate:[aCoder decodeObjectForKey:@"delegate"]];
+        [self setSoundEnabled:[aCoder decodeBoolForKey:@"isSoundEnabled"]];
+        _boshService = [aCoder decodeObjectForKey:@"_boshService"];
+        _connection = [aCoder decodeObjectForKey:@"_connection"];
+        _audioTagReceive = [aCoder decodeObjectForKey:@"_audioTagReceive"];
+    }
+    
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    // if ([super respondsToSelector:@selector(encodeWithCoder:)])
+    //     [super encodeWithCoder:aCoder];
+    
+    [aCoder encodeObject:jid forKey:@"jid"];
+    [aCoder encodeObject:password forKey:@"password"];
+    [aCoder encodeObject:resource forKey:@"resource"];
+    [aCoder encodeBool:isSoundEnabled forKey:@"isSoundEnabled"];
+    [aCoder encodeObject:_boshService forKey:@"_boshService"];
+    [aCoder encodeObject:_connection forKey:@"_connection"];
+    [aCoder encodeObject:_registredHandlerDict forKey:@"_registredHandlerDict"];
+    [aCoder encodeObject:_audioTagReceive forKey:@"_audioTagReceive"];
 }
 @end
 
