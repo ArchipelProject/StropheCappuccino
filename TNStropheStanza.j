@@ -158,13 +158,23 @@
 */
 - (CPArray)children
 {
-    var nodes   = [[CPArray alloc] init];
+    var nodes   = [CPArray array];
     var temp    = _xmlNode.childNodes;
     
     for (var i = 0; i < temp.length; i++)
+    {
         [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
-
+    }
+    
     return nodes;
+}
+
+/*! return the name of the current node
+    @return CPString containing the name of the current node
+*/
+- (CPString)name
+{
+    return _xmlNode.tagName;
 }
 
 - (BOOL)containsChildrenWithName:(CPString)aName
