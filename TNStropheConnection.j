@@ -246,7 +246,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 
                 [center postNotification:TNStropheConnectionStatusConnected];
             }
-        });
+        }, /* wait */ 3600);
     }
     catch(ex)
     {
