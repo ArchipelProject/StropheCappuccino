@@ -161,7 +161,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
            aGroup = "General";
     
     var uid     = [_connection getUniqueId];
-    var params  = [[CPDictionary alloc] init];
+    //var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
     var addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
     
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
@@ -169,6 +169,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [addReq addChildName:@"group" withAttributes:nil];
     [addReq addTextNode:aGroup];
     
+    //[_connection registerSelector:@selector(didAddContact:) ofObject:self withDict:params]
     [_connection send:addReq];
     
     var contact = [TNStropheContact contactWithConnection:_connection jid:aJid group:aGroup];
@@ -179,31 +180,29 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [[self addGroupIfNotExists:aGroup]]
    	[[self contacts] addObject:contact];
    	
-    var center = [CPNotificationCenter defaultCenter];
+   	var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheRosterAddedContactNotification object:contact];
 }
 
-- (BOOL)removeContact:(CPString)aJid 
+
+- (void)removeContact:(CPString)aJid 
 {
     var contact = [self getContactFromJID:aJid];
     if (contact) 
     {
         [[self contacts] removeObject:contact];
         
-        var uid = [_connection getUniqueId];
-        var params = [[CPDictionary alloc] init];
-        var removeReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+        var uid         = [_connection getUniqueId];
+        var removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
         
         [removeReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-        [removeReq addChildName:@"item" withAttributes:{'jid': aJid, 'subscription':"remove" }];
+        [removeReq addChildName:@"item" withAttributes:{'jid': aJid, 'subscription': 'remove'}];
         
         [_connection send:removeReq];
         
         var center = [CPNotificationCenter defaultCenter];
         [center postNotificationName:TNStropheRosterRemovedContactNotification object:contact];
     }
-    
-    return NO;
 }
 
 - (void)changeNickname:(CPString)aName forJID:(CPString)aJid
@@ -302,7 +301,12 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 - (void)askAuthorizationTo:(CPString)aJid
 {
-    var auth = [TNStropheStanza presenceWithAttributes:{"from": [_connection jid], "type": "subscribe", "to": aJid}];
+    var uid     = [_connection getUniqueId];
+    var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+    var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": aJid}];
+    
+    console.log([auth stringValue]);
+    
     [_connection send:auth];
 }
 

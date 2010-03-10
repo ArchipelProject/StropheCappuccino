@@ -57,7 +57,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     @group TNStropheConnectionDebug
     If set to true, all stanza received are written in the console.
 */
-TNStropheConnectionDebugModeIsEnabled    = NO;
+TNStropheConnectionDebugModeIsEnabled    = YES;
 
 
 /*! @ingroup strophecappuccino
@@ -268,6 +268,8 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 */
 - (void)send:(TNStropheStanza)aStanza
 {
+    if (TNStropheConnectionDebugModeIsEnabled)
+        console.log([aStanza tree]);
     _connection.send([aStanza tree]);
 }
 
