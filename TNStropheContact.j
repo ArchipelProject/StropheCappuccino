@@ -89,7 +89,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     if (self = [super init])
     {
         var bundle = [CPBundle bundleForClass:[self class]];
-
+        
         _imageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Offline.png"]];
         _imageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Available.png"]];
         _imageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Away.png"]];
@@ -370,6 +370,24 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [[self messagesQueue] removeAllObjects];
     
     [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
+}
+
+- (void)subscribe
+{
+    var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] jid], "type": "subscribed", "to": [self jid]}];
+    [[self connection] send:resp];
+}
+
+- (void)unsubscribe
+{
+    var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] jid], "type": "unsubscribed", "to": [self jid]}];
+    [[self connection] send:resp];
+}
+
+- (void)askSubscription
+{
+    var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": [self jid]}];   
+    [[self connection] send:auth];
 }
 
 
