@@ -24,7 +24,7 @@ var ENV = require("system").env,
     task = require("jake").task,
     FileList = require("jake").FileList,
     app = require("cappuccino/jake").app,
-    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Release";
+    configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Debug";
 
 app ("StropheCappuccino", function(task)
 {
