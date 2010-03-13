@@ -124,6 +124,11 @@
     return _xmlNode.getAttribute(anAttribute);
 }
 
+- (void)setValue:(CPString)aValue forAttribute:(CPString)anAttribute
+{
+    _xmlNode.attrs({aValue: anAttribute});
+}
+
 /*! get an CPArray of TNXMLNode with matching tag name
     @param aName the name tags should match
     @return CPArray of TNXMLNode
@@ -280,12 +285,28 @@
     return [self valueForAttribute:@"from"];
 }
 
+/*! set the from field of the stanza
+    @param the new from value
+*/
+- (void)setFrom:(CPString)aFrom
+{
+    [self setValue:aFrom ForAttribute:@"from"];
+}
+
 /*! get the to field of the stanza
     @return to field of stanza
 */
 - (CPString)getTo
 {
     return [self valueForAttribute:@"to"];
+}
+
+/*! set the to field of the stanza
+    @param the new To value
+*/
+- (void)setTo:(CPString)aTo
+{
+    [self setValue:aTo ForAttribute:@"to"];
 }
 
 /*! get the type field of the stanza
@@ -296,6 +317,14 @@
     return [self valueForAttribute:@"type"];
 }
 
+/*! set the type field of the stanza
+    @param the new type value
+*/
+- (void)setType:(CPString)aType
+{
+    [self setValue:aType ForAttribute:@"type"];
+}
+
 /*! get the xmlns field of the stanza
     @return xmlns field of stanza
 */
@@ -304,12 +333,28 @@
     return [self valueForAttribute:@"xmlns"];
 }
 
+/*! set the xmls field of the stanza
+    @param the new xmls value
+*/
+- (void)setNamespace:(CPString)aNamespace
+{
+    [self setValue:aNamespace ForAttribute:@"xmlns"];
+}
+
 /*! get the id field of the stanza
     @return id field of stanza
 */
 - (CPString)getID
 {
     return [self valueForAttribute:@"id"];
+}
+
+/*! set the id field of the stanza
+    @param the new id value
+*/
+- (void)setID:(CPString)anID
+{
+    [self setValue:anID ForAttribute:@"id"];
 }
 
 /*! get the resource part of the from field of the stanza

@@ -35,12 +35,15 @@ TNStropheContactPresenceUpdatedNotification = @"TNStropheContactPresenceUpdatedN
 TNStropheContactMessageReceivedNotification = @"TNStropheContactMessageReceivedNotification";
 TNStropheContactMessageTreatedNotification  = @"TNStropheContactMessageTreatedNotification";
 TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotification";
+TNStropheContactStanzaSentNotification      = @"TNStropheContactStanzaSentNotification"
+
+// Message status
 TNStropheContactMessageComposing            = @"TNStropheContactMessageComposing";
 TNStropheContactMessagePaused               = @"TNStropheContactMessagePaused";
 TNStropheContactMessageActive               = @"TNStropheContactMessageActive";
 TNStropheContactMessageInactive             = @"TNStropheContactMessageInactive";
 TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
-
+      
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Contact
 */
@@ -98,7 +101,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _imageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"NewMessage.png"]];
         
         [self setType:@"contact"];
-        [self setValue:_imageOffline forKeyPath:@"statusIcon"];
+        [self setStatusIcon:_imageOffline];
         [self setStatus:TNStropheContactStatusOffline];
 
         [self setConnection:aConnection];
@@ -206,6 +209,33 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     {
         [self setVCard:vCard];
     }
+    
+    return NO;
+}
+
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector
+{
+    var uid     = [[self connection] getUniqueId];
+    var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
+    var ret     = nil;
+    
+    [aStanza setTo:[self fullJID]];
+    [aStanza setID:uid];
+    
+    if (aSelector)
+        ret = [[self connection] registerSelector:aSelector ofObject:self withDict:params];
+    
+    [[self connection] send:aStanza];
+
+    return ret;
+}
+
+- (BOOL)didSendStanza:(TNStropheStanza)aStanza
+{
+    var center      = [CPNotificationCenter defaultCenter];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
+    
+    [center postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
     
     return NO;
 }
