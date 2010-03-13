@@ -108,7 +108,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
     id              _connection;
     CPDictionary    _registredHandlerDict;
     
-    id                      _audioTagReceive;
+    id              _audioTagReceive;
 }
 
 /*! instanciate a TNStropheConnection object
@@ -316,7 +316,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
 
 /*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictonnary parameter.
     The dictionnary should contains zero to many of the followings :
-     - <b>namespace</b>: the namespace of the stanza
+     - <b>namespace</b>: the namespace of the stanza or of the first child (like query)
      - <b>name</b>: the name of the stanza (message, iq or presence)
      - <b>type</b>: the type of the stanza
      - <b>id</b>: the unique identifier 

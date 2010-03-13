@@ -44,7 +44,7 @@
 */
 - (TNXMLNode)initWithNode:(id)aNode
 {
-    if (self == [super init])
+    if (self = [super init])
     {
         _xmlNode = aNode;
     }
@@ -192,7 +192,7 @@
 
 - (CPString)description
 {
-    return _xmlNode;
+    return [self stringValue];
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
@@ -270,11 +270,6 @@
 + (TNStropheStanza)stanzaWithStanza:(id)aStanza
 {
     return [[TNStropheStanza alloc] initWithNode:aStanza];
-}
-
-- (CPString)description
-{
-    return [self stringValue];
 }
 
 /*! get the from field of the stanza
