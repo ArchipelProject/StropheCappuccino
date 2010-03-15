@@ -305,8 +305,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
     var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": aJid}];
     
-    console.log([auth stringValue]);
-    
     [_connection send:auth];
 }
 

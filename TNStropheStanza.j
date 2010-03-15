@@ -124,9 +124,18 @@
     return _xmlNode.getAttribute(anAttribute);
 }
 
+/*! allow to set a value for a given attribute
+    @param aValue the value
+    @param anAttribute the attribute name
+*/
 - (void)setValue:(CPString)aValue forAttribute:(CPString)anAttribute
-{
-    _xmlNode.attrs({aValue: anAttribute});
+{   
+    var attr = {};
+    attr[anAttribute] = aValue
+    
+    while(_xmlNode.up());
+    
+    _xmlNode = _xmlNode.attrs(attr);
 }
 
 /*! get an CPArray of TNXMLNode with matching tag name
@@ -290,7 +299,7 @@
 */
 - (void)setFrom:(CPString)aFrom
 {
-    [self setValue:aFrom ForAttribute:@"from"];
+    [self setValue:aFrom forAttribute:@"from"];
 }
 
 /*! get the to field of the stanza
@@ -306,7 +315,7 @@
 */
 - (void)setTo:(CPString)aTo
 {
-    [self setValue:aTo ForAttribute:@"to"];
+    [self setValue:aTo forAttribute:@"to"];
 }
 
 /*! get the type field of the stanza
@@ -322,7 +331,7 @@
 */
 - (void)setType:(CPString)aType
 {
-    [self setValue:aType ForAttribute:@"type"];
+    [self setValue:aType forAttribute:@"type"];
 }
 
 /*! get the xmlns field of the stanza
@@ -338,7 +347,7 @@
 */
 - (void)setNamespace:(CPString)aNamespace
 {
-    [self setValue:aNamespace ForAttribute:@"xmlns"];
+    [self setValue:aNamespace forAttribute:@"xmlns"];
 }
 
 /*! get the id field of the stanza
@@ -354,7 +363,7 @@
 */
 - (void)setID:(CPString)anID
 {
-    [self setValue:anID ForAttribute:@"id"];
+    [self setValue:anID forAttribute:@"id"];
 }
 
 /*! get the resource part of the from field of the stanza
