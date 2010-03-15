@@ -57,7 +57,7 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
     @group TNStropheConnectionDebug
     If set to true, all stanza received are written in the console.
 */
-TNStropheConnectionDebugModeIsEnabled    = YES;
+TNStropheConnectionDebugModeIsEnabled    = NO;
 
 
 /*! @ingroup strophecappuccino
@@ -269,7 +269,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
 - (void)send:(TNStropheStanza)aStanza
 {
     if (TNStropheConnectionDebugModeIsEnabled)
-        console.log([aStanza tree]);
+        CPLog.debug([aStanza tree]);
     _connection.send([aStanza tree]);
 }
 
@@ -337,7 +337,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
                 if (TNStropheConnectionDebugModeIsEnabled)
-                    console.log(stanza);
+                    CPLog.debug(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -363,7 +363,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
                 if (TNStropheConnectionDebugModeIsEnabled)
-                    console.log(stanza);
+                    CPLog.debug(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 

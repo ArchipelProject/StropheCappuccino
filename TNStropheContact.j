@@ -213,9 +213,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return NO;
 }
 
-- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId
 {
-    var uid     = [[self connection] getUniqueId];
+    var uid     = anId
     var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
     var ret     = nil;
     
@@ -223,11 +223,20 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [aStanza setID:uid];
     
     if (aSelector)
-        ret = [[self connection] registerSelector:aSelector ofObject:self withDict:params];
+    {
+        ret = [[self connection] registerSelector:aSelector ofObject:anObject withDict:params];
+    }
     
     [[self connection] send:aStanza];
 
     return ret;
+}
+
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    var uid     = [[self connection] getUniqueId];
+    
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:uid]
 }
 
 - (BOOL)didSendStanza:(TNStropheStanza)aStanza

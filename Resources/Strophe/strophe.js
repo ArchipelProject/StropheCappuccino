@@ -1286,8 +1286,13 @@ Strophe.Builder.prototype = {
      */
     up: function ()
     {
-        this.node = this.node.parentNode;
-        return this;
+        if (this.node.parentNode)
+        {
+            this.node = this.node.parentNode;
+            return this;
+        }
+        return null;
+        
     },
 
     /** Function: attrs
