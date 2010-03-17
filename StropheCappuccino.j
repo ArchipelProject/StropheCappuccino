@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//objj_executeFile("StropheCappuccino/Resources/Strophe/JQuery/jquery.min.js")
-//objj_executeFile("StropheCappuccino/Resources/Strophe/strophe.js")
 @import "Resources/Strophe/JQuery/jquery.min.js"
 @import "Resources/Strophe/strophe.js"
 @import "TNStropheStanza.j"

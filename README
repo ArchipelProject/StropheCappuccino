@@ -11,19 +11,9 @@ free to use it or improve it.</p>
 
 <h3>Quick Start</h3>
 -----------
-<p>In order to use StropeCappuccino, you'll need a copy of Strophe.js 
-and a copy or JQuery. Then you'll have to include this JS in the 
-index.html of your Cappuccino application (It may exists a better 
-way to do this...) :</p>
+<p>Simply include the StropheCappuccino framework in your Frameworks directory and include StropheCappuccino.js</p>
 
-&lt;head&gt;
-&lt;script type='text/javascript' src='Resources/Strophe/JQuery/jquery.min.js'&gt;&lt;/script&gt;
-&lt;script type='text/javascript' src='Resources/Strophe/strophe.js'&gt;&lt;/script&gt;
-&lt;/head&gt;
-
-<p>And then import in your application the classes :</p>
-
-@import "StropheCappuccino/TNStrophe.j"
+@import <StropheCappuccino/StropheCappuccino.j>
 
 <h3>Documentation</h3>
 <p>To generate the documentation execute the following :</p>
