@@ -81,7 +81,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
         [params setValue:@"presence" forKey:@"name"];
         [params setValue:@"subscribe" forKey:@"type"];
         [params setValue:[_connection jid] forKey:@"to"];
-        [_connection registerSelector:@selector(_didReceivedPresence:) ofObject:self withDict:params];
+        [_connection registerSelector:@selector(_didReceiveSubscription:) ofObject:self withDict:params];
     }
 
     return self;
@@ -92,11 +92,11 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     
     @return YES to keep the selector registred in TNStropheConnection
 */
-- (BOOL)_didReceivedPresence:(id)requestStanza 
+- (BOOL)_didReceiveSubscription:(id)requestStanza 
 {
     if ([[self delegate] respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
         [[self delegate] performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
-
+    
     return YES;
 }
 
@@ -194,8 +194,9 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     @param aJid the jid of the new contact
     @param aName the nickname of the new contact. If nil, it will be the JID
     @param aGroup the group of the new contact. if nil, it will be "General"
+    @return the new TNStropheContact
 */
-- (void)addContact:(CPString)aJid withName:(CPString)aName inGroup:(CPString)aGroup
+- (TNStropheContact)addContact:(CPString)aJid withName:(CPString)aName inGroup:(CPString)aGroup
 {
     if ([self doesRosterContainsJID:aJid] == YES)
         return;
@@ -223,6 +224,8 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
    	
    	var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheRosterAddedContactNotification object:contact];
+    
+    return contact;
 }
 
 /*! remove a contact from the roster according to its JID
@@ -362,12 +365,27 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 
-/*! subscribe to the given JID
+/*! subscribe to the given JID and add in into the roster if needed
     @param aJid the JID to subscribe
 */
 - (void)authorizeJID:(CPString)aJid 
 {
     var contact = [self getContactFromJID:aJid];
+    
+    if (!contact)
+    {
+        var name = aJid.split('@')[0];
+        
+        // this is stupid to put this here.
+        // But I have to put it somewhere before integration in archipel at more
+        // judicious place
+        //
+        // var exp = new RegExp("[01234567890abcdef]{6}\-[01234567890abcdef]{4}\-[01234567890abcdef]{4}\-[01234567890abcdef]{4}\-[01234567890abcdef]{12}" , "gi")
+        // alert(exp.test("579e6e34-dRa9-ecdd-e417-6b2e24e7bce4"));
+        
+        contact = [self addContact:aJid withName:name inGroup:@"General"];        
+    }
+    
     [contact subscribe];
 }
 
