@@ -74,6 +74,12 @@ TNStropheContactPresenceUpdatedNotification = @"TNStropheContactPresenceUpdatedN
 /*! 
     @global
     @group TNStropheContact
+    notification sent when contact receive its vCard
+*/
+TNStropheContactVCardReceivedNotification = @"TNStropheContactVCardReceivedNotification";
+/*! 
+    @global
+    @group TNStropheContact
     notification sent when contact receive a message
 */
 TNStropheContactMessageReceivedNotification = @"TNStropheContactMessageReceivedNotification";
@@ -250,7 +256,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
 
     if (presenceType == "unavailable") 
-    {   
+    {
         [self setValue:TNStropheContactStatusOffline forKey:@"status"];
         [self setValue:_imageOffline forKeyPath:@"statusIcon"];
         _statusReminder = _imageOffline;
@@ -310,7 +316,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [connection send:vcard_stanza];
 }
 
-/*! executed on getVCard result
+/*! executed on getVCard result. Will post TNStropheContactVCardReceivedNotification
     and send notifications
     You should never have to use this method
     @param aStanza the response TNStropheStanza
@@ -318,10 +324,13 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (BOOL)didReceivedVCard:(TNStropheStanza)aStanza
 {
     var vCard   = [aStanza firstChildWithName:@"vCard"];
+    var center  = [CPNotificationCenter defaultCenter];
     
     if (vCard)
     {
         [self setVCard:vCard];
+        
+        [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
     
     return NO;

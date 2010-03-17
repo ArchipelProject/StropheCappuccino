@@ -119,7 +119,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 /*! this called when the roster is recieved. Will post TNStropheRosterRetrievedNotification
-    
     @return NO to remove the selector registred from TNStropheConnection
 */
 - (BOOL)_didRosterReceived:(id)aStanza 
@@ -157,11 +156,8 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return NO;
 }
 
-
 /*! return a TNStropheContact object according to the given JID
-
     @param aJid CPString containing the JID
-
     @return TNStropheContact the contact with the given JID
 */
 - (TNStropheContact)getContactFromJID:(CPString)aJid
@@ -178,7 +174,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 /*! check if roster contains a contact with a given JID
-    
     @param aJid the JID to search
     @return YES is JID is in roster, NO otherwise
 */
@@ -196,7 +191,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 /*! add a new contact to the roster with given information
-    
     @param aJid the jid of the new contact
     @param aName the nickname of the new contact. If nil, it will be the JID
     @param aGroup the group of the new contact. if nil, it will be "General"
