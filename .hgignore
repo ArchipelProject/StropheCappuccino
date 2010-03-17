@@ -4,3 +4,4 @@ syntax: glob
 Build
 Documentation
 *Build
+debug.txt
