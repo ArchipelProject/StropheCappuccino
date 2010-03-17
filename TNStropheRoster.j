@@ -25,10 +25,30 @@
 
 
 
-//TNStropheRosterAskRetrievingNotification            = @"TNStropheRosterAskRetrievingNotification";
+/*! 
+    @global
+    @group TNStropheRoster
+    notification indicates that TNStropheRoster has received the data from the XMPP server
+*/
 TNStropheRosterRetrievedNotification                = @"TNStropheRosterRetrievedNotification";
+/*! 
+    @global
+    @group TNStropheRoster
+    notification indicates that a new contact has been added to the TNStropheRoster
+*/
 TNStropheRosterAddedContactNotification             = @"TNStropheRosterAddedContactNotification";
+/*! 
+    @global
+    @group TNStropheRoster
+    notification indicates that a new contact has been removed from the TNStropheRoster
+*/
+
 TNStropheRosterRemovedContactNotification           = @"TNStropheRosterRemovedContactNotification";
+/*! 
+    @global
+    @group TNStropheRoster
+    notification indicates that a new group has been added to the TNStropheRoster
+*/
 TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGroupNotification";
 
 
@@ -45,7 +65,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     TNStropheConnection     _connection;
 }
 
-// instance methods
+/*! initialize a roster with a valid TNStropheConnection
+
+    @return initialized instance of TNStropheRoster
+*/
 - (id)initWithConnection:(TNStropheConnection)aConnection 
 {
     if (self = [super init])
@@ -58,13 +81,18 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
         [params setValue:@"presence" forKey:@"name"];
         [params setValue:@"subscribe" forKey:@"type"];
         [params setValue:[_connection jid] forKey:@"to"];
-        [_connection registerSelector:@selector(presenceSubscriptionRequestHandler:) ofObject:self withDict:params];
+        [_connection registerSelector:@selector(_didReceivedPresence:) ofObject:self withDict:params];
     }
 
     return self;
 }
 
-- (BOOL)presenceSubscriptionRequestHandler:(id)requestStanza 
+/*! message sent when a presence information received 
+    send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
+    
+    @return YES to keep the selector registred in TNStropheConnection
+*/
+- (BOOL)_didReceivedPresence:(id)requestStanza 
 {
     if ([[self delegate] respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
         [[self delegate] performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
@@ -72,7 +100,9 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return YES;
 }
 
-- (CPArray)getRoster
+/*! ask the server to get the roster of the TNStropheConnection user
+*/
+- (void)getRoster
 {
     var uid         = [_connection getUniqueId:@"roster"];    
     var params      = [[CPDictionary alloc] init];
@@ -88,11 +118,16 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [_connection send:rosteriq];
 }
 
+/*! this called when the roster is recieved. Will post TNStropheRosterRetrievedNotification
+    
+    @return NO to remove the selector registred from TNStropheConnection
+*/
 - (BOOL)_didRosterReceived:(id)aStanza 
 {
     var query   = [aStanza firstChildWithName:@"query"];
     var items   = [query childrenWithName:@"item"];
-    
+    var center  = [CPNotificationCenter defaultCenter];
+        
     for (var i = 0; i < [items count]; i++)
     {
         var item = [items objectAtIndex:i];
@@ -117,16 +152,19 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     	
     }
     
-    //announce complete roster retrieved
-    var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
     
-    return YES;
+    return NO;
 }
 
 
-// Contact management
-- (TNStropheContact) getContactFromJID:(CPString)aJid
+/*! return a TNStropheContact object according to the given JID
+
+    @param aJid CPString containing the JID
+
+    @return TNStropheContact the contact with the given JID
+*/
+- (TNStropheContact)getContactFromJID:(CPString)aJid
 {
     //@each (var contact in [self contacts])
     for(var i = 0; i < [[self contacts] count]; i++)
@@ -139,6 +177,11 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return nil; 
 }
 
+/*! check if roster contains a contact with a given JID
+    
+    @param aJid the JID to search
+    @return YES is JID is in roster, NO otherwise
+*/
 - (BOOL)doesRosterContainsJID:(CPString)aJid
 {
     //@each (var contact in [self contacts])
@@ -152,6 +195,12 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return NO;
 }
 
+/*! add a new contact to the roster with given information
+    
+    @param aJid the jid of the new contact
+    @param aName the nickname of the new contact. If nil, it will be the JID
+    @param aGroup the group of the new contact. if nil, it will be "General"
+*/
 - (void)addContact:(CPString)aJid withName:(CPString)aName inGroup:(CPString)aGroup
 {
     if ([self doesRosterContainsJID:aJid] == YES)
@@ -161,7 +210,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
            aGroup = "General";
     
     var uid     = [_connection getUniqueId];
-    //var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
     var addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
     
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
@@ -169,7 +217,6 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [addReq addChildName:@"group" withAttributes:nil];
     [addReq addTextNode:aGroup];
     
-    //[_connection registerSelector:@selector(didAddContact:) ofObject:self withDict:params]
     [_connection send:addReq];
     
     var contact = [TNStropheContact contactWithConnection:_connection jid:aJid group:aGroup];
@@ -184,7 +231,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [center postNotificationName:TNStropheRosterAddedContactNotification object:contact];
 }
 
-
+/*! remove a contact from the roster according to its JID
+    
+    @param aJid the JID of the contact to remove
+*/
 - (void)removeContact:(CPString)aJid 
 {
     var contact = [self getContactFromJID:aJid];
@@ -205,12 +255,20 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     }
 }
 
+/*! changes the nickname of the contact with the given JID
+    @param aName the new nickname
+    @param aJid the JID of the contact to change the nickname
+*/
 - (void)changeNickname:(CPString)aName forJID:(CPString)aJid
 {
     var contact = [self getContactFromJID:aJid];
     [contact changeNickname:aName];
 }
 
+/*! changes the group of the contact with the given JID
+    @param aGroup the new group
+    @param aJid the JID of the contact to change the nickname
+*/
 - (void) changeGroup:(CPString)aGroup forJID:(CPString)aJid
 {
     var contact = [self getContactFromJID:aJid];
@@ -218,7 +276,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 
-// group management
+/*! return TNStropheGroup object according to the given name
+    @param aGroupName the group name
+    @return TNStropheGroup the group. nil if group doesn't exist
+*/
 - (TNStropheGroup)getGroupFromName:(CPString)aGroupName
 {
     //@each (var group in [self groups])
@@ -232,6 +293,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return nil;
 }
 
+/*! checks if group with given name exist in roster
+    @param aGroup the group name
+    @return YES if group is in roster, NO otherwise 
+*/
 - (BOOL)doesRosterContainsGroup:(CPString)aGroup
 {
     //@each (var group in [self groups])
@@ -245,6 +310,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return NO;
 }
 
+/*! add a group to the roster with given name
+    @param aGroupName the name of the new group
+    @return TNStropheGroup object representing the new group
+*/
 - (TNStropheGroup)addGroup:(CPString)groupName
 {
     var newGroup = [[TNStropheGroup alloc] init];
@@ -258,18 +327,31 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     return newGroup;
 }
 
-- (TNStropheGroup) addGroupIfNotExists:(CPString)groupName
+/*! add a group to the roster with given name only if it doesn't exist.
+    @param aGroupName the name of the new group
+    @return TNStropheGroup object representing the new group
+*/
+- (TNStropheGroup)addGroupIfNotExists:(CPString)groupName
 {
     if (![self doesRosterContainsGroup:groupName])
         return [self addGroup:groupName];
     return nil;
 }
 
+/*! NOT IMPLEMENTED
+    remove a group from the roster with given name
+    @param aGroupName the name of the group to remove
+    @return YES if group has been removed, NO otherwise
+*/
 - (BOOL)removeGroup:(CPString)aGroupName
 {
     // TODO
 }
 
+/*! returns a CPArray containung all the TNStropheContact in a given group
+    @param TNStropheGroup aGroup object
+    @return CPArray containing all TNStropheContact in group
+*/
 - (CPArray)getContactsInGroup:(TNStropheGroup)aGroup
 {
     var ret = [[CPArray alloc] init];
@@ -286,31 +368,40 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 
-// Authorizations management
+/*! subscribe to the given JID
+    @param aJid the JID to subscribe
+*/
 - (void)authorizeJID:(CPString)aJid 
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{"from": [_connection jid], "type": "subscribed", "to": aJid}];
-    [_connection send:resp];
+    var contact = [self getContactFromJID:aJid];
+    [contact subscribe];
 }
 
+/*! unsubscribe to the given JID
+    @param aJid the JID to unsubscribe
+*/
 - (void)unauthorizeJID:(CPString)aJid
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{"from": [_connection jid], "type": "unsubscribed", "to": aJid}];
-    [_connection send:resp];
+    var contact = [self getContactFromJID:aJid];
+    [contact unsubscribe];
 }
 
+/*! ask subscribtion to the given JID
+    @param aJid the JID to ask subscribtion
+*/
 - (void)askAuthorizationTo:(CPString)aJid
 {
-    var uid     = [_connection getUniqueId];
-    var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
-    var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": aJid}];
-    
-    [_connection send:auth];
+    var contact = [self getContactFromJID:aJid];
+    [contact askSubscription];
 }
 
+/*! answer to a pending subscription request.
+    @param TNStropheStanza the subscription request
+    @param theAnswer if YES contact is subscribed and added to the roster. If NO, the subscription request is declined
+*/
 - (void)answerAuthorizationRequest:(id)aStanza answer:(BOOL)theAnswer
 {
-    var requester   = [aStanza getFrom];
+    var requester = [aStanza getFrom];
     
     if (theAnswer == YES)
     {
@@ -326,7 +417,8 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 }
 
 
-// disconnection
+/*! sent disconnect message to the TNStropheConnection of the roster
+*/
 - (void) disconnect
 {
     [_connection disconnect];

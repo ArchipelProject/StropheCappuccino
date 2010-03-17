@@ -21,31 +21,117 @@
 @import "TNStropheGroup.j"
 @import "TNStropheConnection.j"
 
-// Presence status
+/*! 
+    @global
+    @group TNStropheContactStatus
+    Status away
+*/
 TNStropheContactStatusAway       = @"away";
+/*! 
+    @global
+    @group TNStropheContactStatus
+    Status Busy
+*/
 TNStropheContactStatusBusy       = @"xa";
+/*! 
+    @global
+    @group TNStropheContactStatus
+    Status Do Not Disturb
+*/
 TNStropheContactStatusDND        = @"dnd";
+/*! 
+    @global
+    @group TNStropheContactStatus
+    Status offline
+*/
 TNStropheContactStatusOffline    = @"offline";
+/*! 
+    @global
+    @group TNStropheContactStatus
+    Status online
+*/
 TNStropheContactStatusOnline     = @"online";
 
-// Contact updates notification
+
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when nickname of contact has been updated
+*/
 TNStropheContactNicknameUpdatedNotification = @"TNStropheContactNicknameUpdatedNotification";
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when group of contact have been updated
+*/
 TNStropheContactGroupUpdatedNotification    = @"TNStropheContactGroupUpdatedNotification";
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when presence status of contact has been updated
+*/
 TNStropheContactPresenceUpdatedNotification = @"TNStropheContactPresenceUpdatedNotification";
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when contact receive a message
+*/
 TNStropheContactMessageReceivedNotification = @"TNStropheContactMessageReceivedNotification";
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when all messages in messages queue have been treated
+*/
 TNStropheContactMessageTreatedNotification  = @"TNStropheContactMessageTreatedNotification";
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when message have been sent to the contact
+*/
 TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotification";
+/*! 
+    @global
+    @group TNStropheContact
+    notification sent when stanza have been sent to the contact
+*/
 TNStropheContactStanzaSentNotification      = @"TNStropheContactStanzaSentNotification"
 
-// Message status
+
+/*! 
+    @global
+    @group TNStropheContactMessage
+    notification sent when contact is composing a message
+*/
 TNStropheContactMessageComposing            = @"TNStropheContactMessageComposing";
+/*! 
+    @global
+    @group TNStropheContactMessage
+    notification sent when contact stops composing a message
+*/
 TNStropheContactMessagePaused               = @"TNStropheContactMessagePaused";
+/*! 
+    @global
+    @group TNStropheContactMessage
+    notification sent when chat with contact is active
+*/
 TNStropheContactMessageActive               = @"TNStropheContactMessageActive";
+/*! 
+    @global
+    @group TNStropheContactMessage
+    notification sent when chat with contact is unactive
+*/
 TNStropheContactMessageInactive             = @"TNStropheContactMessageInactive";
+/*! 
+    @global
+    @group TNStropheContactMessage
+    notification sent when contact leave chat (close window most of the time)
+*/
 TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
-      
+
+
+
 /*! @ingroup strophecappuccino
-    this is an implementation of a basic XMPP Contact
+    this is an implementation of a XMPP Contact
 */
 @implementation TNStropheContact: CPObject
 {
@@ -74,6 +160,13 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
 }
 
+/*! create a contact using a given connection, jid and group
+    @param aConnection TNStropheConnection to use
+    @param aJid the jid of the contact
+    @param aGroup the group of the contact
+    
+    @return an allocated and initialized TNStropheContact
+*/
 + (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection jid:(CPString)aJid group:(CPString)aGroup
 {
     var contact = [[TNStropheContact alloc] initWithConnection:aConnection];
@@ -87,6 +180,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return contact;
 }
 
+/*! init a TNStropheContact with a given connection
+    @param aConnection TNStropheConnection to use
+    
+    @return an initialized TNStropheContact
+*/
 - (id)initWithConnection:(TNStropheConnection)aConnection
 {
     if (self = [super init])
@@ -119,6 +217,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return [self nickname];
 }
 
+/*! probe the contact about its status
+    You should never have to use this message
+*/
 - (void)getStatus
 {
     var probe = [TNStropheStanza presenceWithAttributes:{"from": [connection jid], "type": "probe", "to": [self jid]}];
@@ -132,8 +233,13 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [[self connection] send:probe];
 }
 
-- (BOOL)didReceivedStatus:(id)aStanza
-{   
+/*! executed on getStatus result. It populates the status of the contact
+    and send notifications
+    You should never have to use this method
+    @param aStanza the response TNStropheStanza
+*/
+- (BOOL)didReceivedStatus:(TNStropheStanza)aStanza
+{
     var bundle          = [CPBundle bundleForClass:self];
     var fromJID         = [aStanza getFrom];
     var resource        = [aStanza getFromResource];
@@ -188,6 +294,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return YES;
 }
 
+/*! probe the contact's vCard
+    you should never have to use this message
+*/
 - (void)getVCard
 {
     var uid = [connection getUniqueId];
@@ -201,7 +310,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [connection send:vcard_stanza];
 }
 
-- (BOOL)didReceivedVCard:(id)aStanza
+/*! executed on getVCard result
+    and send notifications
+    You should never have to use this method
+    @param aStanza the response TNStropheStanza
+*/
+- (BOOL)didReceivedVCard:(TNStropheStanza)aStanza
 {
     var vCard   = [aStanza firstChildWithName:@"vCard"];
     
@@ -213,6 +327,17 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return NO;
 }
 
+/*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
+    in order to use it if you need. You should mostly use the 
+    You should never have to use the method sendStanza:andRegisterSelector:ofObject: in most of the case
+    
+    @param aStanza the TNStropheStanza to send to the contact
+    @param aSelector the selector to perform on response
+    @param anObject the object receiving the selector
+    @param anId the specific stanza ID to use
+    
+    @return the associated registration id for the selector
+*/
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId
 {
     var uid     = anId
@@ -232,23 +357,30 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return ret;
 }
 
+/*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
+    
+    @param aStanza the TNStropheStanza to send to the contact
+    @param aSelector the selector to perform on response
+    @param anObject the object receiving the selector
+    
+    @return the associated registration id for the selector
+*/
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var uid     = [[self connection] getUniqueId];
-    
-    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:uid]
-}
-
-- (BOOL)didSendStanza:(TNStropheStanza)aStanza
-{
+    var uid         = [[self connection] getUniqueId];
     var center      = [CPNotificationCenter defaultCenter];
     var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
     
+    var ret = [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:uid]
+    
     [center postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
     
-    return NO;
+    return ret
 }
 
+/*! register the contact to listen incoming messages
+    you should never have to use this message if you use TNStropheRoster
+*/
 - (void)getMessages
 {
     var params = [[CPDictionary alloc] init];
@@ -257,10 +389,17 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [params setValue:[self jid] forKey:@"from"];
     [params setValue:{"matchBare": YES} forKey:@"options"];
     
-    [[self connection] registerSelector:@selector(didReceivedMessage:) ofObject:self withDict:params];
+    [[self connection] registerSelector:@selector(_didReceivedMessage:) ofObject:self withDict:params];
 }
 
-- (BOOL)didReceivedMessage:(id)aStanza
+/*! message sent when contact listening its message (using getMessages) and send appropriates notifications
+    you should never have to use this message.
+    
+    @param aStanza the response stanza
+    
+    @return YES in order to listen again
+*/
+- (BOOL)_didReceivedMessage:(id)aStanza
 {
     var center      = [CPNotificationCenter defaultCenter];
     var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", [CPDate date], @"date"];
@@ -293,6 +432,10 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return YES;
 }
 
+
+/*! send a message to the contact
+    @param aMessage CPString containing the message
+*/
 - (void)sendMessage:(CPString)aMessage
 {
     var uid             = [connection getUniqueId];
@@ -302,11 +445,19 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [messageStanza addChildName:@"body"];
     [messageStanza addTextNode:aMessage];
     
-    [[self connection] registerSelector:@selector(didSentMessage:) ofObject:self withDict:params];
+    [[self connection] registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
     [[self connection] send:messageStanza];
 }
 
-- (BOOL)didSentMessage:(id)aStanza
+/*! message sent when a message has been sent. It posts appropriate notification with userInfo
+    containing the stanza under the key "stanza"
+    you should never use this message
+    
+    @param aStanza the response stanza
+    
+    @return NO to remove the registering of the selector
+*/
+- (BOOL)_didSentMessage:(id)aStanza
 {
     var center      = [CPNotificationCenter defaultCenter];
     var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
@@ -316,6 +467,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return NO;
 }
 
+/*! this allows to send "composing" information to a user. This will never send "paused".
+    you have to handle a timer if you want to automatically send pause after a while.
+*/
 - (void)sendComposing
 {
     if (!_isComposing)
@@ -327,12 +481,14 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
         [composingStanza addChildName:@"composing" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
 
-        [[self connection] registerSelector:@selector(didSentMessage:) ofObject:self withDict:params];
+        [[self connection] registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
         [[self connection] send:composingStanza];
         _isComposing = YES;
     }
 }
 
+/*! this allows to send "paused" information to a user.
+*/
 - (void)sendComposePaused
 {
     var uid             = [connection getUniqueId];
@@ -341,12 +497,15 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     [pausedStanza addChildName:@"paused" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
     
-    [[self connection] registerSelector:@selector(didSentMessage:) ofObject:self withDict:params];
+    [[self connection] registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
     [[self connection] send:pausedStanza];
 
     _isComposing = NO;
 }
 
+/*! this allows to change the contact nickname. Will post TNStropheContactNicknameUpdatedNotification
+    @param newNickname the new nickname
+*/
 - (void)changeNickname:(CPString)newNickname
 {
     [self setNickname:newNickname];
@@ -363,6 +522,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [center postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
 }
 
+/*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
+*/
 - (void)changeGroup:(CPString)newGroupName
 {
     [self setGroup:newGroupName];
@@ -379,6 +540,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
+/*! return the last TNStropheStanza message in the message queue and remove it form the queue.
+    Will post TNStropheContactMessageTreatedNotification.
+    
+    @return TNStropheStanza the last message in queue
+*/
 - (TNStropheStanza)popMessagesQueue
 {
     if ([[self messagesQueue] count] == 0)
@@ -394,11 +560,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
     
-    
-    
     return lastMessage;
 }
 
+/*! purge all message in queue. Will post TNStropheContactMessageTreatedNotification
+*/
 - (void)freeMessagesQueue
 {
     var center = [CPNotificationCenter defaultCenter];
@@ -411,25 +577,38 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
 }
 
+/*! subscribe to the contact
+*/
 - (void)subscribe
 {
     var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] jid], "type": "subscribed", "to": [self jid]}];
     [[self connection] send:resp];
 }
 
+/*! unsubscribe from the contact
+*/
 - (void)unsubscribe
 {
     var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] jid], "type": "unsubscribed", "to": [self jid]}];
     [[self connection] send:resp];
 }
 
+/*! ask subscribtion to the contact
+*/
 - (void)askSubscription
 {
     var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": [self jid]}];   
     [[self connection] send:auth];
 }
 
+@end
 
+
+
+@implementation TNStropheContact (codingCompliant)
+{
+    
+}
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -489,6 +668,6 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [aCoder encodeObject:messagesQueue forKey:@"messagesQueue"];
     [aCoder encodeObject:numberOfEvents forKey:@"numberOfEvents"];
 }
-
+@end
 
 @end
