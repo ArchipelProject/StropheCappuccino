@@ -244,7 +244,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
        	        if ([[self delegate] respondsToSelector:@selector(onStropheConnected:)])
        	            [[self delegate] onStropheConnected:self];
 
-                [center postNotification:TNStropheConnectionStatusConnected];
+                [center postNotification:TNStropheConnectionStatusConnected object:self];
             }
         }, /* wait */ 3600);
     }
