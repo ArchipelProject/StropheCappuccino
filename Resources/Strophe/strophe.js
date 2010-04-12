@@ -1503,8 +1503,8 @@ Strophe.Handler.prototype = {
                               e.line + " - " + e.name + ": " + e.message);
             } else if (e.fileName) {
                 if (typeof(console) != "undefined") {
-                    console.trace();
-                    console.error(this.handler, " - error - ", e, e.message);
+                    //console.trace();
+                    //console.error(this.handler, " - error - ", e, e.message);
                 }
                 Strophe.fatal("error: " + this.handler + " " +
                               e.fileName + ":" + e.lineNumber + " - " +
