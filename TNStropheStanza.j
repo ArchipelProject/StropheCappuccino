@@ -285,6 +285,14 @@
     return [[TNStropheStanza alloc] initWithNode:aStanza];
 }
 
+/*! get the from node only field of the stanza
+    @return from node field of stanza
+*/
+- (CPString)getFromNode
+{
+    return [self valueForAttribute:@"from"].split("/")[0];
+}
+
 /*! get the from field of the stanza
     @return from field of stanza
 */
