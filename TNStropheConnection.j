@@ -229,7 +229,6 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
     _connection = new Strophe.Connection(_boshService);
     _connection.connect([self jid] + @"/controller", [self password], function (status, errorCond) 
     {
-        console.log(status + "Strophe.Status.DISCONNECTING" + Strophe.Status.DISCONNECTING)
         var center = [CPNotificationCenter defaultCenter];
 
         if (status == Strophe.Status.CONNECTING)
