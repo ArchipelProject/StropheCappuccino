@@ -38,7 +38,20 @@ TNStropheConnectionStatusConnected        = @"TNStropheConnectionStatusConnected
     @group TNStropheConnectionStatus
     Notification sent on connection fail 
 */
-TNStropheConnectionStatusFailure          = @"TNStropheConnectionStatusFailure";
+TNStropheConnectionStatusConnectionFailure      = @"TNStropheConnectionStatusConnectionFailure";
+/*! @global
+    @group TNStropheConnectionStatus
+    Notification sent when authenticating
+
+*/
+TNStropheConnectionStatusAuthenticating         = @"TNStropheConnectionStatusAuthenticating"
+/*! 
+    @global
+    @group TNStropheConnectionStatus
+    Notification sent on auth fail 
+*/
+TNStropheConnectionStatusAuthFailure          = @"TNStropheConnectionStatusAuthFailure";
+
 /*! 
     @global
     @group TNStropheConnectionStatus
@@ -51,6 +64,13 @@ TNStropheConnectionStatusDisconnecting    = @"TNStropheConnectionStatusDisconnec
     Notification sent when disconnected 
 */
 TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnected";
+
+/*! 
+    @global
+    @group TNStropheConnectionStatus
+    Notification sent when other error occurs 
+*/
+TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 /*! 
     @global
@@ -93,7 +113,11 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
     
     #TNStropheConnectionStatusDisconnected
     
-    #TNStropheConnectionStatusFailure
+    #TNStropheConnectionStatusConnectionFailure
+    
+    # TNStropheConnectionStatusAuthFailure
+    
+    #TNStropheConnectionStatusError
 */
 @implementation TNStropheConnection: CPObject 
 {    
@@ -205,6 +229,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
     _connection = new Strophe.Connection(_boshService);
     _connection.connect([self jid] + @"/controller", [self password], function (status, errorCond) 
     {
+        console.log(status + "Strophe.Status.DISCONNECTING" + Strophe.Status.DISCONNECTING)
         var center = [CPNotificationCenter defaultCenter];
 
         if (status == Strophe.Status.CONNECTING)
@@ -219,7 +244,21 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
             if ([[self delegate] respondsToSelector:@selector(onStropheConnectFail:)])
    	            [[self delegate] onStropheConnectFail:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusFailure object:self];
+   	        [center postNotificationName:TNStropheConnectionStatusConnectionFailure object:self];
+        }
+        else if (status == Strophe.Status.AUTHFAIL) 
+        {
+            if ([[self delegate] respondsToSelector:@selector(onStropheAuthFail:)])
+   	            [[self delegate] onStropheAuthFail:self];
+
+   	        [center postNotificationName:TNStropheConnectionStatusAuthFailure object:self];
+        }
+        else if (status == Strophe.Status.ERROR) 
+        {
+            if ([[self delegate] respondsToSelector:@selector(onStropheError:)])
+   	            [[self delegate] onStropheError:self];
+
+   	        [center postNotificationName:TNStropheConnectionStatusError object:self];
         } 
         else if (status == Strophe.Status.DISCONNECTING) 
         {
@@ -227,7 +266,14 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
    	            [[self delegate] onStropheDisconnecting:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusDisconnecting object:self];
-        } 
+        }
+        else if (status == Strophe.Status.AUTHENTICATING) 
+        {
+   	        if ([[self delegate] respondsToSelector:@selector(onStropheAuthenticating:)])
+   	            [[self delegate] onStropheAuthenticating:self];
+
+   	        [center postNotificationName:TNStropheConnectionStatusAuthenticating object:self];
+        }
         else if (status == Strophe.Status.DISCONNECTED) 
         {
    	        if ([[self delegate] respondsToSelector:@selector(onStropheDisconnected:)])
@@ -244,7 +290,7 @@ TNStropheConnectionDebugModeIsEnabled    = YES;
 
             [center postNotificationName:TNStropheConnectionStatusConnected object:self];
         }
-    }, /* wait */ 3600);
+    }, /* wait */ 1);
 }
 
 /*! this disconnect the XMPP connection
