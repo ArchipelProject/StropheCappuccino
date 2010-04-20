@@ -20,7 +20,7 @@
 
 
 /*! @ingroup strophecappuccino
-    This is an implémentation of an XML node 
+    This is an implementation of an XML node 
 */
 @implementation TNXMLNode : CPObject
 {
