@@ -18,13 +18,21 @@
 
 @import <Foundation/Foundation.j>
 
-
+/*! @ingroup strophecappuccino
+    this is a subclass of CPImage that allows to create a CPImage from a image 
+    encoded in a base64 CPString.
+*/
 @implementation TNBase64Image : CPImage
 {
     CPString    _baseEncoded64Data  @accessors(setter=setBaseEncoded64Data:);
     CPString    _contentType        @accessors(setter=setContentType:);
 }
 
+/*! create the TNBase64Image from the base64 string using a given content-type
+    @param aContentType the content type to use (for example "image/png")
+    @param someBase64Data the CPString containing the encoded image in base64
+    @return a initialized and loaded TNBase64Image
+*/
 + (TNBase64Image)base64ImageWithContentType:(CPString)aContentType andData:(CPString)someBase64Data 
 {
     var img = [[TNBase64Image alloc] init];
@@ -37,6 +45,8 @@
     return img;
 }
 
+/*! override the CPImage load message.
+*/
 - (void)load
 {
     if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)

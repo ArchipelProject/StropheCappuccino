@@ -226,7 +226,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 }
 
 /*! probe the contact about its status
-    You should never have to use this message
+    You should never have to use this message if you are using TNStropheRoster
 */
 - (void)getStatus
 {
@@ -305,7 +305,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
 
 /*! probe the contact's vCard
-    you should never have to use this message
+    you should never have to use this message if you are using TNStropheRoster
 */
 - (void)getVCard
 {
@@ -321,7 +321,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 }
 
 /*! executed on getVCard result. Will post TNStropheContactVCardReceivedNotification
-    and send notifications
+    and send notifications. If vCard contains a PHOTO node, it will set the avatar TNBase64Image
+    property of the TNStropheContact
     You should never have to use this method
     @param aStanza the response TNStropheStanza
 */
@@ -343,11 +344,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             
             avatar = [TNBase64Image base64ImageWithContentType:contentType andData:data];
         }
-        
-        [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
     
-    return YES;
+    [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
+    
+    return NO;
 }
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
