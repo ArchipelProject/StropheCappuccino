@@ -20,6 +20,7 @@
 
 @import "TNStropheGroup.j"
 @import "TNStropheConnection.j"
+@import "TNBase64Image.j"
 
 /*! 
     @global
@@ -155,6 +156,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPArray             messagesQueue   @accessors;
     CPNumber            numberOfEvents  @accessors;
     TNStropheConnection connection      @accessors;
+    TNBase64Image       avatar          @accessors;
     
     CPImage             _imageOffline;
     CPImage             _imageOnline;
@@ -292,7 +294,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         }
     }
     
-    [self getVCard];
+    if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
+        [self getVCard];
     
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
@@ -300,17 +303,18 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return YES;
 }
 
+
 /*! probe the contact's vCard
     you should never have to use this message
 */
 - (void)getVCard
 {
-    var uid = [connection getUniqueId];
-    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection jid], "to": [self jid], "type": "get", "id": uid}];
+    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection jid], "to": [self jid], "type": "get"}];
     [vcard_stanza addChildName:@"vCard" withAttributes:{'xmlns': "vcard-temp"}];
     
     var params = [[CPDictionary alloc] init];
-    [params setValue:uid forKey:@"id"];
+    [params setValue:[self jid] forKey:@"from"];
+    [params setValue:{"matchBare": YES} forKey:@"options"];
 
     [connection registerSelector:@selector(didReceivedVCard:) ofObject:self withDict:params];
     [connection send:vcard_stanza];
@@ -330,10 +334,20 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     {
         [self setVCard:vCard];
         
+        var photoNode;
+        
+        if (photoNode = [vCard firstChildWithName:@"PHOTO"])
+        {
+            var contentType = [[photoNode firstChildWithName:@"TYPE"] text];
+            var data        = [[photoNode firstChildWithName:@"BINVAL"] text];
+            
+            avatar = [TNBase64Image base64ImageWithContentType:contentType andData:data];
+        }
+        
         [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
     
-    return NO;
+    return YES;
 }
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
