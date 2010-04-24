@@ -289,14 +289,14 @@ CPLogRegister(CPLogConsole);
 
             [center postNotificationName:TNStropheConnectionStatusConnected object:self];
         }
-    }, /* wait */ 1);
+    }, /* wait */ 3600);
 }
 
 /*! this disconnect the XMPP connection
 */
 - (void)disconnect 
 {
-    _connection.disconnect("logout");
+    _connection.disconnect();
 }
 
 

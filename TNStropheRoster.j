@@ -62,7 +62,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     CPMutableArray          groups          @accessors;
     id                      delegate        @accessors;
     
-    TNStropheConnection     _connection;
+    TNStropheConnection     _connection     @accessors(getter=connection);
 }
 
 /*! initialize a roster with a valid TNStropheConnection
@@ -432,7 +432,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
 /*! sent disconnect message to the TNStropheConnection of the roster
 */
-- (void) disconnect
+- (void)disconnect
 {
     [_connection disconnect];
 }
