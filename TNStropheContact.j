@@ -152,6 +152,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPString            type            @accessors;
     CPString            fullJID         @accessors;
     CPString            vCard           @accessors;
+    CPString            show            @accessors;
     CPImage             statusIcon      @accessors;
     CPArray             messagesQueue   @accessors;
     CPNumber            numberOfEvents  @accessors;
@@ -293,6 +294,10 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             }
         }
     }
+    
+    var presenceShow;
+    if (presenceShow = [aStanza firstChildWithName:@"status"])
+        [self setShow:[presenceShow text]];
     
     if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
         [self getVCard];
