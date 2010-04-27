@@ -143,9 +143,9 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 
         	var contact = [TNStropheContact contactWithConnection:_connection jid:theJid group:theGroup];
             [contact setNickname:nickname];
-
-            [contact getStatus];
+            
             [contact getVCard];
+            [contact getStatus];
             [contact getMessages];
            	[[self contacts] addObject:contact];
         }
@@ -217,8 +217,8 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     
     var contact = [TNStropheContact contactWithConnection:_connection jid:aJid group:aGroup];
     [contact setNickname:aName];
-    [contact getStatus];
     [contact getVCard];
+    [contact getStatus];
     [contact getMessages];
     [[self addGroupIfNotExists:aGroup]]
    	[[self contacts] addObject:contact];
