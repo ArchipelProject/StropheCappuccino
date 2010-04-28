@@ -77,8 +77,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     @group TNStropheConnectionDebug
     If set to true, all stanza received are written in the console.
 */
-TNStropheConnectionDebugModeIsEnabled    = NO;
-CPLogRegister(CPLogConsole);
+TNStropheConnectionDebugModeIsEnabled    = YES;
 
 /*! @ingroup strophecappuccino
     this is an Cappuccino implementation of an XMPP connection
@@ -307,7 +306,7 @@ CPLogRegister(CPLogConsole);
 - (void)send:(TNStropheStanza)aStanza
 {
     if (TNStropheConnectionDebugModeIsEnabled)
-        CPLog.debug([aStanza tree]);
+        console.log([aStanza tree]);
     _connection.send([aStanza tree]);
 }
 
