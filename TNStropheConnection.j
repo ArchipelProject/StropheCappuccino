@@ -124,7 +124,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
     CPString        resource                @accessors(); 
     CPString        password                @accessors(); 
     id              delegate                @accessors();
-    BOOL            isSoundEnabled          @accessors(getter=isSoudEnabled, setter=setSoundEnabled:);
+    BOOL            isSoundEnabled          @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
     
     
     CPString        _boshService;
@@ -443,7 +443,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 
 - (void)playReceivedSound
 {
-    if ([self isSoudEnabled])
+    if ([self isSoundEnabled])
     {
         _audioTagReceive.play();
     }

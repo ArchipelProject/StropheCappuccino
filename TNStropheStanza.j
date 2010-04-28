@@ -111,7 +111,7 @@
 */
 - (BOOL)up
 {
-    if (_xmlNode.node.parentNode)
+    if (_xmlNode.node && _xmlNode.node.parentNode)
     {
         ret = _xmlNode.up();
         return YES;
@@ -298,11 +298,17 @@
     return [self valueForAttribute:@"from"].split("/")[0];
 }
 
+- (CPString)getFromNodeUser
+{
+    return [self valueForAttribute:@"from"].split("/")[0].split("@")[0];
+}
+
 /*! get the from field of the stanza
     @return from field of stanza
 */
 - (CPString)getFrom
 {
+    while ([self up]);
     return [self valueForAttribute:@"from"];
 }
 
