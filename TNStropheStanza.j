@@ -109,9 +109,14 @@
 
 /*! Move the pointer to the parent of the current node
 */
-- (void)up
+- (BOOL)up
 {
-    _xmlNode = _xmlNode.up();
+    if (_xmlNode.node.parentNode)
+    {
+        ret = _xmlNode.up();
+        return YES;
+    }
+    return NO;
 }
 
 /*! get value of an attribute of the current node
@@ -130,11 +135,11 @@
 - (void)setValue:(CPString)aValue forAttribute:(CPString)anAttribute
 {   
     var attr = {};
-    attr[anAttribute] = aValue
+    var tmpNode;
     
-    while(_xmlNode.up());
+    attr[anAttribute] = aValue;
     
-    _xmlNode = _xmlNode.attrs(attr);
+    _xmlNode.attrs(attr);
 }
 
 /*! get an CPArray of TNXMLNode with matching tag name
@@ -306,6 +311,7 @@
 */
 - (void)setFrom:(CPString)aFrom
 {
+    while ([self up]);
     [self setValue:aFrom forAttribute:@"from"];
 }
 
@@ -322,6 +328,7 @@
 */
 - (void)setTo:(CPString)aTo
 {
+    while ([self up]);
     [self setValue:aTo forAttribute:@"to"];
 }
 
@@ -370,6 +377,7 @@
 */
 - (void)setID:(CPString)anID
 {
+    while ([self up]);
     [self setValue:anID forAttribute:@"id"];
 }
 
