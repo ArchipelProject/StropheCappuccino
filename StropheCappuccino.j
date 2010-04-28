@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "Resources/Strophe/JQuery/jquery.min.js"
 @import "Resources/Strophe/strophe.js"
 @import "TNStropheStanza.j"
 @import "TNStropheGroup.j"
