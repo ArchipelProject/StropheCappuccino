@@ -200,7 +200,7 @@
 */
 - (CPString)text
 {
-    return $(_xmlNode).text();
+    return Strophe.getText(_xmlNode);
 }
 
 - (CPString)description
