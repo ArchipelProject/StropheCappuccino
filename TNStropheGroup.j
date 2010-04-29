@@ -23,9 +23,10 @@
 */
 @implementation TNStropheGroup: CPObject 
 {
-    CPArray     contacts    @accessors;
-    CPString    name        @accessors;
-    CPString    type        @accessors;
+    CPArray                 contacts    @accessors;
+    CPString                name        @accessors;
+    CPString                type        @accessors;
+    TNStropheConnection     connection  @accessors;
 }
 
 - (id)init
