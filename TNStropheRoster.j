@@ -138,12 +138,13 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
         
         if (![self doesRosterContainsJID:theJid])
         {
-            var theGroup = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General";
-            [self addGroupIfNotExists:theGroup];
-
-        	var contact = [TNStropheContact contactWithConnection:_connection jid:theJid group:theGroup];
-            [contact setNickname:nickname];
+            var groupName   = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General";
+            var group       = [self addGroupIfNotExists:groupName];
+            var contact     = [TNStropheContact contactWithConnection:_connection jid:theJid group:groupName];
             
+            [[group contacts] addObject:contact];
+            
+            [contact setNickname:nickname];
             [contact getVCard];
             [contact getStatus];
             [contact getMessages];
@@ -220,7 +221,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     [contact getVCard];
     [contact getStatus];
     [contact getMessages];
-    [[self addGroupIfNotExists:aGroup]]
+    
+    var group = [self addGroupIfNotExists:aGroup];
+    
+    [[group contacts] addObject:contact];
    	[[self contacts] addObject:contact];
    	
    	var center = [CPNotificationCenter defaultCenter];
@@ -267,9 +271,15 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     @param aGroup the new group
     @param aJid the JID of the contact to change the nickname
 */
-- (void) changeGroup:(CPString)aGroup forJID:(CPString)aJid
+- (void)changeGroup:(CPString)aGroup forJID:(CPString)aJid
 {
-    var contact = [self getContactFromJID:aJid];
+    var contact     = [self getContactFromJID:aJid];
+    var oldGroup    = [self getGroupFromName:[contact group]];
+    var newGroup    = [self getGroupFromName:aGroup];
+    
+    [[newGroup contacts] addObject:contact];
+    [[oldGroup contacts] removeObject:contact];
+    
     [contact changeGroup:aGroup];
 }
 
@@ -317,6 +327,7 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     var newGroup = [[TNStropheGroup alloc] init];
 
     [newGroup setName:groupName];
+    [newGroup setConnection:_connection];
     [[self groups] addObject:newGroup];
     
     var center = [CPNotificationCenter defaultCenter];
@@ -333,7 +344,8 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 {
     if (![self doesRosterContainsGroup:groupName])
         return [self addGroup:groupName];
-    return nil;
+    
+    return [self getGroupFromName:groupName];
 }
 
 /*! NOT IMPLEMENTED
