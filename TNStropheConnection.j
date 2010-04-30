@@ -306,7 +306,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 - (void)send:(TNStropheStanza)aStanza
 {
     if (TNStropheConnectionDebugModeIsEnabled)
-        CPLog.debug([aStanza tree]);
+        console.log([aStanza tree]);
     _connection.send([aStanza tree]);
 }
 
@@ -374,7 +374,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
                 if (TNStropheConnectionDebugModeIsEnabled)
-                    CPLog.debug(stanza);
+                    console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -400,7 +400,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
                 if (TNStropheConnectionDebugModeIsEnabled)
-                    CPLog.debug(stanza);
+                    console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
