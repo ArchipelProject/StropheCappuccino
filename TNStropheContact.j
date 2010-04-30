@@ -353,7 +353,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     
-    return NO;
+    return YES;
 }
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
