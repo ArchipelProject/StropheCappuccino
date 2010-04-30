@@ -353,9 +353,9 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
     @param aGroupName the name of the group to remove
     @return YES if group has been removed, NO otherwise
 */
-- (BOOL)removeGroup:(CPString)aGroupName
+- (BOOL)removeGroup:(TNStropheGroup)aGroup
 {
-    // TODO
+    return [groups removeObject:aGroup];
 }
 
 /*! returns a CPArray containung all the TNStropheContact in a given group
