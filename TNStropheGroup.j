@@ -18,6 +18,8 @@
 
 @import <Foundation/Foundation.j>
 
+TNStropheGroupRenamed = @"TNStropheGroupRenamed";
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
 */
@@ -45,4 +47,23 @@
     return [self name];
 }
 
+- (void)rename:(CPString)aName
+{
+    var center = [CPNotificationCenter defaultCenter];
+    
+    [self setName:aName];
+    
+    for (var i = 0; i < [contacts count]; i++)
+    {
+        var contact = [contacts objectAtIndex:i];
+        [contact changeGroup:aName];
+    }
+    
+    [center postNotificationName:TNStropheGroupRenamed object:self];
+}
+
+- (int)count
+{
+    return [contacts count];
+}
 @end
