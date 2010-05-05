@@ -18,25 +18,30 @@
 
 @import <Foundation/Foundation.j>
 
-TNStropheGroupRenamed = @"TNStropheGroupRenamed";
+TNStropheGroupRenamedNotification = @"TNStropheGroupRenamed";
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
 */
 @implementation TNStropheGroup: CPObject 
 {
-    CPArray                 contacts    @accessors;
-    CPString                name        @accessors;
-    CPString                type        @accessors;
-    TNStropheConnection     connection  @accessors;
+    CPArray                 _contacts   @accessors(getter=contacts);
+    CPString                _name       @accessors(getter=name, setter=setName:);
+    TNStropheConnection     _connection @accessors(getter=connection, setter=setConnection:);
 }
 
-- (id)init
++ (TNStropheGroup)stropheGroupWithName:(CPString)aName connection:(TNStropheConnection)aConnection
+{
+    return [[TNStropheGroup alloc] initWithName:aName connection:aConnection];
+}
+
+- (TNStropheGroup)initWithName:(CPString)aName connection:(TNStropheConnection)aConnection
 {
     if (self = [super init])
     {
-        [self setType:@"group"];
-        [self setContacts:[[CPArray alloc] init]];
+        _contacts   = [CPArray array];
+        _name       = aName;
+        _connection = aConnection;
     }
 
     return self;
@@ -44,26 +49,41 @@ TNStropheGroupRenamed = @"TNStropheGroupRenamed";
 
 - (CPString)description
 {
-    return [self name];
+    return _name;
 }
 
-- (void)rename:(CPString)aName
+- (void)changeName:(CPString)aName
 {
     var center = [CPNotificationCenter defaultCenter];
     
-    [self setName:aName];
+    _name = aName;
     
-    for (var i = 0; i < [contacts count]; i++)
+    for (var i = 0; i < [self count]; i++)
     {
-        var contact = [contacts objectAtIndex:i];
+        var contact = [self objectAtIndex:i];
         [contact changeGroup:aName];
     }
     
-    [center postNotificationName:TNStropheGroupRenamed object:self];
+    [center postNotificationName:TNStropheGroupRenamedNotification object:self];
+}
+
+
+- (void)addContact:(TNStropheContact)aContact
+{
+    if ([aContact class] != TNStropheContact)
+        [CPException raise:"Invalid Object" reason:"You can only add TNStropheContacts"];
+    
+    [_contacts addObject:aContact];
+}
+
+- (void)removeContact:(TNStropheContact)aContact
+{
+    [_contacts removeObject:aContact];
 }
 
 - (int)count
 {
-    return [contacts count];
+    return [_contacts count];
 }
+
 @end
