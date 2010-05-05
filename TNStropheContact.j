@@ -142,13 +142,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 @implementation TNStropheContact: CPObject
 {
-    CPString            jid             @accessors;
+    CPString            JID             @accessors;
     CPString            nodeName        @accessors;
     CPString            domain          @accessors;
     CPString            nickname        @accessors;
     CPString            resource        @accessors;
     CPString            status          @accessors;
-    CPString            group           @accessors;
     CPString            type            @accessors;
     CPString            fullJID         @accessors;
     CPString            vCard           @accessors;
@@ -156,6 +155,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPImage             statusIcon      @accessors;
     CPArray             messagesQueue   @accessors;
     CPNumber            numberOfEvents  @accessors;
+    CPString            groupName       @accessors;
     TNStropheConnection connection      @accessors;
     TNBase64Image       avatar          @accessors;
     
@@ -169,22 +169,22 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
 }
 
-/*! create a contact using a given connection, jid and group
+/*! create a contact using a given connection, JID and group
     @param aConnection TNStropheConnection to use
-    @param aJid the jid of the contact
+    @param aJID the JID of the contact
     @param aGroup the group of the contact
     
     @return an allocated and initialized TNStropheContact
 */
-+ (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection jid:(CPString)aJid group:(CPString)aGroup
++ (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID groupName:(CPString)aGroupName
 {
     var contact = [[TNStropheContact alloc] initWithConnection:aConnection];
-    [contact setGroup:aGroup];
-	[contact setJid:aJid];
-	[contact setNodeName:aJid.split('@')[0]];
-	[contact setNickname:aJid.split('@')[0]];
-	[contact setResource:aJid.split('/')[1]];
-	[contact setDomain: aJid.split('/')[0].split('@')[1]];
+	[contact setJID:aJID];
+	[contact setGroupName:aGroupName];
+	[contact setNodeName:aJID.split('@')[0]];
+	[contact setNickname:aJID.split('@')[0]];
+	[contact setResource:aJID.split('/')[1]];
+	[contact setDomain: aJID.split('/')[0].split('@')[1]];
 	
     return contact;
 }
@@ -231,11 +231,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)getStatus
 {
-    var probe = [TNStropheStanza presenceWithAttributes:{"from": [connection jid], "type": "probe", "to": [self jid]}];
+    var probe = [TNStropheStanza presenceWithAttributes:{"from": [connection JID], "type": "probe", "to": [self JID]}];
     var params = [[CPDictionary alloc] init];
     
     [params setValue:@"presence" forKey:@"name"];
-    [params setValue:[self jid] forKey:@"from"];
+    [params setValue:[self JID] forKey:@"from"];
     [params setValue:{"matchBare": YES} forKey:@"options"];
     
     [connection registerSelector:@selector(didReceivedStatus:) ofObject:self withDict:params];
@@ -314,11 +314,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)getVCard
 {
-    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection jid], "to": [self jid], "type": "get"}];
+    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection JID], "to": [self JID], "type": "get"}];
     [vcard_stanza addChildName:@"vCard" withAttributes:{'xmlns': "vcard-temp"}];
     
     var params = [[CPDictionary alloc] init];
-    [params setValue:[self jid] forKey:@"from"];
+    [params setValue:[self JID] forKey:@"from"];
     [params setValue:{"matchBare": YES} forKey:@"options"];
 
     [connection registerSelector:@selector(didReceivedVCard:) ofObject:self withDict:params];
@@ -333,25 +333,25 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (BOOL)didReceivedVCard:(TNStropheStanza)aStanza
 {
-    var vCard   = [aStanza firstChildWithName:@"vCard"];
-    var center  = [CPNotificationCenter defaultCenter];
+    var aVCard   = [aStanza firstChildWithName:@"vCard"];
     
-    if (vCard)
+    if (aVCard)
     {
-        [self setVCard:vCard];
-        
+        var center  = [CPNotificationCenter defaultCenter];
         var photoNode;
         
-        if (photoNode = [vCard firstChildWithName:@"PHOTO"])
+        [self setVCard:aVCard];
+        
+        if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
         {
             var contentType = [[photoNode firstChildWithName:@"TYPE"] text];
             var data        = [[photoNode firstChildWithName:@"BINVAL"] text];
             
             avatar = [TNBase64Image base64ImageWithContentType:contentType andData:data];
         }
+        
+        [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
-    
-    [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     
     return YES;
 }
@@ -415,7 +415,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     var params = [[CPDictionary alloc] init];
 
     [params setValue:@"message" forKey:@"name"];
-    [params setValue:[self jid] forKey:@"from"];
+    [params setValue:[self JID] forKey:@"from"];
     [params setValue:{"matchBare": YES} forKey:@"options"];
     
     [[self connection] registerSelector:@selector(_didReceivedMessage:) ofObject:self withDict:params];
@@ -468,7 +468,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (void)sendMessage:(CPString)aMessage
 {
     var uid             = [connection getUniqueId];
-    var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self jid], "from": [[self connection] jid], "type": "chat"}];
+    var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self JID], "from": [[self connection] JID], "type": "chat"}];
     var params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
     
     [messageStanza addChildName:@"body"];
@@ -504,7 +504,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     if (!_isComposing)
     {
         var uid             = [connection getUniqueId];
-        var composingStanza = [TNStropheStanza messageWithAttributes:{"to":  [self jid], "from": [[self connection] jid], "type": "chat"}];
+        var composingStanza = [TNStropheStanza messageWithAttributes:{"to":  [self JID], "from": [[self connection] JID], "type": "chat"}];
         var params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
 
 
@@ -521,7 +521,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (void)sendComposePaused
 {
     var uid             = [connection getUniqueId];
-    var pausedStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self jid], "from": [[self connection] jid], "type": "chat"}];
+    var pausedStanza   = [TNStropheStanza messageWithAttributes:{"to":  [self JID], "from": [[self connection] JID], "type": "chat"}];
     var params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
     
     [pausedStanza addChildName:@"paused" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
@@ -541,9 +541,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
     [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"jid": [self jid], "name": newNickname}];
+    [stanza addChildName:@"item" withAttributes:{"JID": [self JID], "name": newNickname}];
     [stanza addChildName:@"group" withAttributes:nil];
-    [stanza addTextNode:[self group]];
+    [stanza addTextNode:[self groupName]];
 
     [[self connection] send:stanza];
    
@@ -553,17 +553,17 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
 /*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
 */
-- (void)changeGroup:(CPString)newGroupName
+- (void)changeGroup:(TNStropheGroup)newGroup
 {
-    [self setGroup:newGroupName];
-    
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
     [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"jid": [self jid], "name": [self nickname]}];
+    [stanza addChildName:@"item" withAttributes:{"JID": [self JID], "name": [self nickname]}];
     [stanza addChildName:@"group" withAttributes:nil];
-    [stanza addTextNode:newGroupName];
+    [stanza addTextNode:[newGroup name]];
     
     [[self connection] send:stanza];
+    
+    [self setGroupName:[newGroup name]];
     
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
@@ -610,7 +610,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)subscribe
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] jid], "type": "subscribed", "to": [self jid]}];
+    var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] JID], "type": "subscribed", "to": [self JID]}];
     [[self connection] send:resp];
 }
 
@@ -618,7 +618,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)unsubscribe
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] jid], "type": "unsubscribed", "to": [self jid]}];
+    var resp = [TNStropheStanza presenceWithAttributes:{"from": [[self connection] JID], "type": "unsubscribed", "to": [self JID]}];
     [[self connection] send:resp];
 }
 
@@ -626,7 +626,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)askSubscription
 {
-    var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": [self jid]}];   
+    var auth    = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": [self JID]}];   
     [[self connection] send:auth];
 }
 
@@ -645,7 +645,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     if (self)
     {
         //[self setConnection:[aCoder decodeObjectForKey:@"connection"]];
-        [self setJid:[aCoder decodeObjectForKey:@"jid"]];
+        [self setJID:[aCoder decodeObjectForKey:@"JID"]];
         [self setNodeName:[aCoder decodeObjectForKey:@"nodeName"]];
         [self setDomain:[aCoder decodeObjectForKey:@"domain"]];
         [self setNickname:[aCoder decodeObjectForKey:@"nickname"]];
@@ -655,7 +655,6 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             
         [self setStatus:[aCoder decodeObjectForKey:@"status"]];
         [self setStatusIcon:[aCoder decodeObjectForKey:@"statusIcon"]];
-        [self setGroup:[aCoder decodeObjectForKey:@"group"]];
         [self setType:[aCoder decodeObjectForKey:@"type"]];
         
         
@@ -677,14 +676,13 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     //     [super encodeWithCoder:aCoder];
     
     //[aCoder encodeObject:connection forKey:@"connection"];
-    [aCoder encodeObject:jid forKey:@"jid"];
+    [aCoder encodeObject:JID forKey:@"JID"];
     [aCoder encodeObject:nodeName forKey:@"nodeName"];
     [aCoder encodeObject:domain forKey:@"domain"];
     [aCoder encodeObject:nickname forKey:@"nickname"];
     if ([self resource])
         [aCoder encodeObject:resource forKey:@"resource"];
     [aCoder encodeObject:status forKey:@"status"];
-    [aCoder encodeObject:group forKey:@"group"];
     [aCoder encodeObject:type forKey:@"type"];
     
     if ([self fullJID])

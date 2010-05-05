@@ -120,7 +120,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 */
 @implementation TNStropheConnection: CPObject 
 {    
-    CPString        jid                     @accessors(); 
+    CPString        JID                     @accessors(); 
     CPString        resource                @accessors(); 
     CPString        password                @accessors(); 
     id              delegate                @accessors();
@@ -148,19 +148,19 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 /*! instanciate a TNStropheConnection object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aJid a JID to connect to the XMPP server
+    @param aJID a JID to connect to the XMPP server
     @param aPassword the password associated to the JID
     
     @return a valid TNStropheConnection
 */
-+ (TNStropheConnection)connectionWithService:(CPString)aService jid:(CPString)aJid password:(CPString)aPassword 
++ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID password:(CPString)aPassword 
 {
-    return [[TNStropheConnection alloc] initWithService:aService jid:aJid password:aPassword];
+    return [[TNStropheConnection alloc] initWithService:aService JID:aJID password:aPassword];
 }
 
-+ (TNStropheConnection)connectionWithService:(CPString)aService jid:(CPString)aJid resource:(CPString)aResource password:(CPString)aPassword 
++ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID resource:(CPString)aResource password:(CPString)aPassword 
 {
-    return [[TNStropheConnection alloc] initWithService:aService jid:aJid resource:aResource password:aPassword];
+    return [[TNStropheConnection alloc] initWithService:aService JID:aJID resource:aResource password:aPassword];
 }
 
 
@@ -193,25 +193,25 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 /*! initialize the TNStropheConnection
 
     @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aJid a JID to connect to the XMPP server
+    @param aJID a JID to connect to the XMPP server
     @param aPassword the password associated to the JID
 */
-- (id)initWithService:(CPString)aService jid:(CPString)aJid password:(CPString)aPassword
+- (id)initWithService:(CPString)aService JID:(CPString)aJID password:(CPString)aPassword
 {
     if (self = [self initWithService:aService])
     {
-        [self setJid:aJid];
+        [self setJID:aJID];
         [self setPassword:aPassword];
     }
     
     return self;
 }
 
-- (id)initWithService:(CPString)aService jid:(CPString)aJid  resource:(CPString)aResource password:(CPString)aPassword
+- (id)initWithService:(CPString)aService JID:(CPString)aJID  resource:(CPString)aResource password:(CPString)aPassword
 {
     if (self = [self initWithService:aService])
     {
-        [self setJid:aJid];
+        [self setJID:aJID];
         [self setPassword:aPassword];
         [self setResource:aResource];
     }
@@ -226,7 +226,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 - (void)connect
 {
     _connection = new Strophe.Connection(_boshService);
-    _connection.connect([self jid] + @"/controller", [self password], function (status, errorCond) 
+    _connection.connect([self JID] + @"/controller", [self password], function (status, errorCond) 
     {
         var center = [CPNotificationCenter defaultCenter];
 
@@ -456,7 +456,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
     
     if (self)
     {
-        [self setJid:[aCoder decodeObjectForKey:@"jid"]];
+        [self setJID:[aCoder decodeObjectForKey:@"JID"]];
         [self setPassword:[aCoder decodeObjectForKey:@"password"]];
         [self setResource:[aCoder decodeObjectForKey:@"resource"]];
         [self setDelegate:[aCoder decodeObjectForKey:@"delegate"]];
@@ -474,7 +474,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
     // if ([super respondsToSelector:@selector(encodeWithCoder:)])
     //     [super encodeWithCoder:aCoder];
     
-    [aCoder encodeObject:jid forKey:@"jid"];
+    [aCoder encodeObject:JID forKey:@"JID"];
     [aCoder encodeObject:password forKey:@"password"];
     [aCoder encodeObject:resource forKey:@"resource"];
     [aCoder encodeBool:isSoundEnabled forKey:@"isSoundEnabled"];
