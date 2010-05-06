@@ -569,6 +569,22 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
+- (void)changeGroupName:(CPString)aNewName
+{
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildName:@"item" withAttributes:{"JID": [self JID], "name": [self nickname]}];
+    [stanza addChildName:@"group" withAttributes:nil];
+    [stanza addTextNode:aNewName];
+    
+    [[self connection] send:stanza];
+    
+    [self setGroupName:aNewName];
+    
+    var center = [CPNotificationCenter defaultCenter];
+    [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+}
+
 /*! return the last TNStropheStanza message in the message queue and remove it form the queue.
     Will post TNStropheContactMessageTreatedNotification.
     
