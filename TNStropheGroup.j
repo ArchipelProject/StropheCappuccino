@@ -60,8 +60,8 @@ TNStropheGroupRenamedNotification = @"TNStropheGroupRenamed";
     
     for (var i = 0; i < [self count]; i++)
     {
-        var contact = [self objectAtIndex:i];
-        [contact changeGroup:aName];
+        var contact = [_contacts objectAtIndex:i];
+        [contact changeGroupName:aName];
     }
     
     [center postNotificationName:TNStropheGroupRenamedNotification object:self];
