@@ -307,6 +307,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 {
     if (TNStropheConnectionDebugModeIsEnabled)
         console.log([aStanza tree]);
+    
     _connection.send([aStanza tree]);
 }
 
@@ -431,6 +432,19 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
     _connection.deleteTimedHandler(aTimedHandlerId)
 }
 
+- (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    _connection.xmlInput = function(elem){
+        [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
+    }
+}
+
+- (void)rawOutputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
+{
+    _connection.xmlOutput = function(elem){
+        [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
+    }
+}
 
 /*! Immediately send any pending outgoing data.
     
