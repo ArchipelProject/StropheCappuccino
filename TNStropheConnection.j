@@ -72,12 +72,6 @@ TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnec
 */
 TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
-/*! 
-    @global
-    @group TNStropheConnectionDebug
-    If set to true, all stanza received are written in the console.
-*/
-TNStropheConnectionDebugModeIsEnabled    = NO;
 
 /*! @ingroup strophecappuccino
     this is an Cappuccino implementation of an XMPP connection
@@ -120,18 +114,19 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 */
 @implementation TNStropheConnection: CPObject 
 {    
-    CPString        JID                     @accessors(); 
-    CPString        resource                @accessors(); 
-    CPString        password                @accessors(); 
-    id              delegate                @accessors();
-    BOOL            isSoundEnabled          @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
-    
+    CPString        _JID                    @accessors(property=JID); 
+    CPString        _resource               @accessors(property=resource); 
+    CPString        _password               @accessors(property=password); 
+    id              _delegate               @accessors(property=delegate);
+    BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
+    BOOL            _debugMode              @accessors(getter=isDebugMode, setter=setDebugMode:);
     
     CPString        _boshService;
     id              _connection;
     CPDictionary    _registredHandlerDict;
     
     id              _audioTagReceive;
+    
 }
 
 /*! instanciate a TNStropheConnection object
@@ -172,10 +167,11 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 {
     if (self = [super init])
     {
-        _boshService = aService;
-        _registredHandlerDict = [[CPDictionary alloc] init];
-        resource = @"controller";
-        [self setSoundEnabled:YES];
+        _boshService            = aService;
+        _debugMode              = NO;
+        _registredHandlerDict   = [[CPDictionary alloc] init];
+        _soundEnabled           = YES;
+        _resource               = @"controller";
         
         var bundle  = [CPBundle bundleForClass:[self class]];
         var sound   = [bundle pathForResource:@"Receive.mp3"];
@@ -184,7 +180,6 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
         _audioTagReceive.setAttribute("src", sound);
         _audioTagReceive.setAttribute("autobuffer", "autobuffer");
         document.body.appendChild(_audioTagReceive);
-
     }
     
     return self;
@@ -200,8 +195,8 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 {
     if (self = [self initWithService:aService])
     {
-        [self setJID:aJID];
-        [self setPassword:aPassword];
+        _JID        = aJID;
+        _password   = aPassword;
     }
     
     return self;
@@ -211,9 +206,9 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 {
     if (self = [self initWithService:aService])
     {
-        [self setJID:aJID];
-        [self setPassword:aPassword];
-        [self setResource:aResource];
+        _JID        = aJID;
+        _password   = aPassword;
+        _resource   = aResource;
     }
     
     return self;
@@ -226,56 +221,56 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 - (void)connect
 {
     _connection = new Strophe.Connection(_boshService);
-    _connection.connect([self JID] + @"/controller", [self password], function (status, errorCond) 
+    _connection.connect(_JID + @"/controller", _password, function (status, errorCond) 
     {
         var center = [CPNotificationCenter defaultCenter];
 
         if (status == Strophe.Status.CONNECTING)
         {
-            if ([[self delegate] respondsToSelector:@selector(onStropheConnecting:)])
-   	            [[self delegate] onStropheConnecting:self];
+            if ([_delegate respondsToSelector:@selector(onStropheConnecting:)])
+   	            [_delegate onStropheConnecting:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusConnecting object:self]; 
         } 
         else if (status == Strophe.Status.CONNFAIL) 
         {
-            if ([[self delegate] respondsToSelector:@selector(onStropheConnectFail:)])
-   	            [[self delegate] onStropheConnectFail:self];
+            if ([_delegate respondsToSelector:@selector(onStropheConnectFail:)])
+   	            [_delegate onStropheConnectFail:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusConnectionFailure object:self];
         }
         else if (status == Strophe.Status.AUTHFAIL) 
         {
-            if ([[self delegate] respondsToSelector:@selector(onStropheAuthFail:)])
-   	            [[self delegate] onStropheAuthFail:self];
+            if ([_delegate respondsToSelector:@selector(onStropheAuthFail:)])
+   	            [_delegate onStropheAuthFail:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusAuthFailure object:self];
         }
         else if (status == Strophe.Status.ERROR) 
         {
-            if ([[self delegate] respondsToSelector:@selector(onStropheError:)])
-   	            [[self delegate] onStropheError:self];
+            if ([_delegate respondsToSelector:@selector(onStropheError:)])
+   	            [_delegate onStropheError:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusError object:self];
         } 
         else if (status == Strophe.Status.DISCONNECTING) 
         {
-   	        if ([[self delegate] respondsToSelector:@selector(onStropheDisconnecting:)])
-   	            [[self delegate] onStropheDisconnecting:self];
+   	        if ([_delegate respondsToSelector:@selector(onStropheDisconnecting:)])
+   	            [_delegate onStropheDisconnecting:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusDisconnecting object:self];
         }
         else if (status == Strophe.Status.AUTHENTICATING) 
         {
-   	        if ([[self delegate] respondsToSelector:@selector(onStropheAuthenticating:)])
-   	            [[self delegate] onStropheAuthenticating:self];
+   	        if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
+   	            [_delegate onStropheAuthenticating:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusAuthenticating object:self];
         }
         else if (status == Strophe.Status.DISCONNECTED) 
         {
-   	        if ([[self delegate] respondsToSelector:@selector(onStropheDisconnected:)])
-   	            [[self delegate] onStropheDisconnected:self];
+   	        if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
+   	            [_delegate onStropheDisconnected:self];
 
    	        [center postNotificationName:TNStropheConnectionStatusDisconnected object:self];
         } 
@@ -283,8 +278,8 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
         {    
    	        _connection.send($pres().tree());
 
-   	        if ([[self delegate] respondsToSelector:@selector(onStropheConnected:)])
-   	            [[self delegate] onStropheConnected:self];
+   	        if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
+   	            [_delegate onStropheConnected:self];
 
             [center postNotificationName:TNStropheConnectionStatusConnected object:self];
         }
@@ -305,7 +300,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 */
 - (void)send:(TNStropheStanza)aStanza
 {
-    if (TNStropheConnectionDebugModeIsEnabled)
+    if (_debugMode)
         console.log([aStanza tree]);
     
     _connection.send([aStanza tree]);
@@ -374,7 +369,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
-                if (TNStropheConnectionDebugModeIsEnabled)
+                if (_debugMode)
                     console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
@@ -400,7 +395,7 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
 - (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
-                if (TNStropheConnectionDebugModeIsEnabled)
+                if (_debugMode)
                     console.log(stanza);
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
@@ -470,14 +465,14 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
     
     if (self)
     {
-        [self setJID:[aCoder decodeObjectForKey:@"JID"]];
-        [self setPassword:[aCoder decodeObjectForKey:@"password"]];
-        [self setResource:[aCoder decodeObjectForKey:@"resource"]];
-        [self setDelegate:[aCoder decodeObjectForKey:@"delegate"]];
-        [self setSoundEnabled:[aCoder decodeBoolForKey:@"isSoundEnabled"]];
-        _boshService = [aCoder decodeObjectForKey:@"_boshService"];
-        _connection = [aCoder decodeObjectForKey:@"_connection"];
-        _audioTagReceive = [aCoder decodeObjectForKey:@"_audioTagReceive"];
+        _JID                = [aCoder decodeObjectForKey:@"_JID"];
+        _password           = [aCoder decodeObjectForKey:@"_password"];
+        _resource           = [aCoder decodeObjectForKey:@"_resource"];
+        _delegate           = [aCoder decodeObjectForKey:@"_delegate"];
+        _soundEnabled       = [aCoder decodeBoolForKey:@"_soundEnabled"];
+        _boshService        = [aCoder decodeObjectForKey:@"_boshService"];
+        _connection         = [aCoder decodeObjectForKey:@"_connection"];
+        _audioTagReceive    = [aCoder decodeObjectForKey:@"_audioTagReceive"];
     }
     
     return self;
@@ -488,10 +483,10 @@ TNStropheConnectionDebugModeIsEnabled    = NO;
     // if ([super respondsToSelector:@selector(encodeWithCoder:)])
     //     [super encodeWithCoder:aCoder];
     
-    [aCoder encodeObject:JID forKey:@"JID"];
-    [aCoder encodeObject:password forKey:@"password"];
-    [aCoder encodeObject:resource forKey:@"resource"];
-    [aCoder encodeBool:isSoundEnabled forKey:@"isSoundEnabled"];
+    [aCoder encodeObject:_JID forKey:@"_JID"];
+    [aCoder encodeObject:_password forKey:@"_password"];
+    [aCoder encodeObject:_resource forKey:@"_resource"];
+    [aCoder encodeBool:_soundEnabled forKey:@"_soundEnabled"];
     [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
     [aCoder encodeObject:_registredHandlerDict forKey:@"_registredHandlerDict"];
