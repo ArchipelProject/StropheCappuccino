@@ -126,7 +126,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     CPDictionary    _registredHandlerDict;
     
     id              _audioTagReceive;
-    
 }
 
 /*! instanciate a TNStropheConnection object
@@ -171,7 +170,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _debugMode              = NO;
         _registredHandlerDict   = [[CPDictionary alloc] init];
         _soundEnabled           = YES;
-        _resource               = @"controller";
         
         var bundle  = [CPBundle bundleForClass:[self class]];
         var sound   = [bundle pathForResource:@"Receive.mp3"];
@@ -204,10 +202,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 - (id)initWithService:(CPString)aService JID:(CPString)aJID  resource:(CPString)aResource password:(CPString)aPassword
 {
-    if (self = [self initWithService:aService])
+    if (self = [self initWithService:aService JID:aJID password:aPassword])
     {
-        _JID        = aJID;
-        _password   = aPassword;
         _resource   = aResource;
     }
     
@@ -220,8 +216,11 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 */
 - (void)connect
 {
+    var fullJID = _JID + @"/" + _resource;
+
     _connection = new Strophe.Connection(_boshService);
-    _connection.connect(_JID + @"/controller", _password, function (status, errorCond) 
+    
+    _connection.connect(fullJID, _password, function (status, errorCond) 
     {
         var center = [CPNotificationCenter defaultCenter];
 
