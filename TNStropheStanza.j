@@ -263,6 +263,14 @@
     return [[TNStropheStanza alloc] initWithName:@"iq" andAttributes:attributes];
 }
 
+/*! instanciate a TNStropheStanza with name IQ
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)iq
+{
+    return [[TNStropheStanza alloc] initWithName:@"iq" andAttributes:nil];
+}
+
 /*! instanciate a TNStropheStanza with name presence
     @param attributes CPDictionary of attributes
     @return instance of TNStropheStanza
@@ -272,6 +280,14 @@
     return [[TNStropheStanza alloc] initWithName:@"presence" andAttributes:attributes];
 }
 
+/*! instanciate a TNStropheStanza with name presence
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)presence
+{
+    return [[TNStropheStanza alloc] initWithName:@"presence" andAttributes:nil];
+}
+
 /*! instanciate a TNStropheStanza with name message
     @param attributes CPDictionary of attributes
     @return instance of TNStropheStanza
@@ -279,6 +295,14 @@
 + (TNStropheStanza)messageWithAttributes:(CPDictionary)attributes
 {
     return [[TNStropheStanza alloc] initWithName:@"message" andAttributes:attributes];
+}
+
+/*! instanciate a TNStropheStanza with name message
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)message
+{
+    return [[TNStropheStanza alloc] initWithName:@"message" andAttributes:nil];
 }
 
 /*! instanciate a TNStropheStanza from a Pure XML Dom Element

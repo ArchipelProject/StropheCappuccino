@@ -314,11 +314,14 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)getVCard
 {
-    var vcard_stanza = [TNStropheStanza stanzaWithName:@"iq" andAttributes:{"from": [connection JID], "to": [self JID], "type": "get"}];
+    var uid             = [connection getUniqueId];
+    var vcard_stanza    = [TNStropheStanza iqWithAttributes:{"from": [connection JID], "to": [self JID], "type": "get", "id": uid}];
+    
     [vcard_stanza addChildName:@"vCard" withAttributes:{'xmlns': "vcard-temp"}];
     
     var params = [[CPDictionary alloc] init];
     [params setValue:[self JID] forKey:@"from"];
+    [params setValue:uid forKey:@"id"];
     [params setValue:{"matchBare": YES} forKey:@"options"];
 
     [connection registerSelector:@selector(didReceivedVCard:) ofObject:self withDict:params];
