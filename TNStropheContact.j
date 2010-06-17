@@ -324,7 +324,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [params setValue:uid forKey:@"id"];
     [params setValue:{"matchBare": YES} forKey:@"options"];
 
-    [connection registerSelector:@selector(didReceivedVCard:) ofObject:self withDict:params];
+    [connection registerSelector:@selector(didReceiveVCard:) ofObject:self withDict:params];
     [connection send:vcard_stanza];
 }
 
@@ -334,7 +334,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     You should never have to use this method
     @param aStanza the response TNStropheStanza
 */
-- (BOOL)didReceivedVCard:(TNStropheStanza)aStanza
+- (BOOL)didReceiveVCard:(TNStropheStanza)aStanza
 {
     var aVCard   = [aStanza firstChildWithName:@"vCard"];
     
