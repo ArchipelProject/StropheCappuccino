@@ -170,6 +170,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _debugMode              = NO;
         _registredHandlerDict   = [[CPDictionary alloc] init];
         _soundEnabled           = YES;
+        _connection             = new Strophe.Connection(_boshService);
         
         var bundle  = [CPBundle bundleForClass:[self class]];
         var sound   = [bundle pathForResource:@"Receive.mp3"];
@@ -210,6 +211,10 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     return self;
 }
 
+- (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
+{
+    Strophe.addNamespace(aName, aValue)
+}
 
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 
@@ -217,8 +222,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)connect
 {
     var fullJID = _JID + @"/" + _resource;
-
-    _connection = new Strophe.Connection(_boshService);
     
     _connection.connect(fullJID, _password, function (status, errorCond) 
     {
@@ -300,7 +303,10 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)send:(TNStropheStanza)aStanza
 {
     if (_debugMode)
+    {
+        console.log("StropheCappuccino Stanza Send:")
         console.log([aStanza tree]);
+    }
     
     _connection.send([aStanza tree]);
 }
@@ -369,7 +375,10 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
                 if (_debugMode)
+                {
+                    console.log("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                     console.log(stanza);
+                }
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -378,7 +387,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
             [aDict valueForKey:@"id"], 
             [aDict valueForKey:@"from"],
             [aDict valueForKey:@"options"]);
-            
+    
     return handlerId;
 }
 
@@ -395,7 +404,10 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
                 if (_debugMode)
+                {
+                    console.log("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                     console.log(stanza);
+                }
                 return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -451,7 +463,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 - (void)playReceivedSound
 {
-    if ([self isSoundEnabled])
+    if (_soundEnabled)
     {
         _audioTagReceive.play();
     }
@@ -479,9 +491,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    // if ([super respondsToSelector:@selector(encodeWithCoder:)])
-    //     [super encodeWithCoder:aCoder];
-    
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_password forKey:@"_password"];
     [aCoder encodeObject:_resource forKey:@"_resource"];
