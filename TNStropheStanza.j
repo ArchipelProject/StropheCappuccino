@@ -271,6 +271,15 @@
     return [[TNStropheStanza alloc] initWithName:@"iq" andAttributes:nil];
 }
 
+/*! instanciate a TNStropheStanza with name IQ
+    @param aType CPString the type of the query
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)iqWithType:(CPString)aType
+{
+    return [[TNStropheStanza alloc] initWithName:@"iq" andAttributes:{"type": aType}];
+}
+
 /*! instanciate a TNStropheStanza with name presence
     @param attributes CPDictionary of attributes
     @return instance of TNStropheStanza
