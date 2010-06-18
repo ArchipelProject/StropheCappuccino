@@ -51,6 +51,12 @@ TNStropheRosterRemovedContactNotification           = @"TNStropheRosterRemovedCo
 */
 TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGroupNotification";
 
+/*! 
+    @global
+    @group TNStropheRoster
+    notification indicates that a new group has been added to the TNStropheRoster
+*/
+TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemovedGroupNotification";
 
 
 /*! @ingroup strophecappuccino
@@ -203,7 +209,10 @@ TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGrou
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
-    return [_groups removeObject:aGroup];
+    var center  = [CPNotificationCenter defaultCenter];
+    
+    [_groups removeObject:aGroup];
+    [center postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
 }
 
 /*! checks if given TNStropheGroup is in roster

@@ -20,14 +20,16 @@
 
 TNStropheGroupRenamedNotification = @"TNStropheGroupRenamed";
 
+TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
 */
 @implementation TNStropheGroup: CPObject 
 {
     CPArray                 _contacts   @accessors(getter=contacts);
-    CPString                _name       @accessors(getter=name, setter=setName:);
-    TNStropheConnection     _connection @accessors(getter=connection, setter=setConnection:);
+    CPString                _name       @accessors(property=name);
+    TNStropheConnection     _connection @accessors(property=connection);
 }
 
 + (TNStropheGroup)stropheGroupWithName:(CPString)aName connection:(TNStropheConnection)aConnection
@@ -86,4 +88,25 @@ TNStropheGroupRenamedNotification = @"TNStropheGroupRenamed";
     return [_contacts count];
 }
 
+@end
+
+@implementation TNStropheGroup (codingCompliant)
+
+- (id)initWithCoder:(CPCoder)aCoder
+{
+    self = [super initWithCoder:aCoder];
+    
+    if (self)
+    {
+        _contacts   = [aCoder decodeObjectForKey:@"_contacts"];
+        _name       = [aCoder decodeObjectForKey:@"_name"];
+    }
+    return self;
+}
+
+- (void)encodeWithCoder:(CPCoder)aCoder
+{
+    [aCoder encodeObject:_contacts forKey:@"_contacts"];
+    [aCoder encodeObject:_name forKey:@"_name"];
+}
 @end
