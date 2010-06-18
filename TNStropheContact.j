@@ -654,9 +654,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
 
 @implementation TNStropheContact (codingCompliant)
-{
-    
-}
+
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -714,6 +712,4 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [aCoder encodeObject:messagesQueue forKey:@"messagesQueue"];
     [aCoder encodeObject:numberOfEvents forKey:@"numberOfEvents"];
 }
-@end
-
 @end
