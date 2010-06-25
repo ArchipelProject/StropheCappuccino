@@ -373,6 +373,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             _avatar = [TNBase64Image base64ImageWithContentType:contentType andData:data];
         }
         
+        var name;
+        if ((_nickname == _nodeName) && ([aVCard firstChildWithName:@"NAME"]))
+        {
+            _nickname = [[aVCard firstChildWithName:@"NAME"] text]
+        }
+        
         [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
     
