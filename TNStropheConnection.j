@@ -302,7 +302,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 */
 - (void)send:(TNStropheStanza)aStanza
 {
-    if (_debugMode)
+    if (_debugMode && console.log)
     {
         console.log("StropheCappuccino Stanza Send:")
         console.log([aStanza tree]);
@@ -374,7 +374,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
-                if (_debugMode)
+                if (_debugMode && console.log)
                 {
                     console.log("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                     console.log(stanza);
@@ -403,7 +403,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
-                if (_debugMode)
+                if (_debugMode && console.log)
                 {
                     console.log("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                     console.log(stanza);
