@@ -66,7 +66,7 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 {
     CPArray                 _contacts       @accessors(getter=contacts);
     CPArray                 _groups         @accessors(getter=groups);
-    id                      _delegate       @accessors(getter=delegate, setter=setDelegate:);
+    id                      _delegate       @accessors(property=delegate);
     TNStropheConnection     _connection     @accessors(getter=connection);
     
     TNStropheGroup          _defaultGroup;
