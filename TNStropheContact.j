@@ -594,7 +594,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
 - (void)changeGroupName:(CPString)aNewName
 {
+    var center = [CPNotificationCenter defaultCenter];
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    
     [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [stanza addChildName:@"item" withAttributes:{"JID": _JID, "name": _nickname}];
     [stanza addChildName:@"group" withAttributes:nil];
@@ -604,7 +606,6 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     _groupName = aNewName;
     
-    var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
@@ -620,8 +621,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         
     var lastMessage = [_messagesQueue objectAtIndex:0];
     var center = [CPNotificationCenter defaultCenter];
+
     _numberOfEvents--;
-    
     _statusIcon = _statusReminder;
     
     [_messagesQueue removeObjectAtIndex:0];
@@ -636,8 +637,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (void)freeMessagesQueue
 {
     var center = [CPNotificationCenter defaultCenter];
-    _numberOfEvents = 0;
 
+    _numberOfEvents = 0;
     _statusIcon = _statusReminder;
     
     [_messagesQueue removeAllObjects];
