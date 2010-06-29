@@ -151,7 +151,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     CPString            _JID            @accessors(property=JID);
     CPString            _nickname       @accessors(property=nickname);
     CPString            _nodeName       @accessors(property=nodeName);
-    CPString            _resource       @accessors(property=resource);
+    CPArray             _resources      @accessors(property=resources);
     CPString            _XMPPStatus     @accessors(property=XMPPStatus);
     CPString            _XMPPShow       @accessors(property=XMPPShow);
     CPString            _type           @accessors(property=type);
@@ -180,13 +180,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 + (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID groupName:(CPString)aGroupName
 {
     var contact = [[TNStropheContact alloc] initWithConnection:aConnection];
-	[contact setJID:aJID];
-	[contact setGroupName:aGroupName];
-	[contact setNodeName:aJID.split('@')[0]];
-	[contact setNickname:aJID.split('@')[0]];
-	[contact setResource:aJID.split('/')[1]];
-	[contact setDomain: aJID.split('/')[0].split('@')[1]];
-	
+    [contact setJID:aJID];
+    [contact setGroupName:aGroupName];
+    [contact setNodeName:aJID.split('@')[0]];
+    [contact setNickname:aJID.split('@')[0]];
+    [contact setDomain: aJID.split('/')[0].split('@')[1]];
+    
     return contact;
 }
 
@@ -216,6 +215,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _messagesQueue      = [[CPArray alloc] init];
         _numberOfEvents     = 0;
         _isComposing        = NO;
+        
+        _resources = [CPArray array];
     }
     
     return self;
@@ -256,14 +257,15 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     var presenceType    = [aStanza getType];
     
     _fullJID = fromJID;
-    _resource = resource;
     
+    if ((resource != @"") && ![_resources containsObject:resource])
+        [_resources addObject:resource];
     
     if (presenceType == "error")
     {
         errorCode       = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
         _XMPPShow       = TNStropheContactStatusOffline;
-        _XMPPStatus           ="Error code: " + errorCode;
+        _XMPPStatus     ="Error code: " + errorCode;
         _statusIcon     = _imageNewError;
         _statusReminder = _imageNewError;
         
@@ -273,13 +275,18 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     }
     if (presenceType == "unavailable") 
     {
-        _XMPPShow       = TNStropheContactStatusOffline;
-        _statusIcon     = _imageOffline;
-        _statusReminder = _imageOffline;
+        [_resources removeObject:resource];
         
-        var presenceShow = [aStanza firstChildWithName:@"status"];
-        if (presenceShow)
-            _XMPPStatus = [presenceShow text];
+        if ([_resources count] == 0)
+        {
+            _XMPPShow       = TNStropheContactStatusOffline;
+            _statusIcon     = _imageOffline;
+            _statusReminder = _imageOffline;
+            
+            var presenceShow = [aStanza firstChildWithName:@"status"];
+            if (presenceShow)
+                _XMPPStatus = [presenceShow text];
+        }
         
         [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
         
@@ -402,6 +409,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
     var ret     = nil;
     
+    var lastKnownResource = _fullJID.split("/")[1];
+    
+    if (![_resources containsObject:lastKnownResource])
+        _fullJID = _fullJID.split("/")[0] + "/" + [_resources lastObject];
+        
     [aStanza setTo:_fullJID];
     [aStanza setID:uid];
     
@@ -694,7 +706,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _groupName      = [aCoder decodeObjectForKey:@"_groupName"];
         _nickname       = [aCoder decodeObjectForKey:@"_nickname"];
         _XMPPStatus     = [aCoder decodeObjectForKey:@"_XMPPStatus"];
-        _resource       = [aCoder decodeObjectForKey:@"_resource"];
+        _resources      = [aCoder decodeObjectForKey:@"_resources"];
         _XMPPShow       = [aCoder decodeObjectForKey:@"_XMPPShow"];
         _statusIcon     = [aCoder decodeObjectForKey:@"_statusIcon"];
         _type           = [aCoder decodeObjectForKey:@"_type"];
@@ -721,8 +733,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [aCoder encodeObject:_messagesQueue forKey:@"_messagesQueue"];
     [aCoder encodeObject:_numberOfEvents forKey:@"_numberOfEvents"];
 
-    if (_resource)
-        [aCoder encodeObject:_resource forKey:@"_resource"];
+    if (_resources)
+        [aCoder encodeObject:_resources forKey:@"_resources"];
     
     if (_fullJID)
         [aCoder encodeObject:_fullJID forKey:@"_fullJID"];
