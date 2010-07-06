@@ -258,7 +258,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     
     _fullJID = fromJID;
     
-    if ((resource != @"") && ![_resources containsObject:resource])
+    if (resource && (resource != @"") && ![_resources containsObject:resource])
         [_resources addObject:resource];
     
     if (presenceType == "error")
@@ -273,10 +273,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         
         return NO;
     }
-    if (presenceType == "unavailable") 
+    if (presenceType == "unavailable")
     {
-        [_resources removeObject:resource];
         
+        [_resources removeObject:resource];
+        console.log("contcat become unavailablefrom resource: "+resource+", we have in resources : " + [_resources count])
+        console.log(_resources)
         if ([_resources count] == 0)
         {
             _XMPPShow       = TNStropheContactStatusOffline;
@@ -287,12 +289,24 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             if (presenceShow)
                 _XMPPStatus = [presenceShow text];
         }
-        
-        [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
-        
-        return YES;
     }
-    else (presenceType == "result")
+    else if ((presenceType == "subscribe"))
+    {
+        _XMPPStatus = "Asking subscribtion"
+    }
+    else if ((presenceType == "subscribed"))
+    {
+        // ouaaah
+    }
+    else if (presenceType == "unsubscribe")
+    {
+        // kajfds
+    }
+    else if (presenceType == "unsubscribed")
+    {
+        _XMPPStatus = "Unauthorized";
+    }
+    else
     {
         _XMPPShow       = TNStropheContactStatusOnline;
         _statusIcon     = _imageOnline;
@@ -328,11 +342,11 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         
         if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
             [self getVCard];
-        
-        [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
-        
-        return YES;
     }
+    
+    [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
+    
+    return YES;
 }
 
 

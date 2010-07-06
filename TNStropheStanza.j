@@ -83,6 +83,11 @@
     _xmlNode = _xmlNode.c(aTagName, {});
 }
 
+- (void)addNode:(id)aNode
+{
+    _xmlNode.cnode(aNode)
+}
+
 /*! Add text value to the current seletected node
     @param aText name of the new tag
 */
@@ -104,7 +109,8 @@
 */
 - (CPString)stringValue
 {
-    return _xmlNode.toString();
+    //return Strophe.toString(_xmlNode);
+    return Strophe.serialize(_xmlNode);
 }
 
 /*! Move the pointer to the parent of the current node
