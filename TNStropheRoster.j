@@ -457,14 +457,7 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     if (!contact)
     {
         var name = aJID.split('@')[0];
-        
-        // this is stupid to put this here.
-        // But I have to put it somewhere before integration in archipel at more
-        // judicious place
-        //
-        // var exp = new RegExp("[01234567890abcdef]{6}\-[01234567890abcdef]{4}\-[01234567890abcdef]{4}\-[01234567890abcdef]{4}\-[01234567890abcdef]{12}" , "gi")
-        // alert(exp.test("579e6e34-dRa9-ecdd-e417-6b2e24e7bce4"));
-        
+                
         contact = [self addContact:aJID withName:name inGroupWithName:@"General"];
     }
     

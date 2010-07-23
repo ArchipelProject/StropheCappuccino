@@ -115,9 +115,11 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 @implementation TNStropheConnection: CPObject 
 {    
     CPString        _JID                    @accessors(property=JID); 
+    CPString        _fullJID                @accessors(property=fullJID); 
     CPString        _resource               @accessors(property=resource); 
     CPString        _password               @accessors(property=password); 
     id              _delegate               @accessors(property=delegate);
+    int             _maxConnections         @accessors(property=maxConnections);
     BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
     BOOL            _debugMode              @accessors(getter=isDebugMode, setter=setDebugMode:);
     
@@ -170,6 +172,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _debugMode              = NO;
         _registredHandlerDict   = [[CPDictionary alloc] init];
         _soundEnabled           = YES;
+        _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
         
         var bundle  = [CPBundle bundleForClass:[self class]];
@@ -221,9 +224,9 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 */
 - (void)connect
 {
-    var fullJID = _JID + @"/" + _resource;
+    _fullJID = _JID + @"/" + _resource;
     
-    _connection.connect(fullJID, _password, function (status, errorCond) 
+    _connection.connect(_fullJID, _password, function (status, errorCond) 
     {
         var center = [CPNotificationCenter defaultCenter];
 
@@ -285,7 +288,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
             [center postNotificationName:TNStropheConnectionStatusConnected object:self];
         }
-    }, /* wait */ 3600);
+    }, /* wait */ 3600, /* hold */ _maxConnections);
 }
 
 /*! this disconnect the XMPP connection

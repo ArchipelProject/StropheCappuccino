@@ -351,6 +351,11 @@
     return [self valueForAttribute:@"from"];
 }
 
+- (CPString)getDomain
+{
+    return [self getFrom].split("@")[1].split("/")[0]
+}
+
 /*! set the from field of the stanza
     @param the new from value
 */
