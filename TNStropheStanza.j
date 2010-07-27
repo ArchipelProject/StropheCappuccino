@@ -163,6 +163,21 @@
     return nodes;
 }
 
+- (CPArray)ownChildrenWithName:(CPString)aName
+{
+    var nodes   = [[CPArray alloc] init];
+    var temp    = _xmlNode.childNodes;
+    
+    for (var i = 0; i < temp.length; i++)
+    {
+        if (temp[i].tagName == aName)
+            [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
+        
+    }
+
+    return nodes;
+}
+
 /*! get the first TNXMLNode that matching tag name
     @param aName the name tags should match
     @return the first matching TNXMLNode
