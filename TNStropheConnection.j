@@ -20,7 +20,6 @@
 @import <Foundation/Foundation.j>
 @import "TNStropheStanza.j"
 
-
 /*! 
     @global
     @group TNStropheConnectionStatus
@@ -112,6 +111,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     
     #TNStropheConnectionStatusError
 */
+
 @implementation TNStropheConnection: CPObject 
 {    
     CPString        _JID                    @accessors(property=JID); 
@@ -121,7 +121,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     id              _delegate               @accessors(property=delegate);
     int             _maxConnections         @accessors(property=maxConnections);
     BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
-    BOOL            _debugMode              @accessors(getter=isDebugMode, setter=setDebugMode:);
     
     CPString        _boshService;
     id              _connection;
@@ -169,7 +168,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     if (self = [super init])
     {
         _boshService            = aService;
-        _debugMode              = NO;
         _registredHandlerDict   = [[CPDictionary alloc] init];
         _soundEnabled           = YES;
         _maxConnections         = 10;
@@ -270,21 +268,21 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
    	        if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
    	            [_delegate onStropheAuthenticating:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusAuthenticating object:self];
+            [center postNotificationName:TNStropheConnectionStatusAuthenticating object:self];
         }
         else if (status == Strophe.Status.DISCONNECTED) 
         {
-   	        if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
-   	            [_delegate onStropheDisconnected:self];
+            if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
+            [_delegate onStropheDisconnected:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusDisconnected object:self];
+                [center postNotificationName:TNStropheConnectionStatusDisconnected object:self];
         } 
         else if (status == Strophe.Status.CONNECTED)
         {    
-   	        _connection.send($pres().tree());
-
-   	        if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
-   	            [_delegate onStropheConnected:self];
+            _connection.send($pres().tree());
+            
+            if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
+                [_delegate onStropheConnected:self];
 
             [center postNotificationName:TNStropheConnectionStatusConnected object:self];
         }
@@ -305,11 +303,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 */
 - (void)send:(TNStropheStanza)aStanza
 {
-    if (_debugMode && console.log)
-    {
-        console.log("StropheCappuccino Stanza Send:")
-        console.log([aStanza tree]);
-    }
+    CPLog.debug("StropheCappuccino Stanza Send:")
+    CPLog.debug(aStanza);
     
     _connection.send([aStanza tree]);
 }
@@ -374,15 +369,13 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     
     @return an id of the handler registration used to remove it
 */
-- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict 
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
-                if (_debugMode && console.log)
-                {
-                    console.log("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                    console.log(stanza);
-                }
-                return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
+                var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
+                CPLog.debug("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
+                CPLog.debug(stanzaObject);
+                return [anObject performSelector:aSelector withObject:stanzaObject]; 
             }, 
             [aDict valueForKey:@"namespace"], 
             [aDict valueForKey:@"name"], 
@@ -406,12 +399,11 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
-                if (_debugMode && console.log)
-                {
-                    console.log("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                    console.log(stanza);
-                }
-                return [anObject performSelector:aSelector withObject:[TNStropheStanza stanzaWithStanza:stanza]]; 
+                var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
+                CPLog.debug("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
+                CPLog.debug(stanza);
+                
+                return [anObject performSelector:aSelector withObject:stanzaObject]; 
             }, 
             [aDict valueForKey:@"namespace"], 
             [aDict valueForKey:@"name"], 

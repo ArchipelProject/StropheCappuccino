@@ -277,8 +277,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     {
         
         [_resources removeObject:resource];
-        console.log("contcat become unavailablefrom resource: "+resource+", we have in resources : " + [_resources count])
-        console.log(_resources)
+        CPLogConsole("contact become unavailable from resource: "+resource+". Resources left : " + _resources )
+        
         if ([_resources count] == 0)
         {
             _XMPPShow       = TNStropheContactStatusOffline;
