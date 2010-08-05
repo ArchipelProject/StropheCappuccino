@@ -83,7 +83,10 @@
     _xmlNode = _xmlNode.c(aTagName, {});
 }
 
-- (void)addNode:(id)aNode
+/*! append a node to the current node
+    @param aNode the dom element to add.
+*/
+- (void)addNode:(DOMElement)aNode
 {
     _xmlNode.cnode(aNode)
 }
@@ -163,6 +166,10 @@
     return nodes;
 }
 
+/*! return all direct children wth given name.
+    @param aName the name tags should match
+    @return CPArray of TNXMLNode
+*/
 - (CPArray)ownChildrenWithName:(CPString)aName
 {
     var nodes   = [[CPArray alloc] init];
@@ -172,7 +179,6 @@
     {
         if (temp[i].tagName == aName)
             [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
-        
     }
 
     return nodes;
@@ -182,7 +188,7 @@
     @param aName the name tags should match
     @return the first matching TNXMLNode
 */
-- (CPArray)firstChildWithName:(CPString)aName
+- (TNXMLNode)firstChildWithName:(CPString)aName
 {
     var elements = _xmlNode.getElementsByTagName(aName);
 
@@ -262,7 +268,7 @@
     this is an implementation of a basic XMPP Stanza
 */
 @implementation TNStropheStanza: TNXMLNode
-{   
+{
 }
 
 /*! instanciate a TNStropheStanza
@@ -344,31 +350,14 @@
     return [[TNStropheStanza alloc] initWithNode:aStanza];
 }
 
-/*! get the from node only field of the stanza
-    @return from node field of stanza
-*/
-- (CPString)getFromNode
-{
-    return [self valueForAttribute:@"from"].split("/")[0];
-}
-
-- (CPString)getFromNodeUser
-{
-    return [self valueForAttribute:@"from"].split("/")[0].split("@")[0];
-}
 
 /*! get the from field of the stanza
     @return from field of stanza
 */
-- (CPString)getFrom
+- (CPString)from
 {
     while ([self up]);
     return [self valueForAttribute:@"from"];
-}
-
-- (CPString)getDomain
-{
-    return [self getFrom].split("@")[1].split("/")[0]
 }
 
 /*! set the from field of the stanza
@@ -380,10 +369,44 @@
     [self setValue:aFrom forAttribute:@"from"];
 }
 
+/*! get the from node only field of the stanza
+    @return from node field of stanza
+*/
+- (CPString)fromNode
+{
+    return [self valueForAttribute:@"from"].split("/")[0];
+}
+
+/*! return the the bare user name
+    @return from node field of stanza
+*/
+- (CPString)fromUser
+{
+    return [self valueForAttribute:@"from"].split("/")[0].split("@")[0];
+}
+
+/*! get the domain of the form field
+    @return domain field of stanza
+*/
+- (CPString)fromDomain
+{
+    return [self from].split("@")[1].split("/")[0]
+}
+
+/*! get the resource part of the from field of the stanza
+    @return resource of from field
+*/
+-(CPString)fromResource
+{
+    if ([[[self from] componentsSeparatedByString:@"/"] count] > 1)
+        return [[[self from] componentsSeparatedByString:@"/"] objectAtIndex:1];
+    return nil;
+}
+
 /*! get the to field of the stanza
     @return to field of stanza
 */
-- (CPString)getTo
+- (CPString)to
 {
     return [self valueForAttribute:@"to"];
 }
@@ -400,7 +423,7 @@
 /*! get the type field of the stanza
     @return type field of stanza
 */
-- (CPString)getType
+- (CPString)type
 {
     return [self valueForAttribute:@"type"];
 }
@@ -416,7 +439,7 @@
 /*! get the xmlns field of the stanza
     @return xmlns field of stanza
 */
-- (CPString)getNamespace
+- (CPString)namespace
 {
     return [self valueForAttribute:@"xmlns"];
 }
@@ -432,7 +455,7 @@
 /*! get the id field of the stanza
     @return id field of stanza
 */
-- (CPString)getID
+- (CPString)ID
 {
     return [self valueForAttribute:@"id"];
 }
@@ -446,14 +469,5 @@
     [self setValue:anID forAttribute:@"id"];
 }
 
-/*! get the resource part of the from field of the stanza
-    @return resource of from field
-*/
--(CPString)getFromResource
-{
-    if ([[[self getFrom] componentsSeparatedByString:@"/"] count] > 1)
-        return [[[self getFrom] componentsSeparatedByString:@"/"] objectAtIndex:1];
-    return nil;
-}
 @end
 

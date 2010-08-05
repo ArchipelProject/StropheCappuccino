@@ -488,7 +488,7 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 */
 - (void)answerAuthorizationRequest:(id)aStanza answer:(BOOL)theAnswer
 {
-    var requester = [aStanza getFrom];
+    var requester = [aStanza from];
     
     if (theAnswer == YES)
     {
