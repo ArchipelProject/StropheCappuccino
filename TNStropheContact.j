@@ -252,9 +252,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     var center          = [CPNotificationCenter defaultCenter];
     var bundle          = [CPBundle bundleForClass:self];
-    var fromJID         = [aStanza getFrom];
-    var resource        = [aStanza getFromResource];
-    var presenceType    = [aStanza getType];
+    var fromJID         = [aStanza from];
+    var resource        = [aStanza fromResource];
+    var presenceType    = [aStanza type];
     
     _fullJID = fromJID;
     
