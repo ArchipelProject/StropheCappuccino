@@ -423,9 +423,10 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     var params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];;
     var ret     = nil;
     
-    var lastKnownResource = _fullJID.split("/")[1];
     
-    if (![_resources containsObject:lastKnownResource])
+    var lastKnownResource = (_fullJID) ? _fullJID.split("/")[1] : nil;
+    
+    if (_fullJID && ![_resources containsObject:lastKnownResource])
         _fullJID = _fullJID.split("/")[0] + "/" + [_resources lastObject];
         
     [aStanza setTo:_fullJID];
