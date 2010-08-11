@@ -66,7 +66,8 @@
     return self;
 }
 
-/*! Add a children to the current seletected node
+/*! Add a child to the current seletected node
+    This will move the stanza object pointer to the child node
     @param aTagName name of the new tag
     @param attributes CPDictionary contains all attributes
 */
@@ -75,7 +76,8 @@
     _xmlNode = _xmlNode.c(aTagName, attributes);
 }
 
-/*! Add a children to the current seletected node
+/*! Add a child to the current seletected node
+    This will move the stanza object pointer to the child node
     @param aTagName name of the new tag
 */
 - (void)addChildName:(CPString)aTagName
