@@ -280,6 +280,18 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         else if (status == Strophe.Status.CONNECTED)
         {    
             _connection.send($pres().tree());
+            var caps = [TNStropheStanza presence];
+            [caps addChildName:@"c" withAttributes:{
+                "xmlns": "http://jabber.org/protocol/caps",
+                "node": "http://archipelproject.org/#1.0",
+                "hash": "sha-1",
+                "ver": "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
+            
+            [self registerSelector:@selector(handleFeaturesDisco:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:
+                @"iq", @"name", @"http://jabber.org/protocol/disco#info", "namespace"]];
+            
+            [self send:caps];
+            
             
             if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
                 [_delegate onStropheConnected:self];
@@ -288,6 +300,43 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         }
     }, /* wait */ 3600, /* hold */ _maxConnections);
 }
+
+- (BOOL)handleFeaturesDisco:(TNStropheStanza)aStanza
+{
+    console.log("==========================================================================================");
+    console.log("==========================================================================================");
+    console.log("aStanza: " + aStanza);
+    
+    var uid = [self getUniqueId];
+    var resp = [TNStropheStanza iqWithAttributes:{"id": uid, "type": "result"}];
+    [resp setTo:[aStanza from]];
+    
+    [resp addChildName:@"query" withAttributes:{"xmlns": "http://jabber.org/protocol/disco#info"}];
+    [resp addChildName:@"identity" withAttributes:{"category": "client", "name": "Archipel 1.0", "type": "web"}];
+    [resp up];
+    [resp addChildName:@"feature" withAttributes:{"var": "http://jabber.org/protocol/pubsub"}];
+    [resp up];
+    [resp addChildName:@"feature" withAttributes:{"var": "http://jabber.org/protocol/pubsub+notify"}];
+    
+    console.log("RESP: " + resp);
+    console.log("==========================================================================================");
+    console.log("==========================================================================================");
+    
+    var params = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+    [self registerSelector:@selector(handlServerResponse:) ofObject:self withDict:params];
+        
+    [self send:resp];
+    
+    return YES;
+}
+
+- (void)handlServerResponse:(TNStropheStanza)aStanza
+{
+     console.log("##########################################################################################");
+     CPLog.info(aStanza)
+      console.log("##########################################################################################");
+}
+
 
 /*! this disconnect the XMPP connection
 */
@@ -350,7 +399,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 }
 
 
-/*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictonnary parameter.
+/*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
     The dictionnary should contains zero to many of the followings :
      - <b>namespace</b>: the namespace of the stanza or of the first child (like query)
      - <b>name</b>: the name of the stanza (message, iq or presence)
