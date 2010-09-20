@@ -45,7 +45,16 @@
 {
     if (self = [super init])
     {
-        _xmlNode = aNode;
+        if ((aNode.c) && (aNode.c) != undefined)
+        {
+            _xmlNode = aNode;
+        }
+        else
+        {
+            _xmlNode = new Strophe.Builder('msg');
+            _xmlNode.nodeTree = aNode;
+            _xmlNode.node = aNode;
+        }
     }
     
     return self;
@@ -64,6 +73,14 @@
     }
     
     return self;
+}
+
+/*! copy the current TNXMLNode
+    @return a copy of this 
+*/
+- (TNXMLNode)copy
+{
+    return [TNXMLNode nodeWithXMLNode:Strophe.copyElement([self tree])];
 }
 
 /*! Add a child to the current seletected node
@@ -136,7 +153,7 @@
 */
 - (CPString)valueForAttribute:(CPString)anAttribute
 {
-    return _xmlNode.getAttribute(anAttribute);
+    return [self tree].getAttribute(anAttribute);
 }
 
 /*! allow to set a value for a given attribute
@@ -160,7 +177,7 @@
 - (CPArray)childrenWithName:(CPString)aName
 {
     var nodes   = [[CPArray alloc] init];
-    var temp    = _xmlNode.getElementsByTagName(aName);
+    var temp    = [self tree].getElementsByTagName(aName);
     
     for (var i = 0; i < temp.length; i++)
         [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
@@ -175,7 +192,7 @@
 - (CPArray)ownChildrenWithName:(CPString)aName
 {
     var nodes   = [[CPArray alloc] init];
-    var temp    = _xmlNode.childNodes;
+    var temp    = [self tree].childNodes;
     
     for (var i = 0; i < temp.length; i++)
     {
@@ -192,9 +209,9 @@
 */
 - (TNXMLNode)firstChildWithName:(CPString)aName
 {
-    var elements = _xmlNode.getElementsByTagName(aName);
-
-    if (elements && (elements.length >  0)) 
+    var elements = [self tree].getElementsByTagName(aName);
+    
+    if (elements && (elements.length >  0))
         return [TNXMLNode nodeWithXMLNode:elements[0]];
     else
         return nil;
@@ -206,7 +223,7 @@
 - (CPArray)children
 {
     var nodes   = [CPArray array];
-    var temp    = _xmlNode.childNodes;
+    var temp    = [self tree].childNodes;
     
     for (var i = 0; i < temp.length; i++)
     {
@@ -221,7 +238,7 @@
 */
 - (CPString)name
 {
-    return _xmlNode.tagName;
+    return [self tree].tagName;
 }
 
 - (BOOL)containsChildrenWithName:(CPString)aName
@@ -234,7 +251,7 @@
 */
 - (CPString)text
 {
-    return Strophe.getText(_xmlNode);
+    return Strophe.getText([self tree]);
 }
 
 - (CPString)description
