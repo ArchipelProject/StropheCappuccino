@@ -352,8 +352,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 */
 - (void)send:(TNStropheStanza)aStanza
 {
-    CPLog.debug("StropheCappuccino Stanza Send:")
-    CPLog.debug(aStanza);
+    CPLog.trace("StropheCappuccino Stanza Send:")
+    CPLog.trace(aStanza);
     
     _connection.send([aStanza tree]);
 }
@@ -422,8 +422,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 {    
    var handlerId =  _connection.addHandler(function(stanza) {
                 var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
-                CPLog.debug("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                CPLog.debug(stanzaObject);
+                CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
+                CPLog.trace(stanzaObject);
                 return [anObject performSelector:aSelector withObject:stanzaObject]; 
             }, 
             [aDict valueForKey:@"namespace"], 
@@ -449,8 +449,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 {    
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
                 var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
-                CPLog.debug("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                CPLog.debug(stanza);
+                CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
+                CPLog.trace(stanza);
                 
                 return [anObject performSelector:aSelector withObject:stanzaObject]; 
             }, 
