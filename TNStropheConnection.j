@@ -178,6 +178,10 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _audioTagReceive.setAttribute("src", sound);
         _audioTagReceive.setAttribute("autobuffer", "autobuffer");
         document.body.appendChild(_audioTagReceive);
+
+        [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
+        [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
+        [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
     }
 
     return self;
@@ -200,7 +204,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     return self;
 }
 
-- (id)initWithService:(CPString)aService JID:(CPString)aJID  resource:(CPString)aResource password:(CPString)aPassword
+- (id)initWithService:(CPString)aService JID:(CPString)aJID resource:(CPString)aResource password:(CPString)aPassword
 {
     if (self = [self initWithService:aService JID:aJID password:aPassword])
     {
@@ -260,15 +264,15 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
                 _connection.send($pres().tree());
                 var caps = [TNStropheStanza presence];
                 [caps addChildWithName:@"c" andAttributes:{
-                    "xmlns": "http://jabber.org/protocol/caps",
-                    "node": "http://archipelproject.org/#1.0",
-                    "hash": "sha-1",
-                    "ver": "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
+                    "xmlns" : Strophe.NS.CAPS,
+                    "node"  : "http://archipelproject.org/#1.0",
+                    "hash"  : "sha-1",
+                    "ver"   : "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
 
                 [self registerSelector:@selector(handleFeaturesDisco:)
                               ofObject:self
                               withDict:[CPDictionary dictionaryWithObjectsAndKeys:
-                    @"iq", @"name", @"http://jabber.org/protocol/disco#info", "namespace"]];
+                    @"iq", @"name", Strophe.NS.DISCO_INFO, "namespace"]];
 
                 [self send:caps];
 
@@ -294,12 +298,12 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     [resp setTo:[aStanza from]];
 
-    [resp addChildWithName:@"query" andAttributes:{"xmlns": "http://jabber.org/protocol/disco#info"}];
+    [resp addChildWithName:@"query" andAttributes:{"xmlns":Strophe.NS.DISCO_INFO}];
     [resp addChildWithName:@"identity" andAttributes:{"category": "client", "name": "Archipel 1.0", "type": "web"}];
     [resp up];
-    [resp addChildWithName:@"feature" andAttributes:{"var": "http://jabber.org/protocol/pubsub"}];
+    [resp addChildWithName:@"feature" andAttributes:{"var":Strophe.NS.PUBSUB}];
     [resp up];
-    [resp addChildWithName:@"feature" andAttributes:{"var": "http://jabber.org/protocol/pubsub+notify"}];
+    [resp addChildWithName:@"feature" andAttributes:{"var":Strophe.NS.PUBSUB_NOTIFY}];
 
     console.log("RESP: " + resp);
     console.log("==========================================================================================");
