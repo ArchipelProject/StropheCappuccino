@@ -459,8 +459,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
         [self unauthorizeJID:requester];
 
     if (![self containsJID:requester])
-        [self addContact:requester withName:requester inGroup:nil];
-
+        [self addContact:requester withName:requester inGroupWithName:nil];
 }
 
 /*! sent disconnect message to the TNStropheConnection of the roster
