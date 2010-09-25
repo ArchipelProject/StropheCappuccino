@@ -297,11 +297,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)sendCAPS
 {
     var caps = [TNStropheStanza presence];
-    [caps addChildWithName:@"c" andAttributes:{
-        "xmlns" : Strophe.NS.CAPS,
-        "node"  : _clientNode,
-        "hash"  : "sha-1",
-        "ver"   : [self _clientVer] }];
+    [caps addChildWithName:@"c" andAttributes:{ "xmlns":Strophe.NS.CAPS, "node":_clientNode, "hash":"sha-1", "ver":[self _clientVer] }];
 
     [self registerSelector:@selector(handleFeaturesDisco:)
                   ofObject:self
