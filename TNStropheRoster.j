@@ -183,7 +183,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 {
     if (![self containsGroupWithName:aGroupName])
     {
-        var newGroup = [TNStropheGroup stropheGroupWithName:aGroupName connection:_connection]
+        var newGroup = [TNStropheGroup stropheGroupWithName:aGroupName connection:_connection];
 
         return [self addGroup:newGroup];
     }
@@ -207,7 +207,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (BOOL)containsGroup:(TNStropheGroup)aGroup
 {
-    for(var i = 0; i < [_groups count]; i++)
+    for (var i = 0; i < [_groups count]; i++)
     {
         var group = [_groups objectAtIndex:i];
 
@@ -234,7 +234,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (TNStropheGroup)groupWithName:(CPString)aGroupName
 {
-    for(var i = 0; i < [_groups count]; i++)
+    for (var i = 0; i < [_groups count]; i++)
     {
         var group = [_groups objectAtIndex:i];
 
@@ -350,7 +350,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (TNStropheContact)contactWithJID:(CPString)aJID
 {
-    for(var i = 0; i < [_contacts count]; i++)
+    for (var i = 0; i < [_contacts count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
         if ([contact JID] == aJID)
@@ -367,7 +367,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 - (BOOL)containsJID:(CPString)aJID
 {
     //@each (var contact in _contacts)
-    for(var i = 0; i < [_contacts count]; i++)
+    for (var i = 0; i < [_contacts count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
 
