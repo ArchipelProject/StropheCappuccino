@@ -218,7 +218,7 @@
 {
     var elements = [self tree].getElementsByTagName(aName);
 
-    if (elements && (elements.length >  0))
+    if (elements && (elements.length > 0))
         return [TNXMLNode nodeWithXMLNode:elements[0]];
     else
         return nil;
