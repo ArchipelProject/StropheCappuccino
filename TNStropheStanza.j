@@ -408,7 +408,7 @@
 /*! get the resource part of the from field of the stanza
     @return resource of from field
 */
--(CPString)fromResource
+- (CPString)fromResource
 {
     if ([[[self from] componentsSeparatedByString:@"/"] count] > 1)
         return [[[self from] componentsSeparatedByString:@"/"] objectAtIndex:1];
