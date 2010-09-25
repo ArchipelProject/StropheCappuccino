@@ -17,6 +17,7 @@
  */
 
 @import "Resources/Strophe/strophe.js"
+@import "Resources/Strophe/sha1.js"
 @import "TNStropheStanza.j"
 @import "TNStropheGroup.j"
 @import "TNStropheConnection.j"

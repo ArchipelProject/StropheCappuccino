@@ -121,6 +121,11 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     id              _delegate               @accessors(property=delegate);
     int             _maxConnections         @accessors(property=maxConnections);
     BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
+    CPString        _clientNode             @accessors(property=clientNode);
+    CPString        _identityCategory       @accessors(property=identityCategory);
+    CPString        _identityName           @accessors(property=identityName);
+    CPString        _identityType           @accessors(property=identityType);
+    CPArray         _features               @accessors(readonly);
 
     CPString        _boshService;
     id              _connection;
@@ -172,17 +177,25 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
 
+        [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
+        [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
+        [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
+        [self addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
+
+        _clientNode             = @"http://cappuccino.org";
+        _identityCategory       = @"client";
+        _identityName           = @"StropheCappuccino";
+        _identityType           = @"web";
+        _features               = [ Strophe.NS.CAPS,
+                                    Strophe.NS.DISCO_INFO,
+                                    Strophe.NS.DISCO_ITEMS];
+
         var sound = [[CPBundle bundleForClass:[self class]] pathForResource:@"Receive.mp3"];
 
         _audioTagReceive = document.createElement('audio');
         _audioTagReceive.setAttribute("src", sound);
         _audioTagReceive.setAttribute("autobuffer", "autobuffer");
         document.body.appendChild(_audioTagReceive);
-
-        [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
-        [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
-        [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
-        [self addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
     }
 
     return self;
@@ -263,19 +276,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
                 break;
             case Strophe.Status.CONNECTED:
                 _connection.send($pres().tree());
-                var caps = [TNStropheStanza presence];
-                [caps addChildWithName:@"c" andAttributes:{
-                    "xmlns" : Strophe.NS.CAPS,
-                    "node"  : "http://archipelproject.org/#1.0",
-                    "hash"  : "sha-1",
-                    "ver"   : "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
-
-                [self registerSelector:@selector(handleFeaturesDisco:)
-                              ofObject:self
-                              withDict:[CPDictionary dictionaryWithObjectsAndKeys:
-                    @"iq", @"name", Strophe.NS.DISCO_INFO, "namespace"]];
-
-                [self send:caps];
+                [self sendCAPS];
 
                 selector            = @selector(onStropheConnected:);
                 notificationName    = TNStropheConnectionStatusConnected;
@@ -288,41 +289,56 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     }, /* wait */ 3600, /* hold */ _maxConnections);
 }
 
+- (CPString)_clientVer
+{
+    return b64_sha1(_features.join());
+}
+
+- (void)sendCAPS
+{
+    var caps = [TNStropheStanza presence];
+    [caps addChildWithName:@"c" andAttributes:{
+        "xmlns" : Strophe.NS.CAPS,
+        "node"  : _clientNode,
+        "hash"  : "sha-1",
+        "ver"   : [self _clientVer] }];
+
+    [self registerSelector:@selector(handleFeaturesDisco:)
+                  ofObject:self
+                  withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type", Strophe.NS.DISCO_INFO, "namespace"]];
+
+    [self send:caps];
+}
+
+- (void)addFeature:(CPString)aFeatureNamespace
+{
+    [_features addObject:aFeatureNamespace];
+}
+
+- (void)removeFeature:(CPString)aFeatureNamespace
+{
+    [_features removeObjectIdenticalTo:aFeatureNamespace];
+}
+
 - (BOOL)handleFeaturesDisco:(TNStropheStanza)aStanza
 {
-    console.log("==========================================================================================");
-    console.log("==========================================================================================");
-    console.log("aStanza: " + aStanza);
-
-    var uid = [self getUniqueId],
-        resp = [TNStropheStanza iqWithAttributes:{"id": uid, "type": "result"}];
+    var resp = [TNStropheStanza iqWithAttributes:{"id":[self getUniqueId], "type":"result"}];
 
     [resp setTo:[aStanza from]];
 
-    [resp addChildWithName:@"query" andAttributes:{"xmlns":Strophe.NS.DISCO_INFO}];
-    [resp addChildWithName:@"identity" andAttributes:{"category": "client", "name": "Archipel 1.0", "type": "web"}];
+    [resp addChildWithName:@"query" andAttributes:{"xmlns":Strophe.NS.DISCO_INFO, "node":(_clientNode + '#' + [self _clientVer])}];
+    [resp addChildWithName:@"identity" andAttributes:{"category":_identityCategory, "name":_identityName, "type":_identityType}];
     [resp up];
-    [resp addChildWithName:@"feature" andAttributes:{"var":Strophe.NS.PUBSUB}];
-    [resp up];
-    [resp addChildWithName:@"feature" andAttributes:{"var":Strophe.NS.PUBSUB_NOTIFY}];
 
-    console.log("RESP: " + resp);
-    console.log("==========================================================================================");
-    console.log("==========================================================================================");
-
-    var params = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
-    [self registerSelector:@selector(handleFeaturesDiscoResponse:) ofObject:self withDict:params];
+    for (var i = 0; i < [_features count]; i++)
+    {
+        [resp addChildWithName:@"feature" andAttributes:{"var":features[i]}];
+        [resp up];
+    }
 
     [self send:resp];
 
     return YES;
-}
-
-- (void)handleFeaturesDiscoResponse:(TNStropheStanza)aStanza
-{
-     console.log("##########################################################################################");
-     CPLog.info(aStanza);
-     console.log("##########################################################################################");
 }
 
 /*! this disconnect the XMPP connection
