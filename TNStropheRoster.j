@@ -134,8 +134,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 - (BOOL)_didRosterReceived:(id)aStanza
 {
     var query   = [aStanza firstChildWithName:@"query"],
-        items   = [query childrenWithName:@"item"],
-        center  = [CPNotificationCenter defaultCenter];
+        items   = [query childrenWithName:@"item"];
 
     for (var i = 0; i < [items count]; i++)
     {
@@ -162,7 +161,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
         }
     }
 
-    [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
 
     return NO;
 }
@@ -173,11 +172,9 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (TNStropheGroup)addGroup:(TNStropheGroup)aGroup
 {
-    var center = [CPNotificationCenter defaultCenter];
-
     [_groups addObject:aGroup];
 
-    [center postNotificationName:TNStropheRosterAddedGroupNotification object:aGroup];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedGroupNotification object:aGroup];
 
     return aGroup;
 }
@@ -200,10 +197,8 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
-    var center  = [CPNotificationCenter defaultCenter];
-
     [_groups removeObject:aGroup];
-    [center postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
 }
 
 /*! checks if given TNStropheGroup is in roster
@@ -293,8 +288,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     if (!aGroupName)
         aGroupName = @"General";
 
-    var uid     = [_connection getUniqueId],
-        addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+    var addReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
 
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [addReq addChildName:@"item" withAttributes:{"JID": aJID, "name": aName}];
@@ -309,13 +303,12 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     [contact getStatus];
     [contact getMessages];
 
-    var group  = [self groupWithName:aGroupName orCreate:YES];
+    var group = [self groupWithName:aGroupName orCreate:YES];
 
     [group addContact:contact];
     [_contacts addObject:contact];
 
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheRosterAddedContactNotification object:contact];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedContactNotification object:contact];
 
     return contact;
 }
@@ -327,8 +320,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 - (void)removeContact:(TNStropheContact)aContact
 {
     var group       = [self groupOfContact:aContact],
-        uid         = [_connection getUniqueId],
-        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
 
     [_contacts removeObject:aContact];
     [group removeContact:aContact];
@@ -338,8 +330,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 
     [_connection send:removeReq];
 
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheRosterRemovedContactNotification object:aContact];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedContactNotification object:aContact];
 }
 
 /*! remove a contact from the roster according to its JID
@@ -428,11 +419,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     var contact = [self contactWithJID:aJID];
 
     if (!contact)
-    {
-        var name = aJID.split('@')[0];
-
-        contact = [self addContact:aJID withName:name inGroupWithName:@"General"];
-    }
+        contact = [self addContact:aJID withName:aJID.split('@')[0] inGroupWithName:@"General"];
 
     [contact subscribe];
 }
