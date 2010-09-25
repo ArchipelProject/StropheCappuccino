@@ -229,15 +229,7 @@
 */
 - (CPArray)children
 {
-    var nodes   = [CPArray array],
-        temp    = [self tree].childNodes;
-
-    for (var i = 0; i < temp.length; i++)
-    {
-        [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
-    }
-
-    return nodes;
+    return [self ownChildrenWithName:nil];
 }
 
 /*! return the name of the current node
