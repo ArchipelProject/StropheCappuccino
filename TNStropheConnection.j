@@ -19,6 +19,7 @@
 
 @import <Foundation/Foundation.j>
 @import "TNStropheStanza.j"
+@import "Resources/Strophe/sha1.js"
 
 /*!
     @global
@@ -291,7 +292,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 - (CPString)_clientVer
 {
-    return b64_sha1(_features.join());
+    return SHA1.b64_sha1(_features.join());
 }
 
 - (void)sendCAPS
