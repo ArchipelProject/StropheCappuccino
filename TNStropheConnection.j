@@ -124,7 +124,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     CPString        _boshService;
     id              _connection;
-    CPDictionary    _registredHandlerDict;
+    CPDictionary    _registeredHandlerDict;
 
     id              _audioTagReceive;
 }
@@ -167,7 +167,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     if (self = [super init])
     {
         _boshService            = aService;
-        _registredHandlerDict   = [[CPDictionary alloc] init];
+        _registeredHandlerDict  = [[CPDictionary alloc] init];
         _soundEnabled           = YES;
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
@@ -407,8 +407,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
      - <b>options</b>: an array of options. only {MatchBare: True} works.
     if all the conditions are mets, the selector is fired and the stanza is given as parameter.
 
-    The selector should return YES to not be unregistred. If it returns NO or nothing, it will be
-    unregistred
+    The selector should return YES to not be unregistered. If it returns NO or nothing, it will be
+    unregistered
 
     @param aSelector the selector to be performed
     @param anObject the receiver of the selector
@@ -466,7 +466,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     @param aHandlerId the handler id to remove
 */
-- (void)deleteRegistredSelector:(id)aHandlerId
+- (void)deleteRegisteredSelector:(id)aHandlerId
 {
     _connection.deleteHandler(aHandlerId)
 }
@@ -535,7 +535,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     [aCoder encodeBool:_soundEnabled forKey:@"_soundEnabled"];
     [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
-    [aCoder encodeObject:_registredHandlerDict forKey:@"_registredHandlerDict"];
+    [aCoder encodeObject:_registeredHandlerDict forKey:@"_registeredHandlerDict"];
     [aCoder encodeObject:_audioTagReceive forKey:@"_audioTagReceive"];
 }
 @end
