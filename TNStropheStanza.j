@@ -258,6 +258,22 @@
     return [self stringValue];
 }
 
+/*! get the xmlns field of the node
+    @return xmlns field of node
+*/
+- (CPString)namespace
+{
+    return [self valueForAttribute:@"xmlns"];
+}
+
+/*! set the xmlns field of the node
+    @param the new xmls value
+*/
+- (void)setNamespace:(CPString)aNamespace
+{
+    [self setValue:aNamespace forAttribute:@"xmlns"];
+}
+
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
@@ -449,22 +465,6 @@
 - (void)setType:(CPString)aType
 {
     [self setValue:aType forAttribute:@"type"];
-}
-
-/*! get the xmlns field of the stanza
-    @return xmlns field of stanza
-*/
-- (CPString)namespace
-{
-    return [self valueForAttribute:@"xmlns"];
-}
-
-/*! set the xmlns field of the stanza
-    @param the new xmls value
-*/
-- (void)setNamespace:(CPString)aNamespace
-{
-    [self setValue:aNamespace forAttribute:@"xmlns"];
 }
 
 /*! get the id field of the stanza
