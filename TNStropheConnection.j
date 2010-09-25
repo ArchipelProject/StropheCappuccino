@@ -343,6 +343,20 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     _connection.send([aStanza tree]);
 }
 
+/*! publish a PEP payload
+    @param aPayload: the payload to send
+    @param aNode: the node to publish to
+*/
+- (void)publishPEPPayload:(TNXMLNode)aPayload toNode:(CPString)aNode
+{
+    var stanza = [TNStropheStanza iqWithAttributes:{"type":"set", "id":[self getUniqueId]}];
+    [stanza addChildName:@"pubsub" withAttributes:{"xmlns":Strophe.NS.PUBSUB}]
+    [stanza addChildName:@"publish" withAttributes:{"node":aNode}];
+    [stanza addChildName:@"item"];
+    [stanza addNode:[aPayload tree]];
+    [self send:stanza];
+}
+
 /*! generates an unique identifier
 */
 - (CPString)getUniqueId
