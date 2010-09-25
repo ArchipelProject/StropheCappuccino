@@ -224,77 +224,63 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     _connection.connect(_fullJID, _password, function (status, errorCond)
     {
-        var center = [CPNotificationCenter defaultCenter];
+        var selector,
+            notificationName;
 
-        if (status == Strophe.Status.CONNECTING)
+        switch (status)
         {
-            if ([_delegate respondsToSelector:@selector(onStropheConnecting:)])
-                [_delegate onStropheConnecting:self];
+            case Strophe.Status.CONNECTING:
+                selector            = @selector(onStropheConnecting:);
+                notificationName    = TNStropheConnectionStatusConnecting;
+                break;
+            case Strophe.Status.CONNFAIL:
+                selector            = @selector(onStropheConnectFail:);
+                notificationName    = TNStropheConnectionStatusConnectionFailure;
+                break;
+            case Strophe.Status.AUTHFAIL:
+                selector            = @selector(onStropheAuthFail:);
+                notificationName    = TNStropheConnectionStatusAuthFailure;
+                break;
+            case Strophe.Status.ERROR:
+                selector            = @selector(onStropheError:);
+                notificationName    = TNStropheConnectionStatusError;
+                break;
+            case Strophe.Status.DISCONNECTING:
+                selector            = @selector(onStropheDisconnecting:);
+                notificationName    = TNStropheConnectionStatusDisconnecting;
+                break;
+            case Strophe.Status.AUTHENTICATING:
+                selector            = @selector(onStropheAuthenticating:);
+                notificationName    = TNStropheConnectionStatusAuthenticating;
+                break;
+            case Strophe.Status.DISCONNECTED:
+                selector            = @selector(onStropheDisconnected:);
+                notificationName    = TNStropheConnectionStatusDisconnected;
+                break;
+            case Strophe.Status.CONNECTED:
+                _connection.send($pres().tree());
+                var caps = [TNStropheStanza presence];
+                [caps addChildWithName:@"c" andAttributes:{
+                    "xmlns": "http://jabber.org/protocol/caps",
+                    "node": "http://archipelproject.org/#1.0",
+                    "hash": "sha-1",
+                    "ver": "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
 
-            [center postNotificationName:TNStropheConnectionStatusConnecting object:self];
+                [self registerSelector:@selector(handleFeaturesDisco:)
+                              ofObject:self
+                              withDict:[CPDictionary dictionaryWithObjectsAndKeys:
+                    @"iq", @"name", @"http://jabber.org/protocol/disco#info", "namespace"]];
+
+                [self send:caps];
+
+                selector            = @selector(onStropheConnected:);
+                notificationName    = TNStropheConnectionStatusConnected;
+                break;
         }
-        else if (status == Strophe.Status.CONNFAIL)
-        {
-            if ([_delegate respondsToSelector:@selector(onStropheConnectFail:)])
-                [_delegate onStropheConnectFail:self];
+        if ([_delegate respondsToSelector:selector])
+            [_delegate performSelector:selector withObject:self];
 
-            [center postNotificationName:TNStropheConnectionStatusConnectionFailure object:self];
-        }
-        else if (status == Strophe.Status.AUTHFAIL)
-        {
-            if ([_delegate respondsToSelector:@selector(onStropheAuthFail:)])
-                [_delegate onStropheAuthFail:self];
-
-            [center postNotificationName:TNStropheConnectionStatusAuthFailure object:self];
-        }
-        else if (status == Strophe.Status.ERROR)
-        {
-            if ([_delegate respondsToSelector:@selector(onStropheError:)])
-                [_delegate onStropheError:self];
-
-            [center postNotificationName:TNStropheConnectionStatusError object:self];
-        }
-        else if (status == Strophe.Status.DISCONNECTING)
-        {
-            if ([_delegate respondsToSelector:@selector(onStropheDisconnecting:)])
-                [_delegate onStropheDisconnecting:self];
-
-            [center postNotificationName:TNStropheConnectionStatusDisconnecting object:self];
-        }
-        else if (status == Strophe.Status.AUTHENTICATING)
-        {
-            if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
-                [_delegate onStropheAuthenticating:self];
-
-            [center postNotificationName:TNStropheConnectionStatusAuthenticating object:self];
-        }
-        else if (status == Strophe.Status.DISCONNECTED)
-        {
-            if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
-            [_delegate onStropheDisconnected:self];
-
-                [center postNotificationName:TNStropheConnectionStatusDisconnected object:self];
-        }
-        else if (status == Strophe.Status.CONNECTED)
-        {
-            _connection.send($pres().tree());
-            var caps = [TNStropheStanza presence];
-            [caps addChildName:@"c" withAttributes:{
-                "xmlns": "http://jabber.org/protocol/caps",
-                "node": "http://archipelproject.org/#1.0",
-                "hash": "sha-1",
-                "ver": "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
-
-            [self registerSelector:@selector(handleFeaturesDisco:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:
-                @"iq", @"name", @"http://jabber.org/protocol/disco#info", "namespace"]];
-
-            [self send:caps];
-
-            if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
-                [_delegate onStropheConnected:self];
-
-            [center postNotificationName:TNStropheConnectionStatusConnected object:self];
-        }
+        [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
     }, /* wait */ 3600, /* hold */ _maxConnections);
 }
 
@@ -358,7 +344,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 */
 - (void)getUniqueId
 {
-    return _connection.getUniqueId(null);
+    return [self getUniqueIdWithSuffix:null];
 }
 
 /*! generates an unique identifier prefixed by

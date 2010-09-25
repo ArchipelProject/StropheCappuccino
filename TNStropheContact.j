@@ -249,94 +249,83 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (BOOL)didReceivedStatus:(TNStropheStanza)aStanza
 {
-    var fromJID         = [aStanza from],
-        resource        = [aStanza fromResource],
-        presenceType    = [aStanza type];
+    var resource = [aStanza fromResource];
 
-    _fullJID = fromJID;
+    _fullJID = [aStanza from];
 
     if (resource && (resource != @"") && ![_resources containsObject:resource])
         [_resources addObject:resource];
 
-    if (presenceType == "error")
+    switch ([aStanza type])
     {
-        errorCode       = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
-        _XMPPShow       = TNStropheContactStatusOffline;
-        _XMPPStatus     = "Error code: " + errorCode;
-        _statusIcon     = _imageNewError;
-        _statusReminder = _imageNewError;
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
-
-        return NO;
-    }
-    if (presenceType == "unavailable")
-    {
-        [_resources removeObject:resource];
-        CPLogConsole("contact become unavailable from resource: "+resource+". Resources left : " + _resources )
-
-        if ([_resources count] == 0)
-        {
+        case @"error":
+            errorCode       = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
             _XMPPShow       = TNStropheContactStatusOffline;
-            _statusIcon     = _imageOffline;
-            _statusReminder = _imageOffline;
+            _XMPPStatus     = "Error code: " + errorCode;
+            _statusIcon     = _imageNewError;
+            _statusReminder = _imageNewError;
 
-            var presenceShow = [aStanza firstChildWithName:@"status"];
-            if (presenceShow)
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
+
+            return NO;
+        case @"unavailable":
+            [_resources removeObject:resource];
+            CPLogConsole("contact become unavailable from resource: "+resource+". Resources left : " + _resources )
+
+            if ([_resources count] == 0)
+            {
+                _XMPPShow       = TNStropheContactStatusOffline;
+                _statusIcon     = _imageOffline;
+                _statusReminder = _imageOffline;
+
+                if ([aStanza firstChildWithName:@"status"])
+                    _XMPPStatus = [presenceShow text];
+            }
+            break;
+        case @"subscribe":
+            _XMPPStatus = "Asking subscribtion";
+            break;
+        case @"subscribed":
+            break;
+        case @"unsubscribe":
+            break;
+        case @"unsubscribed":
+            _XMPPStatus = "Unauthorized";
+            break;
+        default:
+            _XMPPShow       = TNStropheContactStatusOnline;
+            _statusIcon     = _imageOnline;
+            _statusReminder = _imageOnline;
+
+            _XMPPStatus = [aStanza firstChildWithName:@"show"];
+            if (_XMPPStatus)
+            {
+                switch ([_XMPPStatus text])
+                {
+                    case TNStropheContactStatusBusy:
+                        _XMPPShow       = TNStropheContactStatusBusy;
+                        _statusIcon     = _imageBusy
+                        _statusReminder = _imageBusy;
+                        break;
+                    case TNStropheContactStatusAway:
+                        _XMPPShow       = TNStropheContactStatusAway;
+                        _statusIcon     = _imageAway
+                        _statusReminder = _imageAway;
+                        break;
+                    case TNStropheContactStatusDND:
+                        _XMPPShow       = TNStropheContactStatusDND;
+                        _statusIcon     = _imageDND;
+                        _statusReminder = _imageDND;
+                        break;
+                }
+            }
+
+            if ([aStanza firstChildWithName:@"status"])
                 _XMPPStatus = [presenceShow text];
-        }
-    }
-    else if ((presenceType == "subscribe"))
-    {
-        _XMPPStatus = "Asking subscribtion"
-    }
-    else if ((presenceType == "subscribed"))
-    {
-        // ouaaah
-    }
-    else if (presenceType == "unsubscribe")
-    {
-        // kajfds
-    }
-    else if (presenceType == "unsubscribed")
-    {
-        _XMPPStatus = "Unauthorized";
-    }
-    else
-    {
-        _XMPPShow       = TNStropheContactStatusOnline;
-        _statusIcon     = _imageOnline;
-        _statusReminder = _imageOnline;
 
-        _XMPPStatus = [aStanza firstChildWithName:@"show"];
-        if (_XMPPStatus)
-        {
-            var textValue = [_XMPPStatus text];
-            if (textValue == TNStropheContactStatusBusy)
-            {
-                _XMPPShow       = TNStropheContactStatusBusy;
-                _statusIcon     = _imageBusy
-                _statusReminder = _imageBusy;
-            }
-            else if (textValue == TNStropheContactStatusAway)
-            {
-                _XMPPShow       = TNStropheContactStatusAway;
-                _statusIcon     = _imageAway
-                _statusReminder = _imageAway;
-            }
-            else if (textValue == TNStropheContactStatusDND)
-            {
-                _XMPPShow       = TNStropheContactStatusDND;
-                _statusIcon     = _imageDND;
-                _statusReminder = _imageDND;
-            }
-        }
-
-        if ([aStanza firstChildWithName:@"status"])
-            _XMPPStatus = [presenceShow text];
-
-        if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
-            [self getVCard];
+            if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
+                [self getVCard];
+            break;
     }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
@@ -507,14 +496,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)sendMessage:(CPString)aMessage
 {
-    var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type": "chat"}],
-        params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
+    var messageStanza = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type": "chat"}];
 
     [messageStanza addChildWithName:@"body"];
     [messageStanza addTextNode:aMessage];
 
-    [_connection registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
-    [_connection send:messageStanza];
+    [self sendStanza:messageStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
 }
 
 /*! message sent when a message has been sent. It posts appropriate notification with userInfo
@@ -534,6 +521,15 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return NO;
 }
 
+- (void)sendStatus:(CPString)aStatus
+{
+    var statusStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}];
+
+    [statusStanza addChildWithName:aStatus andAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
+
+    [self sendStanza:statusStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
+}
+
 /*! this allows to send "composing" information to a user. This will never send "paused".
     you have to handle a timer if you want to automatically send pause after a while.
 */
@@ -541,13 +537,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     if (!_isComposing)
     {
-        var composingStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}],
-            params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
-
-        [composingStanza addChildName:@"composing" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
-
-        [_connection registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
-        [_connection send:composingStanza];
+        [self sendStatus:@"composing"];
         _isComposing = YES;
     }
 }
@@ -556,13 +546,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)sendComposePaused
 {
-    var pausedStanza    = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}],
-        params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
-
-    [pausedStanza addChildName:@"paused" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
-
-    [_connection registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
-    [_connection send:pausedStanza];
+    [self sendStatus:@"paused"];
 
     _isComposing = NO;
 }
