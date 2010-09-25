@@ -114,9 +114,9 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (void)getRoster
 {
-    var uid         = [_connection getUniqueId:@"roster"];
-    var params      = [[CPDictionary alloc] init];
-    var rosteriq    = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}];
+    var uid         = [_connection getUniqueId:@"roster"],
+        params      = [[CPDictionary alloc] init],
+        rosteriq    = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}];
 
     [rosteriq addChildName:@"query" withAttributes:{'xmlns':Strophe.NS.ROSTER}];
 
@@ -133,24 +133,24 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (BOOL)_didRosterReceived:(id)aStanza
 {
-    var query   = [aStanza firstChildWithName:@"query"];
-    var items   = [query childrenWithName:@"item"];
-    var center  = [CPNotificationCenter defaultCenter];
+    var query   = [aStanza firstChildWithName:@"query"],
+        items   = [query childrenWithName:@"item"],
+        center  = [CPNotificationCenter defaultCenter];
 
     for (var i = 0; i < [items count]; i++)
     {
-        var item        = [items objectAtIndex:i];
-        var theJID      = [item valueForAttribute:@"jid"];
-        var nickname    = theJID;
+        var item        = [items objectAtIndex:i],
+            theJID      = [item valueForAttribute:@"jid"],
+            nickname    = theJID;
 
         if ([item valueForAttribute:@"name"])
             nickname = [item valueForAttribute:@"name"];
 
         if (![self containsJID:theJID])
         {
-            var groupName   = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General";
-            var newGroup    = [self groupWithName:groupName orCreate:YES];
-            var newContact  = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName];
+            var groupName   = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General",
+                newGroup    = [self groupWithName:groupName orCreate:YES],
+                newContact  = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName];
 
             [_contacts addObject:newContact];
             [newGroup addContact:newContact];
@@ -293,8 +293,8 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     if (!aGroupName)
         aGroupName = @"General";
 
-    var uid     = [_connection getUniqueId];
-    var addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+    var uid     = [_connection getUniqueId],
+        addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
 
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [addReq addChildName:@"item" withAttributes:{"JID": aJID, "name": aName}];
@@ -326,9 +326,9 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (void)removeContact:(TNStropheContact)aContact
 {
-    var group       = [self groupOfContact:aContact];
-    var uid         = [_connection getUniqueId];
-    var removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+    var group       = [self groupOfContact:aContact],
+        uid         = [_connection getUniqueId],
+        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
 
     [_contacts removeObject:aContact];
     [group removeContact:aContact];

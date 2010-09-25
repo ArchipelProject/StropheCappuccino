@@ -172,8 +172,8 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
 
-        var bundle  = [CPBundle bundleForClass:[self class]];
-        var sound   = [bundle pathForResource:@"Receive.mp3"];
+        var bundle  = [CPBundle bundleForClass:[self class]],
+            sound   = [bundle pathForResource:@"Receive.mp3"];
 
         _audioTagReceive = document.createElement('audio');
         _audioTagReceive.setAttribute("src", sound);
@@ -291,7 +291,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
             [self send:caps];
 
-
             if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
                 [_delegate onStropheConnected:self];
 
@@ -306,8 +305,9 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     console.log("==========================================================================================");
     console.log("aStanza: " + aStanza);
 
-    var uid = [self getUniqueId];
-    var resp = [TNStropheStanza iqWithAttributes:{"id": uid, "type": "result"}];
+    var uid = [self getUniqueId],
+        resp = [TNStropheStanza iqWithAttributes:{"id": uid, "type": "result"}];
+
     [resp setTo:[aStanza from]];
 
     [resp addChildName:@"query" withAttributes:{"xmlns": "http://jabber.org/protocol/disco#info"}];

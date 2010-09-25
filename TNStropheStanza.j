@@ -160,8 +160,8 @@
 */
 - (void)setValue:(CPString)aValue forAttribute:(CPString)anAttribute
 {
-    var attr = {};
-    var tmpNode;
+    var attr = {},
+        tmpNode;
 
     attr[anAttribute] = aValue;
 
@@ -174,8 +174,8 @@
 */
 - (CPArray)childrenWithName:(CPString)aName
 {
-    var nodes   = [[CPArray alloc] init];
-    var temp    = [self tree].getElementsByTagName(aName);
+    var nodes   = [[CPArray alloc] init],
+        temp    = [self tree].getElementsByTagName(aName);
 
     for (var i = 0; i < temp.length; i++)
         [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
@@ -189,8 +189,8 @@
 */
 - (CPArray)ownChildrenWithName:(CPString)aName
 {
-    var nodes   = [[CPArray alloc] init];
-    var temp    = [self tree].childNodes;
+    var nodes   = [[CPArray alloc] init],
+        temp    = [self tree].childNodes;
 
     for (var i = 0; i < temp.length; i++)
     {
@@ -220,8 +220,8 @@
 */
 - (CPArray)children
 {
-    var nodes   = [CPArray array];
-    var temp    = [self tree].childNodes;
+    var nodes   = [CPArray array],
+        temp    = [self tree].childNodes;
 
     for (var i = 0; i < temp.length; i++)
     {
