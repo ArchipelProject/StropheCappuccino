@@ -1,18 +1,18 @@
-/*  
+/*
  * TNStropheConnection.j
  * TNStropheConnection
- *    
+ *
  *  Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,54 +20,54 @@
 @import <Foundation/Foundation.j>
 @import "TNStropheStanza.j"
 
-/*! 
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent on connecting 
+    Notification sent on connecting
 */
-TNStropheConnectionStatusConnecting       = @"TNStropheConnectionStatusConnecting";
-/*! 
+TNStropheConnectionStatusConnecting         = @"TNStropheConnectionStatusConnecting";
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent when connected 
+    Notification sent when connected
 */
-TNStropheConnectionStatusConnected        = @"TNStropheConnectionStatusConnected";
-/*! 
+TNStropheConnectionStatusConnected          = @"TNStropheConnectionStatusConnected";
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent on connection fail 
+    Notification sent on connection fail
 */
-TNStropheConnectionStatusConnectionFailure      = @"TNStropheConnectionStatusConnectionFailure";
+TNStropheConnectionStatusConnectionFailure  = @"TNStropheConnectionStatusConnectionFailure";
 /*! @global
     @group TNStropheConnectionStatus
     Notification sent when authenticating
 
 */
-TNStropheConnectionStatusAuthenticating         = @"TNStropheConnectionStatusAuthenticating"
-/*! 
+TNStropheConnectionStatusAuthenticating     = @"TNStropheConnectionStatusAuthenticating"
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent on auth fail 
+    Notification sent on auth fail
 */
-TNStropheConnectionStatusAuthFailure          = @"TNStropheConnectionStatusAuthFailure";
+TNStropheConnectionStatusAuthFailure        = @"TNStropheConnectionStatusAuthFailure";
 
-/*! 
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent on disconnecting 
+    Notification sent on disconnecting
 */
-TNStropheConnectionStatusDisconnecting    = @"TNStropheConnectionStatusDisconnecting";
-/*! 
+TNStropheConnectionStatusDisconnecting      = @"TNStropheConnectionStatusDisconnecting";
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent when disconnected 
+    Notification sent when disconnected
 */
-TNStropheConnectionStatusDisconnected     = @"TNStropheConnectionStatusDisconnected";
+TNStropheConnectionStatusDisconnected       = @"TNStropheConnectionStatusDisconnected";
 
-/*! 
+/*!
     @global
     @group TNStropheConnectionStatus
-    Notification sent when other error occurs 
+    Notification sent when other error occurs
 */
 TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
@@ -75,67 +75,67 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 /*! @ingroup strophecappuccino
     this is an Cappuccino implementation of an XMPP connection
     using javascript library Strophe by Stanziq.
-    
+
     @par Delegate Methods
-    
+
     \c -onStropheConnecting:
     when strophe is connecting (notification TNStropheConnectionStatusConnecting sent)
-    
+
     \c -onStropheConnectFail:
     if strophe connection fails (notification TNStropheConnectionStatusFailure sent)
-    
+
     \c -onStropheDisconnecting
     when strophe is disconnecting (notification TNStropheConnectionStatusDisconnecting sent)
-    
+
     \c  -onStropheConnected:
     when strophe is disconnected (notification TNStropheConnectionStatusDisconnected sent)
-    
+
     \c  -onStropheConnecting:
     when strophe is connected (notification TNStropheConnectionStatusConnected sent)
-    
+
     @par Notifications:
-    
+
     The following notifications are sent by TNStropheConnection:
-    
+
     #TNStropheConnectionStatusConnecting
-    
+
     #TNStropheConnectionStatusConnected
-    
+
     #TNStropheConnectionStatusDisconnecting
-    
+
     #TNStropheConnectionStatusDisconnected
-    
+
     #TNStropheConnectionStatusConnectionFailure
-    
+
     # TNStropheConnectionStatusAuthFailure
-    
+
     #TNStropheConnectionStatusError
 */
 
-@implementation TNStropheConnection: CPObject 
-{    
-    CPString        _JID                    @accessors(property=JID); 
-    CPString        _fullJID                @accessors(property=fullJID); 
-    CPString        _resource               @accessors(property=resource); 
-    CPString        _password               @accessors(property=password); 
+@implementation TNStropheConnection: CPObject
+{
+    CPString        _JID                    @accessors(property=JID);
+    CPString        _fullJID                @accessors(property=fullJID);
+    CPString        _resource               @accessors(property=resource);
+    CPString        _password               @accessors(property=password);
     id              _delegate               @accessors(property=delegate);
     int             _maxConnections         @accessors(property=maxConnections);
     BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
-    
+
     CPString        _boshService;
     id              _connection;
     CPDictionary    _registredHandlerDict;
-    
+
     id              _audioTagReceive;
 }
 
 /*! instanciate a TNStropheConnection object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
-    
+
     @return a valid TNStropheConnection
 */
-+ (TNStropheConnection)connectionWithService:(CPString)aService 
++ (TNStropheConnection)connectionWithService:(CPString)aService
 {
     return [[TNStropheConnection alloc] initWithService:aService];
 }
@@ -145,19 +145,18 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     @param aService a url of a bosh service (MUST be complete url with http://)
     @param aJID a JID to connect to the XMPP server
     @param aPassword the password associated to the JID
-    
+
     @return a valid TNStropheConnection
 */
-+ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID password:(CPString)aPassword 
++ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID password:(CPString)aPassword
 {
     return [[TNStropheConnection alloc] initWithService:aService JID:aJID password:aPassword];
 }
 
-+ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID resource:(CPString)aResource password:(CPString)aPassword 
++ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID resource:(CPString)aResource password:(CPString)aPassword
 {
     return [[TNStropheConnection alloc] initWithService:aService JID:aJID resource:aResource password:aPassword];
 }
-
 
 /*! initialize the TNStropheConnection
 
@@ -172,7 +171,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _soundEnabled           = YES;
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
-        
+
         var bundle  = [CPBundle bundleForClass:[self class]];
         var sound   = [bundle pathForResource:@"Receive.mp3"];
 
@@ -181,7 +180,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _audioTagReceive.setAttribute("autobuffer", "autobuffer");
         document.body.appendChild(_audioTagReceive);
     }
-    
+
     return self;
 }
 
@@ -198,7 +197,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _JID        = aJID;
         _password   = aPassword;
     }
-    
+
     return self;
 }
 
@@ -208,7 +207,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     {
         _resource   = aResource;
     }
-    
+
     return self;
 }
 
@@ -223,62 +222,62 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)connect
 {
     _fullJID = _JID + @"/" + _resource;
-    
-    _connection.connect(_fullJID, _password, function (status, errorCond) 
+
+    _connection.connect(_fullJID, _password, function (status, errorCond)
     {
         var center = [CPNotificationCenter defaultCenter];
 
         if (status == Strophe.Status.CONNECTING)
         {
             if ([_delegate respondsToSelector:@selector(onStropheConnecting:)])
-   	            [_delegate onStropheConnecting:self];
+                [_delegate onStropheConnecting:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusConnecting object:self]; 
-        } 
-        else if (status == Strophe.Status.CONNFAIL) 
+            [center postNotificationName:TNStropheConnectionStatusConnecting object:self];
+        }
+        else if (status == Strophe.Status.CONNFAIL)
         {
             if ([_delegate respondsToSelector:@selector(onStropheConnectFail:)])
-   	            [_delegate onStropheConnectFail:self];
+                [_delegate onStropheConnectFail:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusConnectionFailure object:self];
+            [center postNotificationName:TNStropheConnectionStatusConnectionFailure object:self];
         }
-        else if (status == Strophe.Status.AUTHFAIL) 
+        else if (status == Strophe.Status.AUTHFAIL)
         {
             if ([_delegate respondsToSelector:@selector(onStropheAuthFail:)])
-   	            [_delegate onStropheAuthFail:self];
+                [_delegate onStropheAuthFail:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusAuthFailure object:self];
+            [center postNotificationName:TNStropheConnectionStatusAuthFailure object:self];
         }
-        else if (status == Strophe.Status.ERROR) 
+        else if (status == Strophe.Status.ERROR)
         {
             if ([_delegate respondsToSelector:@selector(onStropheError:)])
-   	            [_delegate onStropheError:self];
+                [_delegate onStropheError:self];
 
-   	        [center postNotificationName:TNStropheConnectionStatusError object:self];
-        } 
-        else if (status == Strophe.Status.DISCONNECTING) 
-        {
-   	        if ([_delegate respondsToSelector:@selector(onStropheDisconnecting:)])
-   	            [_delegate onStropheDisconnecting:self];
-
-   	        [center postNotificationName:TNStropheConnectionStatusDisconnecting object:self];
+            [center postNotificationName:TNStropheConnectionStatusError object:self];
         }
-        else if (status == Strophe.Status.AUTHENTICATING) 
+        else if (status == Strophe.Status.DISCONNECTING)
         {
-   	        if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
-   	            [_delegate onStropheAuthenticating:self];
+            if ([_delegate respondsToSelector:@selector(onStropheDisconnecting:)])
+                [_delegate onStropheDisconnecting:self];
+
+            [center postNotificationName:TNStropheConnectionStatusDisconnecting object:self];
+        }
+        else if (status == Strophe.Status.AUTHENTICATING)
+        {
+            if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
+                [_delegate onStropheAuthenticating:self];
 
             [center postNotificationName:TNStropheConnectionStatusAuthenticating object:self];
         }
-        else if (status == Strophe.Status.DISCONNECTED) 
+        else if (status == Strophe.Status.DISCONNECTED)
         {
             if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
             [_delegate onStropheDisconnected:self];
 
                 [center postNotificationName:TNStropheConnectionStatusDisconnected object:self];
-        } 
+        }
         else if (status == Strophe.Status.CONNECTED)
-        {    
+        {
             _connection.send($pres().tree());
             var caps = [TNStropheStanza presence];
             [caps addChildName:@"c" withAttributes:{
@@ -286,13 +285,13 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
                 "node": "http://archipelproject.org/#1.0",
                 "hash": "sha-1",
                 "ver": "DndJUicxxxq1gHH7upVXwqpBoMI=" }];
-            
+
             [self registerSelector:@selector(handleFeaturesDisco:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:
                 @"iq", @"name", @"http://jabber.org/protocol/disco#info", "namespace"]];
-            
+
             [self send:caps];
-            
-            
+
+
             if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
                 [_delegate onStropheConnected:self];
 
@@ -306,27 +305,27 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     console.log("==========================================================================================");
     console.log("==========================================================================================");
     console.log("aStanza: " + aStanza);
-    
+
     var uid = [self getUniqueId];
     var resp = [TNStropheStanza iqWithAttributes:{"id": uid, "type": "result"}];
     [resp setTo:[aStanza from]];
-    
+
     [resp addChildName:@"query" withAttributes:{"xmlns": "http://jabber.org/protocol/disco#info"}];
     [resp addChildName:@"identity" withAttributes:{"category": "client", "name": "Archipel 1.0", "type": "web"}];
     [resp up];
     [resp addChildName:@"feature" withAttributes:{"var": "http://jabber.org/protocol/pubsub"}];
     [resp up];
     [resp addChildName:@"feature" withAttributes:{"var": "http://jabber.org/protocol/pubsub+notify"}];
-    
+
     console.log("RESP: " + resp);
     console.log("==========================================================================================");
     console.log("==========================================================================================");
-    
+
     var params = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
     [self registerSelector:@selector(handlServerResponse:) ofObject:self withDict:params];
-        
+
     [self send:resp];
-    
+
     return YES;
 }
 
@@ -334,39 +333,37 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 {
      console.log("##########################################################################################");
      CPLog.info(aStanza)
-      console.log("##########################################################################################");
+     console.log("##########################################################################################");
 }
-
 
 /*! this disconnect the XMPP connection
 */
-- (void)disconnect 
+- (void)disconnect
 {
     _connection.disconnect();
 }
 
-
 /*! send a TNStropheStanza object
-    
+
     @param aStanza: the stanza to send
 */
 - (void)send:(TNStropheStanza)aStanza
 {
     CPLog.trace("StropheCappuccino Stanza Send:")
     CPLog.trace(aStanza);
-    
+
     _connection.send([aStanza tree]);
 }
 
-/*! generates an unique identifier 
+/*! generates an unique identifier
 */
 - (void)getUniqueId
 {
     return _connection.getUniqueId(null);
 }
 
-/*! generates an unique identifier prefixed by 
-    
+/*! generates an unique identifier prefixed by
+
     @param prefix will prefixes the unique identifier
 */
 - (void)getUniqueId:(CPString)prefix
@@ -398,74 +395,73 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _connection.pause();
 }
 
-
 /*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
     The dictionnary should contains zero to many of the followings :
      - <b>namespace</b>: the namespace of the stanza or of the first child (like query)
      - <b>name</b>: the name of the stanza (message, iq or presence)
      - <b>type</b>: the type of the stanza
-     - <b>id</b>: the unique identifier 
+     - <b>id</b>: the unique identifier
      - <b>from</b>: the stanza sender
      - <b>options</b>: an array of options. only {MatchBare: True} works.
     if all the conditions are mets, the selector is fired and the stanza is given as parameter.
-    
-    The selector should return YES to not be unregistred. If it returns NO or nothing, it will be 
+
+    The selector should return YES to not be unregistred. If it returns NO or nothing, it will be
     unregistred
-    
+
     @param aSelector the selector to be performed
     @param anObject the receiver of the selector
     @param aDict a dictionnary of parameters
-    
+
     @return an id of the handler registration used to remove it
 */
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
-{    
+{
    var handlerId =  _connection.addHandler(function(stanza) {
                 var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
-                return [anObject performSelector:aSelector withObject:stanzaObject]; 
-            }, 
-            [aDict valueForKey:@"namespace"], 
-            [aDict valueForKey:@"name"], 
-            [aDict valueForKey:@"type"], 
-            [aDict valueForKey:@"id"], 
+                return [anObject performSelector:aSelector withObject:stanzaObject];
+            },
+            [aDict valueForKey:@"namespace"],
+            [aDict valueForKey:@"name"],
+            [aDict valueForKey:@"type"],
+            [aDict valueForKey:@"id"],
             [aDict valueForKey:@"from"],
             [aDict valueForKey:@"options"]);
-    
+
     return handlerId;
 }
 
 /*! same than registerSelector:ofObject:withDict but with a timeout
-    
+
     @param aSelector the selector to be performed
     @param anObject the receiver of the selector
     @param aDict a dictionnary of parameters
     @timeout CPNumber timeout of the handler
-    
+
     @return an id of the handler registration used to remove it
 */
 - (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
-{    
+{
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
                 var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanza);
-                
-                return [anObject performSelector:aSelector withObject:stanzaObject]; 
-            }, 
-            [aDict valueForKey:@"namespace"], 
-            [aDict valueForKey:@"name"], 
-            [aDict valueForKey:@"type"], 
-            [aDict valueForKey:@"id"], 
+
+                return [anObject performSelector:aSelector withObject:stanzaObject];
+            },
+            [aDict valueForKey:@"namespace"],
+            [aDict valueForKey:@"name"],
+            [aDict valueForKey:@"type"],
+            [aDict valueForKey:@"id"],
             [aDict valueForKey:@"from"],
             [aDict valueForKey:@"options"]);
-    
+
     return handlerId;
 }
 
 /*! delete an registred selector
-    
+
     @param aHandlerId the handler id to remove
 */
 - (void)deleteRegistredSelector:(id)aHandlerId
@@ -474,7 +470,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 }
 
 /*! delete an registred timed selector
-    
+
     @param aHandlerId the handler id to remove
 */
 - (void)deleteRegistredTimedSelector:(id)aTimedHandlerId
@@ -497,13 +493,12 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 }
 
 /*! Immediately send any pending outgoing data.
-    
+
 */
 - (void)flush
 {
     _connection.flush();
 }
-
 
 - (void)playReceivedSound
 {
@@ -511,13 +506,13 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     {
         _audioTagReceive.play();
     }
-    
+
 }
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _JID                = [aCoder decodeObjectForKey:@"_JID"];
@@ -529,7 +524,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _connection         = [aCoder decodeObjectForKey:@"_connection"];
         _audioTagReceive    = [aCoder decodeObjectForKey:@"_audioTagReceive"];
     }
-    
+
     return self;
 }
 
@@ -545,6 +540,3 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     [aCoder encodeObject:_audioTagReceive forKey:@"_audioTagReceive"];
 }
 @end
-
-
-

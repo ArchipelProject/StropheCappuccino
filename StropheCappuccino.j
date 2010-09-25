@@ -24,7 +24,6 @@
 @import "TNStropheRoster.j"
 @import "TNBase64Image.j"
 
-
 /*! @mainpage
     StropheCappuccino is distributed under the @ref license "AGPL".
 
