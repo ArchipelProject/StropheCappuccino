@@ -309,29 +309,29 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     [resp setTo:[aStanza from]];
 
-    [resp addChildName:@"query" withAttributes:{"xmlns": "http://jabber.org/protocol/disco#info"}];
-    [resp addChildName:@"identity" withAttributes:{"category": "client", "name": "Archipel 1.0", "type": "web"}];
+    [resp addChildWithName:@"query" andAttributes:{"xmlns": "http://jabber.org/protocol/disco#info"}];
+    [resp addChildWithName:@"identity" andAttributes:{"category": "client", "name": "Archipel 1.0", "type": "web"}];
     [resp up];
-    [resp addChildName:@"feature" withAttributes:{"var": "http://jabber.org/protocol/pubsub"}];
+    [resp addChildWithName:@"feature" andAttributes:{"var": "http://jabber.org/protocol/pubsub"}];
     [resp up];
-    [resp addChildName:@"feature" withAttributes:{"var": "http://jabber.org/protocol/pubsub+notify"}];
+    [resp addChildWithName:@"feature" andAttributes:{"var": "http://jabber.org/protocol/pubsub+notify"}];
 
     console.log("RESP: " + resp);
     console.log("==========================================================================================");
     console.log("==========================================================================================");
 
     var params = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
-    [self registerSelector:@selector(handlServerResponse:) ofObject:self withDict:params];
+    [self registerSelector:@selector(handleFeaturesDiscoResponse:) ofObject:self withDict:params];
 
     [self send:resp];
 
     return YES;
 }
 
-- (void)handlServerResponse:(TNStropheStanza)aStanza
+- (void)handleFeaturesDiscoResponse:(TNStropheStanza)aStanza
 {
      console.log("##########################################################################################");
-     CPLog.info(aStanza)
+     CPLog.info(aStanza);
      console.log("##########################################################################################");
 }
 
@@ -365,9 +365,9 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     @param prefix will prefixes the unique identifier
 */
-- (void)getUniqueId:(CPString)prefix
+- (CPString)getUniqueIdWithSuffix:(CPString)suffix
 {
-    return _connection.getUniqueId(prefix);
+    return _connection.getUniqueId(suffix);
 }
 
 /*! Reset the current connection
@@ -472,7 +472,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     @param aHandlerId the handler id to remove
 */
-- (void)deleteRegistredTimedSelector:(id)aTimedHandlerId
+- (void)deleteRegisteredTimedSelector:(id)aTimedHandlerId
 {
     _connection.deleteTimedHandler(aTimedHandlerId)
 }

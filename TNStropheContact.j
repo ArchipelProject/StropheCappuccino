@@ -352,7 +352,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     var uid         = [_connection getUniqueId],
         vcardStanza = [TNStropheStanza iqWithAttributes:{"from": [_connection JID], "to": _JID, "type": "get", "id": uid}];
 
-    [vcardStanza addChildName:@"vCard" withAttributes:{'xmlns': "vcard-temp"}];
+    [vcardStanza addChildWithName:@"vCard" andAttributes:{'xmlns': "vcard-temp"}];
 
     var params = [[CPDictionary alloc] init];
     [params setValue:_JID forKey:@"from"];
@@ -510,7 +510,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type": "chat"}],
         params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
 
-    [messageStanza addChildName:@"body"];
+    [messageStanza addChildWithName:@"body"];
     [messageStanza addTextNode:aMessage];
 
     [_connection registerSelector:@selector(_didSentMessage:) ofObject:self withDict:params];
@@ -525,7 +525,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     @return NO to remove the registering of the selector
 */
-- (BOOL)_didSentMessage:(id)aStanza
+- (BOOL)_didSendMessage:(id)aStanza
 {
     var userInfo = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
 
@@ -575,9 +575,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     _nickname = newNickname;
 
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"JID": _JID, "name": _nickname}];
-    [stanza addChildName:@"group" withAttributes:nil];
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"group" andAttributes:nil];
     [stanza addTextNode:_groupName];
 
     [_connection send:stanza];
@@ -590,9 +590,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (void)changeGroup:(TNStropheGroup)newGroup
 {
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"JID": _JID, "name": _nickname}];
-    [stanza addChildName:@"group" withAttributes:nil];
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"group" andAttributes:nil];
     [stanza addTextNode:[newGroup name]];
 
     [_connection send:stanza];
@@ -606,9 +606,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
 
-    [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildName:@"item" withAttributes:{"JID": _JID, "name": _nickname}];
-    [stanza addChildName:@"group" withAttributes:nil];
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"group" andAttributes:nil];
     [stanza addTextNode:aNewName];
 
     [_connection send:stanza];

@@ -24,7 +24,7 @@
 */
 @implementation TNBase64Image : CPImage
 {
-    CPString    _baseEncoded64Data  @accessors(setter=setBaseEncoded64Data:);
+    CPString    _base64EncodedData  @accessors(setter=setBase64EncodedData:);
     CPString    _contentType        @accessors(setter=setContentType:);
 }
 
@@ -37,7 +37,7 @@
 {
     var img = [[TNBase64Image alloc] init];
 
-    [img setBaseEncoded64Data:someBase64Data];
+    [img setBase64EncodedData:someBase64Data];
     [img setContentType:aContentType];
 
     [img load];
@@ -52,7 +52,7 @@
     if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)
         return;
 
-    var data    = @"data:" + _contentType + @";base64," + _baseEncoded64Data;
+    var data    = @"data:" + _contentType + @";base64," + _base64EncodedData;
 
     _loadStatus = CPImageLoadStatusLoading;
     _image      = new Image();

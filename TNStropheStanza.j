@@ -86,18 +86,28 @@
     @param aTagName name of the new tag
     @param attributes CPDictionary contains all attributes
 */
-- (void)addChildName:(CPString)aTagName withAttributes:(CPDictionary)attributes
+- (void)addChildWithName:(CPString)aTagName andAttributes:(CPDictionary)attributes
 {
     _xmlNode = _xmlNode.c(aTagName, attributes);
+}
+
+- (void)addChildName:(CPString)aTagName andAttributes:(CPDictionary)attributes
+{
+    [self addChildWithName:aTagName andAttributes:attributes];
 }
 
 /*! Add a child to the current seletected node
     This will move the stanza object pointer to the child node
     @param aTagName name of the new tag
 */
+- (void)addChildWithName:(CPString)aTagName
+{
+    [self addChildWithName:aTagName andAttributes:{}]
+}
+
 - (void)addChildName:(CPString)aTagName
 {
-    _xmlNode = _xmlNode.c(aTagName, {});
+    [self addChildWithName:aTagName];
 }
 
 /*! append a node to the current node
@@ -173,11 +183,11 @@
 */
 - (CPArray)childrenWithName:(CPString)aName
 {
-    var nodes   = [[CPArray alloc] init],
-        temp    = [self tree].getElementsByTagName(aName);
+    var nodes       = [[CPArray alloc] init],
+        elements    = [self tree].getElementsByTagName(aName);
 
-    for (var i = 0; i < temp.length; i++)
-        [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
+    for (var i = 0; i < elements.length; i++)
+        [nodes addObject:[TNXMLNode nodeWithXMLNode:elements[i]]]
 
     return nodes;
 }
@@ -188,13 +198,13 @@
 */
 - (CPArray)ownChildrenWithName:(CPString)aName
 {
-    var nodes   = [[CPArray alloc] init],
-        temp    = [self tree].childNodes;
+    var nodes       = [[CPArray alloc] init],
+        elements    = [self tree].childNodes;
 
-    for (var i = 0; i < temp.length; i++)
+    for (var i = 0; i < elements.length; i++)
     {
-        if (temp[i].tagName == aName)
-            [nodes addObject:[TNXMLNode nodeWithXMLNode:temp[i]]]
+        if (aName && elements[i].tagName == aName)
+            [nodes addObject:[TNXMLNode nodeWithXMLNode:elements[i]]]
     }
 
     return nodes;
@@ -456,7 +466,7 @@
     return [self valueForAttribute:@"xmlns"];
 }
 
-/*! set the xmls field of the stanza
+/*! set the xmlns field of the stanza
     @param the new xmls value
 */
 - (void)setNamespace:(CPString)aNamespace

@@ -114,16 +114,16 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 */
 - (void)getRoster
 {
-    var uid         = [_connection getUniqueId:@"roster"],
+    var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
         params      = [[CPDictionary alloc] init],
         rosteriq    = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}];
 
-    [rosteriq addChildName:@"query" withAttributes:{'xmlns':Strophe.NS.ROSTER}];
+    [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
 
     [params setValue:@"iq" forKey:@"name"];
     [params setValue:@"result" forKey:@"type"];
     [params setValue:uid forKey:@"id"];
-    [_connection registerSelector:@selector(_didRosterReceived:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didReceiveRoster:) ofObject:self withDict:params];
 
     [_connection send:rosteriq];
 }
@@ -131,7 +131,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 /*! this called when the roster is recieved. Will post TNStropheRosterRetrievedNotification
     @return NO to remove the selector registred from TNStropheConnection
 */
-- (BOOL)_didRosterReceived:(id)aStanza
+- (BOOL)_didReceiveRoster:(id)aStanza
 {
     var query   = [aStanza firstChildWithName:@"query"],
         items   = [query childrenWithName:@"item"];
@@ -290,9 +290,9 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 
     var addReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
 
-    [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [addReq addChildName:@"item" withAttributes:{"JID": aJID, "name": aName}];
-    [addReq addChildName:@"group" withAttributes:nil];
+    [addReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [addReq addChildWithName:@"item" andAttributes:{"JID": aJID, "name": aName}];
+    [addReq addChildWithName:@"group" andAttributes:nil];
     [addReq addTextNode:aGroupName];
 
     [_connection send:addReq];
@@ -325,8 +325,8 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     [_contacts removeObject:aContact];
     [group removeContact:aContact];
 
-    [removeReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [removeReq addChildName:@"item" withAttributes:{'jid': [aContact JID], 'subscription': 'remove'}];
+    [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [removeReq addChildWithName:@"item" andAttributes:{'jid': [aContact JID], 'subscription': 'remove'}];
 
     [_connection send:removeReq];
 
