@@ -216,7 +216,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 }
 
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
-
 */
 - (void)connect
 {
@@ -342,7 +341,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 /*! generates an unique identifier
 */
-- (void)getUniqueId
+- (CPString)getUniqueId
 {
     return [self getUniqueIdWithSuffix:null];
 }
@@ -488,10 +487,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)playReceivedSound
 {
     if (_soundEnabled)
-    {
         _audioTagReceive.play();
-    }
-
 }
 
 - (id)initWithCoder:(CPCoder)aCoder

@@ -215,7 +215,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _numberOfEvents     = 0;
         _isComposing        = NO;
 
-        _resources = [CPArray array];
+        _resources          = [CPArray array];
     }
 
     return self;
@@ -376,9 +376,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         }
 
         if ((_nickname == _nodeName) && ([aVCard firstChildWithName:@"NAME"]))
-        {
-            _nickname = [[aVCard firstChildWithName:@"NAME"] text]
-        }
+            _nickname = [[aVCard firstChildWithName:@"NAME"] text];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
@@ -410,9 +408,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [aStanza setID:anId];
 
     if (aSelector)
-    {
         ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params];
-    }
 
     [_connection send:aStanza];
 
@@ -434,7 +430,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
 
-    return ret
+    return ret;
 }
 
 /*! register the contact to listen incoming messages
