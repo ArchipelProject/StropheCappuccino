@@ -182,6 +182,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
         [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
         [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
+        [self addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
     }
 
     return self;

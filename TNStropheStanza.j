@@ -484,4 +484,25 @@
     [self setValue:anID forAttribute:@"id"];
 }
 
+/*! get the time the stanza was sent if it was delayed
+    @return delayTime from stanza
+*/
+- (CPDate)delayTime
+{
+    if ([self containsChildrenWithName:@"delay"] && [[self firstChildWithName:@"delay"] namespace] == Strophe.NS.DELAY)
+    {
+        // TODO: Fix this to match non-UTC
+        var messageDelay    = [[self firstChildWithName:@"delay"] valueForAttribute:@"stamp"],
+            match           = messageDelay.match(new RegExp(/(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})Z/));
+
+        if (!match || match.length != 3)
+            [CPException raise:CPInvalidArgumentException
+                        reason:"delayTime: the string must be of YYYY-MM-DDTHH:MM:SSZ format"];
+
+        return [[CPDate alloc] initWithString:(match[1] + @" " + match[2] + @" +0000")];
+    }
+
+    return [CPDate dateWithTimeIntervalSinceNow:0];
+}
+
 @end
