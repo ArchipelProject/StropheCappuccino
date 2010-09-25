@@ -487,12 +487,21 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return YES;
 }
 
-/*! send a message to the contact
+/*! send a message to the contact (of type chat)
     @param aMessage CPString containing the message
 */
 - (void)sendMessage:(CPString)aMessage
 {
-    var messageStanza = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type": "chat"}];
+    [self sendMessage:aMessage withType:@"chat"];
+}
+
+/*! send a message to the contact
+    @param aMessage CPString containing the message
+    @param aType    CPString containing type
+*/
+- (void)sendMessage:(CPString)aMessage withType:(CPString)aType
+{
+    var messageStanza = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type":aType}];
 
     [messageStanza addChildWithName:@"body"];
     [messageStanza addTextNode:aMessage];
