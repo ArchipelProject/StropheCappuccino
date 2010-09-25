@@ -1,17 +1,17 @@
-/*  
+/*
  * TNStropheRoster.j
- *    
+ *
  * Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,52 +23,50 @@
 @import "TNStropheGroup.j"
 @import "TNStropheContact.j"
 
-
-
-/*! 
+/*!
     @global
     @group TNStropheRoster
     notification indicates that TNStropheRoster has received the data from the XMPP server
 */
-TNStropheRosterRetrievedNotification                = @"TNStropheRosterRetrievedNotification";
-/*! 
+TNStropheRosterRetrievedNotification        = @"TNStropheRosterRetrievedNotification";
+/*!
     @global
     @group TNStropheRoster
     notification indicates that a new contact has been added to the TNStropheRoster
 */
-TNStropheRosterAddedContactNotification             = @"TNStropheRosterAddedContactNotification";
-/*! 
+TNStropheRosterAddedContactNotification     = @"TNStropheRosterAddedContactNotification";
+/*!
     @global
     @group TNStropheRoster
     notification indicates that a new contact has been removed from the TNStropheRoster
 */
 
-TNStropheRosterRemovedContactNotification           = @"TNStropheRosterRemovedContactNotification";
-/*! 
+TNStropheRosterRemovedContactNotification   = @"TNStropheRosterRemovedContactNotification";
+/*!
     @global
     @group TNStropheRoster
     notification indicates that a new group has been added to the TNStropheRoster
 */
-TNStropheRosterAddedGroupNotification               = @"TNStropheRosterAddedGroupNotification";
+TNStropheRosterAddedGroupNotification       = @"TNStropheRosterAddedGroupNotification";
 
-/*! 
+/*!
     @global
     @group TNStropheRoster
     notification indicates that a new group has been added to the TNStropheRoster
 */
-TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemovedGroupNotification";
+TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotification";
 
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Roster
 */
-@implementation TNStropheRoster : CPObject 
+@implementation TNStropheRoster : CPObject
 {
     CPArray                 _contacts       @accessors(getter=contacts);
     CPArray                 _groups         @accessors(getter=groups);
     id                      _delegate       @accessors(property=delegate);
     TNStropheConnection     _connection     @accessors(getter=connection);
-    
+
     TNStropheGroup          _defaultGroup;
 
 }
@@ -77,18 +75,18 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 
     @return initialized instance of TNStropheRoster
 */
-- (id)initWithConnection:(TNStropheConnection)aConnection 
+- (id)initWithConnection:(TNStropheConnection)aConnection
 {
     if (self = [super init])
     {
         _connection     = aConnection;
         _contacts       = [CPArray array];
         _groups         = [CPArray array];
-        
+
         _defaultGroup   = [TNStropheGroup stropheGroupWithName:@"General" connection:_connection];
-        
+
         //[_groups addObject:_defaultGroup];
-        
+
         var params = [[CPDictionary alloc] init];
         [params setValue:@"presence" forKey:@"name"];
         [params setValue:@"subscribe" forKey:@"type"];
@@ -99,16 +97,16 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     return self;
 }
 
-/*! message sent when a presence information received 
+/*! message sent when a presence information received
     send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
-    
+
     @return YES to keep the selector registred in TNStropheConnection
 */
-- (BOOL)_didReceiveSubscription:(id)requestStanza 
+- (BOOL)_didReceiveSubscription:(id)requestStanza
 {
     if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
         [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
-    
+
     return YES;
 }
 
@@ -116,35 +114,35 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 */
 - (void)getRoster
 {
-    var uid         = [_connection getUniqueId:@"roster"];    
+    var uid         = [_connection getUniqueId:@"roster"];
     var params      = [[CPDictionary alloc] init];
     var rosteriq    = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}];
-    
+
     [rosteriq addChildName:@"query" withAttributes:{'xmlns':Strophe.NS.ROSTER}];
-    
+
     [params setValue:@"iq" forKey:@"name"];
     [params setValue:@"result" forKey:@"type"];
     [params setValue:uid forKey:@"id"];
     [_connection registerSelector:@selector(_didRosterReceived:) ofObject:self withDict:params];
-    
+
     [_connection send:rosteriq];
 }
 
 /*! this called when the roster is recieved. Will post TNStropheRosterRetrievedNotification
     @return NO to remove the selector registred from TNStropheConnection
 */
-- (BOOL)_didRosterReceived:(id)aStanza 
+- (BOOL)_didRosterReceived:(id)aStanza
 {
     var query   = [aStanza firstChildWithName:@"query"];
     var items   = [query childrenWithName:@"item"];
     var center  = [CPNotificationCenter defaultCenter];
-    
+
     for (var i = 0; i < [items count]; i++)
     {
         var item        = [items objectAtIndex:i];
         var theJID      = [item valueForAttribute:@"jid"];
         var nickname    = theJID;
-        
+
         if ([item valueForAttribute:@"name"])
             nickname = [item valueForAttribute:@"name"];
 
@@ -153,28 +151,21 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
             var groupName   = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General";
             var newGroup    = [self groupWithName:groupName orCreate:YES];
             var newContact  = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName];
-            
+
             [_contacts addObject:newContact];
             [newGroup addContact:newContact];
-            
+
             [newContact setNickname:nickname];
             [newContact getVCard];
             [newContact getStatus];
             [newContact getMessages];
         }
     }
-    
+
     [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
-    
+
     return NO;
 }
-
-
-
-
-
-
-
 
 /*! add a group to the roster with given name
     @param aGroupName the name of the new group
@@ -182,12 +173,12 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 */
 - (TNStropheGroup)addGroup:(TNStropheGroup)aGroup
 {
-    var center      = [CPNotificationCenter defaultCenter];
-    
+    var center = [CPNotificationCenter defaultCenter];
+
     [_groups addObject:aGroup];
-    
+
     [center postNotificationName:TNStropheRosterAddedGroupNotification object:aGroup];
-    
+
     return aGroup;
 }
 
@@ -196,10 +187,10 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     if (![self containsGroupWithName:aGroupName])
     {
         var newGroup = [TNStropheGroup stropheGroupWithName:aGroupName connection:_connection]
-        
+
         return [self addGroup:newGroup];
     }
-    
+
     return nil;
 }
 
@@ -210,24 +201,24 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
     var center  = [CPNotificationCenter defaultCenter];
-    
+
     [_groups removeObject:aGroup];
     [center postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
 }
 
 /*! checks if given TNStropheGroup is in roster
     @param aGroup the group
-    @return YES if group is in roster, NO otherwise 
+    @return YES if group is in roster, NO otherwise
 */
 - (BOOL)containsGroup:(TNStropheGroup)aGroup
 {
     for(var i = 0; i < [_groups count]; i++)
     {
         var group = [_groups objectAtIndex:i];
-        
+
         if (group == aGroup)
             return YES;
-    }   
+    }
     return NO;
 }
 
@@ -238,7 +229,7 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 - (BOOL)containsGroupWithName:(CPString)aGroupName
 {
     var group = [self groupWithName:aGroupName];
-    
+
     return [self containsGroup:group];
 }
 
@@ -251,7 +242,7 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     for(var i = 0; i < [_groups count]; i++)
     {
         var group = [_groups objectAtIndex:i];
-        
+
         if ([group name] == aGroupName)
             return group;
     }
@@ -265,10 +256,10 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 - (TNStropheGroup)groupWithName:(CPString)aGroupName orCreate:(BOOL)shouldCreate
 {
     var newGroup = [self groupWithName:aGroupName];
-    
+
     if ((shouldCreate) && !(newGroup))
         return [self addGroupWithName:aGroupName];
-    
+
     return newGroup;
 }
 
@@ -284,17 +275,9 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
         if ([[group contacts] containsObject:aContact])
             return group;
     }
-    
+
     return nil;
 }
-
-
-
-
-
-
-
-
 
 /*! add a new contact to the roster with given information
     @param aJID the JID of the new contact
@@ -309,37 +292,36 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 
     if (!aGroupName)
         aGroupName = @"General";
-    
+
     var uid     = [_connection getUniqueId];
     var addReq  = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
-    
+
     [addReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [addReq addChildName:@"item" withAttributes:{"JID": aJID, "name": aName}];
     [addReq addChildName:@"group" withAttributes:nil];
     [addReq addTextNode:aGroupName];
-    
+
     [_connection send:addReq];
-    
+
     var contact = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
     [contact setNickname:aName];
     [contact getVCard];
     [contact getStatus];
     [contact getMessages];
-    
+
     var group  = [self groupWithName:aGroupName orCreate:YES];
-    
+
     [group addContact:contact];
-   	[_contacts addObject:contact];
-   	
-   	var center = [CPNotificationCenter defaultCenter];
+    [_contacts addObject:contact];
+
+    var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheRosterAddedContactNotification object:contact];
-    
+
     return contact;
 }
 
-
 /*! remove a TNStropheContact from the roster
-    
+
     @param aJID the JID of the contact to remove
 */
 - (void)removeContact:(TNStropheContact)aContact
@@ -347,27 +329,27 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     var group       = [self groupOfContact:aContact];
     var uid         = [_connection getUniqueId];
     var removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
-    
+
     [_contacts removeObject:aContact];
     [group removeContact:aContact];
-    
+
     [removeReq addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [removeReq addChildName:@"item" withAttributes:{'jid': [aContact JID], 'subscription': 'remove'}];
-    
+
     [_connection send:removeReq];
-    
+
     var center = [CPNotificationCenter defaultCenter];
     [center postNotificationName:TNStropheRosterRemovedContactNotification object:aContact];
 }
 
 /*! remove a contact from the roster according to its JID
-    
+
     @param aJID the JID of the contact to remove
 */
-- (void)removeContactWithJID:(CPString)aJID 
+- (void)removeContactWithJID:(CPString)aJID
 {
     var contact = [self contactWithJID:aJID];
-    
+
     [self removeContact:contact];
 }
 
@@ -377,15 +359,14 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 */
 - (TNStropheContact)contactWithJID:(CPString)aJID
 {
-    //@each (var contact in _contacts)
     for(var i = 0; i < [_contacts count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
         if ([contact JID] == aJID)
             return contact;
     }
-    
-    return nil; 
+
+    return nil;
 }
 
 /*! check if roster contains a contact with a given JID
@@ -398,13 +379,12 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     for(var i = 0; i < [_contacts count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
-        
+
         if ([[contact JID] lowercaseString] == [aJID lowercaseString])
             return YES;
     }
     return NO;
 }
-
 
 /*! changes the nickname of the contact with the given JID
     @param aName the new nickname
@@ -414,7 +394,6 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 {
     [aContact changeNickname:aName];
 }
-
 
 /*! changes the nickname of the contact with the given JID
     @param aName the new nickname
@@ -434,33 +413,27 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 - (void)changeGroup:(TNStropheGroup)newGroup ofContact:(TNStropheContact)aContact
 {
     var oldGroup = [self groupOfContact:aContact];
-    
+
     [oldGroup removeContact:aContact];
-    
+
     [newGroup addContact:aContact];
     [aContact changeGroup:newGroup];
 }
 
-
-
-
-
-
-
 /*! subscribe to the given JID and add in into the roster if needed
     @param aJID the JID to subscribe
 */
-- (void)authorizeJID:(CPString)aJID 
+- (void)authorizeJID:(CPString)aJID
 {
     var contact = [self contactWithJID:aJID];
-    
+
     if (!contact)
     {
         var name = aJID.split('@')[0];
-                
+
         contact = [self addContact:aJID withName:name inGroupWithName:@"General"];
     }
-    
+
     [contact subscribe];
 }
 
@@ -489,7 +462,7 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 - (void)answerAuthorizationRequest:(id)aStanza answer:(BOOL)theAnswer
 {
     var requester = [aStanza from];
-    
+
     if (theAnswer == YES)
     {
         [self authorizeJID:requester];
@@ -497,12 +470,11 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
     }
     else
         [self unauthorizeJID:requester];
-    
-    if (![self containsJID:requester])
-        [self addContact:requester withName:requester inGroup:nil]; 
-        
-}
 
+    if (![self containsJID:requester])
+        [self addContact:requester withName:requester inGroup:nil];
+
+}
 
 /*! sent disconnect message to the TNStropheConnection of the roster
 */
@@ -510,4 +482,5 @@ TNStropheRosterRemovedGroupNotification               = @"TNStropheRosterRemoved
 {
     [_connection disconnect];
 }
+
 @end
