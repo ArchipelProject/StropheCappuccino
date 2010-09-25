@@ -160,8 +160,7 @@
 */
 - (void)setValue:(CPString)aValue forAttribute:(CPString)anAttribute
 {
-    var attr = {},
-        tmpNode;
+    var attr = {};
 
     attr[anAttribute] = aValue;
 

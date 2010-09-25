@@ -183,7 +183,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [contact setGroupName:aGroupName];
     [contact setNodeName:aJID.split('@')[0]];
     [contact setNickname:aJID.split('@')[0]];
-    [contact setDomain: aJID.split('/')[0].split('@')[1]];
+    [contact setDomain:aJID.split('/')[0].split('@')[1]];
 
     return contact;
 }
@@ -249,9 +249,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (BOOL)didReceivedStatus:(TNStropheStanza)aStanza
 {
-    var center          = [CPNotificationCenter defaultCenter],
-        bundle          = [CPBundle bundleForClass:self],
-        fromJID         = [aStanza from],
+    var fromJID         = [aStanza from],
         resource        = [aStanza fromResource],
         presenceType    = [aStanza type];
 
@@ -264,17 +262,16 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     {
         errorCode       = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
         _XMPPShow       = TNStropheContactStatusOffline;
-        _XMPPStatus     ="Error code: " + errorCode;
+        _XMPPStatus     = "Error code: " + errorCode;
         _statusIcon     = _imageNewError;
         _statusReminder = _imageNewError;
 
-        [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
 
         return NO;
     }
     if (presenceType == "unavailable")
     {
-
         [_resources removeObject:resource];
         CPLogConsole("contact become unavailable from resource: "+resource+". Resources left : " + _resources )
 
@@ -335,19 +332,17 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             }
         }
 
-        var presenceShow = [aStanza firstChildWithName:@"status"];
-        if (presenceShow)
+        if ([aStanza firstChildWithName:@"status"])
             _XMPPStatus = [presenceShow text];
 
         if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
             [self getVCard];
     }
 
-    [center postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
 
     return YES;
 }
-
 
 /*! probe the contact's vCard
     you should never have to use this message if you are using TNStropheRoster
@@ -380,11 +375,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     if (aVCard)
     {
-        var center = [CPNotificationCenter defaultCenter],
-            photoNode;
-
         _vCard = aVCard;
 
+        var photoNode;
         if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
         {
             var contentType = [[photoNode firstChildWithName:@"TYPE"] text],
@@ -393,13 +386,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             _avatar = [TNBase64Image base64ImageWithContentType:contentType andData:data];
         }
 
-        var name;
         if ((_nickname == _nodeName) && ([aVCard firstChildWithName:@"NAME"]))
         {
             _nickname = [[aVCard firstChildWithName:@"NAME"] text]
         }
 
-        [center postNotificationName:TNStropheContactVCardReceivedNotification object:self];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
 
     return YES;
@@ -418,8 +410,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId
 {
-    var uid                 = anId,
-        params              = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
+    var params              = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
         ret                 = nil,
         lastKnownResource   = (_fullJID) ? _fullJID.split("/")[1] : nil;
 
@@ -427,7 +418,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _fullJID = _fullJID.split("/")[0] + "/" + [_resources lastObject];
 
     [aStanza setTo:_fullJID];
-    [aStanza setID:uid];
+    [aStanza setID:anId];
 
     if (aSelector)
     {
@@ -449,12 +440,10 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var uid         = [_connection getUniqueId],
-        center      = [CPNotificationCenter defaultCenter],
-        userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"],
-        ret = [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:uid];
+    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"],
+        ret         = [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId]];
 
-    [center postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
 
     return ret
 }
@@ -518,9 +507,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)sendMessage:(CPString)aMessage
 {
-    var uid             = [_connection getUniqueId],
-        messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type": "chat"}],
-        params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+    var messageStanza   = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type": "chat"}],
+        params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
 
     [messageStanza addChildName:@"body"];
     [messageStanza addTextNode:aMessage];
@@ -539,10 +527,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (BOOL)_didSentMessage:(id)aStanza
 {
-    var center      = [CPNotificationCenter defaultCenter],
-        userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
+    var userInfo = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
 
-    [center postNotificationName:TNStropheContactMessageSentNotification object:self userInfo:userInfo];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageSentNotification object:self userInfo:userInfo];
 
     return NO;
 }
@@ -554,9 +541,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     if (!_isComposing)
     {
-        var uid             = [_connection getUniqueId],
-            composingStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}],
-            params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+        var composingStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}],
+            params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
 
         [composingStanza addChildName:@"composing" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
 
@@ -570,9 +556,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)sendComposePaused
 {
-    var uid             = [_connection getUniqueId],
-        pausedStanza    = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}],
-        params          = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+    var pausedStanza    = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}],
+        params          = [CPDictionary dictionaryWithObjectsAndKeys:[_connection getUniqueId], @"id"];
 
     [pausedStanza addChildName:@"paused" withAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
 
@@ -597,8 +582,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     [_connection send:stanza];
 
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
 }
 
 /*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
@@ -615,14 +599,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     _groupName = [newGroup name];
 
-    var center = [CPNotificationCenter defaultCenter];
-    [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
 - (void)changeGroupName:(CPString)aNewName
 {
-    var center = [CPNotificationCenter defaultCenter],
-        stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
 
     [stanza addChildName:@"query" withAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [stanza addChildName:@"item" withAttributes:{"JID": _JID, "name": _nickname}];
@@ -633,7 +615,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     _groupName = aNewName;
 
-    [center postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
 /*! return the last TNStropheStanza message in the message queue and remove it form the queue.
@@ -646,31 +628,26 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     if ([_messagesQueue count] == 0)
         return Nil;
 
-    var lastMessage = [_messagesQueue objectAtIndex:0],
-        center      = [CPNotificationCenter defaultCenter];
-
     _numberOfEvents--;
     _statusIcon = _statusReminder;
 
     [_messagesQueue removeObjectAtIndex:0];
 
-    [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageTreatedNotification object:self];
 
-    return lastMessage;
+    return [_messagesQueue objectAtIndex:0];
 }
 
 /*! purge all message in queue. Will post TNStropheContactMessageTreatedNotification
 */
 - (void)freeMessagesQueue
 {
-    var center = [CPNotificationCenter defaultCenter];
-
     _numberOfEvents = 0;
     _statusIcon = _statusReminder;
 
     [_messagesQueue removeAllObjects];
 
-    [center postNotificationName:TNStropheContactMessageTreatedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageTreatedNotification object:self];
 }
 
 /*! subscribe to the contact

@@ -172,8 +172,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
 
-        var bundle  = [CPBundle bundleForClass:[self class]],
-            sound   = [bundle pathForResource:@"Receive.mp3"];
+        var sound = [[CPBundle bundleForClass:[self class]] pathForResource:@"Receive.mp3"];
 
         _audioTagReceive = document.createElement('audio');
         _audioTagReceive.setAttribute("src", sound);

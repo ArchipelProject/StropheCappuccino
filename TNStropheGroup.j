@@ -56,8 +56,6 @@ TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
 
 - (void)changeName:(CPString)aName
 {
-    var center = [CPNotificationCenter defaultCenter];
-
     _name = aName;
 
     for (var i = 0; i < [self count]; i++)
@@ -66,7 +64,7 @@ TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
         [contact changeGroupName:aName];
     }
 
-    [center postNotificationName:TNStropheGroupRenamedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
 }
 
 - (void)addContact:(TNStropheContact)aContact
