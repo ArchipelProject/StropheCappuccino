@@ -332,7 +332,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 }
 
 /*! send a TNStropheStanza object
-
     @param aStanza: the stanza to send
 */
 - (void)send:(TNStropheStanza)aStanza
@@ -429,7 +428,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
     @return an id of the handler registration used to remove it
 */
-- (void)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
 {
     var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
                 var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
@@ -448,7 +447,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     return handlerId;
 }
 
-/*! delete an registred selector
+/*! delete a registered selector
 
     @param aHandlerId the handler id to remove
 */
@@ -457,7 +456,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     _connection.deleteHandler(aHandlerId)
 }
 
-/*! delete an registred timed selector
+/*! delete a registered timed selector
 
     @param aHandlerId the handler id to remove
 */

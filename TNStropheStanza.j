@@ -383,20 +383,20 @@
     [self setValue:aFrom forAttribute:@"from"];
 }
 
-/*! get the from node only field of the stanza
-    @return from node field of stanza
+/*! get the bare from JID of the stanza
+    @return bare from JID of stanza
 */
-- (CPString)fromNode
+- (CPString)fromBare
 {
-    return [self valueForAttribute:@"from"].split("/")[0];
+    return [self from].split("/")[0];
 }
 
 /*! return the the bare user name
-    @return from node field of stanza
+    @return from user field of stanza
 */
 - (CPString)fromUser
 {
-    return [self valueForAttribute:@"from"].split("/")[0].split("@")[0];
+    return [self from].split("/")[0].split("@")[0];
 }
 
 /*! get the domain of the form field
@@ -422,6 +422,7 @@
 */
 - (CPString)to
 {
+    while ([self up]);
     return [self valueForAttribute:@"to"];
 }
 
