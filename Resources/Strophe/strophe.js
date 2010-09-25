@@ -15,12 +15,12 @@ var Base64 = (function () {
             var chr1, chr2, chr3;
             var enc1, enc2, enc3, enc4;
             var i = 0;
-        
+
             do {
                 chr1 = input.charCodeAt(i++);
                 chr2 = input.charCodeAt(i++);
                 chr3 = input.charCodeAt(i++);
-                
+
                 enc1 = chr1 >> 2;
                 enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
                 enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
@@ -31,14 +31,14 @@ var Base64 = (function () {
                 } else if (isNaN(chr3)) {
                     enc4 = 64;
                 }
-                
+
                 output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) +
                     keyStr.charAt(enc3) + keyStr.charAt(enc4);
             } while (i < input.length);
-            
+
             return output;
         },
-        
+
         /**
          * Decodes a base64 string.
          * @param {String} input The string to decode.
@@ -48,22 +48,22 @@ var Base64 = (function () {
             var chr1, chr2, chr3;
             var enc1, enc2, enc3, enc4;
             var i = 0;
-            
+
             // remove all characters that are not A-Z, a-z, 0-9, +, /, or =
             input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-            
+
             do {
                 enc1 = keyStr.indexOf(input.charAt(i++));
                 enc2 = keyStr.indexOf(input.charAt(i++));
                 enc3 = keyStr.indexOf(input.charAt(i++));
                 enc4 = keyStr.indexOf(input.charAt(i++));
-                
+
                 chr1 = (enc1 << 2) | (enc2 >> 4);
                 chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
                 chr3 = ((enc3 & 3) << 6) | enc4;
-                
+
                 output = output + String.fromCharCode(chr1);
-                
+
                 if (enc3 != 64) {
                     output = output + String.fromCharCode(chr2);
                 }
@@ -71,7 +71,7 @@ var Base64 = (function () {
                     output = output + String.fromCharCode(chr3);
                 }
             } while (i < input.length);
-            
+
             return output;
         }
     };
@@ -197,7 +197,7 @@ var MD5 = (function () {
     var md5_ii = function (a, b, c, d, x, s, t) {
         return md5_cmn(c ^ (b | (~d)), a, b, x, s, t);
     };
-    
+
     /*
      * Calculate the MD5 of an array of little-endian words, and a bit length
      */
@@ -218,7 +218,7 @@ var MD5 = (function () {
             oldb = b;
             oldc = c;
             oldd = d;
-            
+
             a = md5_ff(a, b, c, d, x[i+ 0], 7 , -680876936);
             d = md5_ff(d, a, b, c, x[i+ 1], 12, -389564586);
             c = md5_ff(c, d, a, b, x[i+ 2], 17,  606105819);
@@ -235,7 +235,7 @@ var MD5 = (function () {
             d = md5_ff(d, a, b, c, x[i+13], 12, -40341101);
             c = md5_ff(c, d, a, b, x[i+14], 17, -1502002290);
             b = md5_ff(b, c, d, a, x[i+15], 22,  1236535329);
-            
+
             a = md5_gg(a, b, c, d, x[i+ 1], 5 , -165796510);
             d = md5_gg(d, a, b, c, x[i+ 6], 9 , -1069501632);
             c = md5_gg(c, d, a, b, x[i+11], 14,  643717713);
@@ -252,7 +252,7 @@ var MD5 = (function () {
             d = md5_gg(d, a, b, c, x[i+ 2], 9 , -51403784);
             c = md5_gg(c, d, a, b, x[i+ 7], 14,  1735328473);
             b = md5_gg(b, c, d, a, x[i+12], 20, -1926607734);
-            
+
             a = md5_hh(a, b, c, d, x[i+ 5], 4 , -378558);
             d = md5_hh(d, a, b, c, x[i+ 8], 11, -2022574463);
             c = md5_hh(c, d, a, b, x[i+11], 16,  1839030562);
@@ -269,7 +269,7 @@ var MD5 = (function () {
             d = md5_hh(d, a, b, c, x[i+12], 11, -421815835);
             c = md5_hh(c, d, a, b, x[i+15], 16,  530742520);
             b = md5_hh(b, c, d, a, x[i+ 2], 23, -995338651);
-            
+
             a = md5_ii(a, b, c, d, x[i+ 0], 6 , -198630844);
             d = md5_ii(d, a, b, c, x[i+ 7], 10,  1126891415);
             c = md5_ii(c, d, a, b, x[i+14], 15, -1416354905);
@@ -286,7 +286,7 @@ var MD5 = (function () {
             d = md5_ii(d, a, b, c, x[i+11], 10, -1120210379);
             c = md5_ii(c, d, a, b, x[i+ 2], 15,  718787259);
             b = md5_ii(b, c, d, a, x[i+ 9], 21, -343485551);
-            
+
             a = safe_add(a, olda);
             b = safe_add(b, oldb);
             c = safe_add(c, oldc);
@@ -302,14 +302,14 @@ var MD5 = (function () {
     var core_hmac_md5 = function (key, data) {
         var bkey = str2binl(key);
         if(bkey.length > 16) { bkey = core_md5(bkey, key.length * chrsz); }
-        
+
         var ipad = new Array(16), opad = new Array(16);
         for(var i = 0; i < 16; i++)
         {
             ipad[i] = bkey[i] ^ 0x36363636;
             opad[i] = bkey[i] ^ 0x5C5C5C5C;
         }
-        
+
         var hash = core_md5(ipad.concat(str2binl(data)), 512 + data.length * chrsz);
         return core_md5(opad.concat(hash), 512 + 128);
     };
@@ -579,7 +579,7 @@ Strophe = {
         STANZAS: "urn:ietf:params:xml:ns:xmpp-stanzas"
     },
 
-    /** Function: addNamespace 
+    /** Function: addNamespace
      *  This function is used to extend the current namespaces in
      *	Strophe.NS.  It takes a key and a value with the key being the
      *	name of the new namespace, with its actual value.
@@ -589,7 +589,7 @@ Strophe = {
      *  Parameters:
      *    (String) name - The name under which the namespace will be
      *      referenced under Strophe.NS
-     *    (String) value - The actual namespace.	
+     *    (String) value - The actual namespace.
      */
     addNamespace: function (name, value)
     {
@@ -786,7 +786,7 @@ Strophe = {
                     if (arguments[a].hasOwnProperty(k)) {
                         node.setAttribute(k, arguments[a][k]);
                     }
-                } 
+                }
             }
         }
 
@@ -802,12 +802,12 @@ Strophe = {
      *	Returns:
      *      Escaped text.
      */
-    xmlescape: function(text) 
+    xmlescape: function(text)
     {
 	text = text.replace(/\&/g, "&amp;");
         text = text.replace(/</g,  "&lt;");
         text = text.replace(/>/g,  "&gt;");
-        return text;    
+        return text;
     },
 
     /** Function: xmlTextNode
@@ -1407,7 +1407,7 @@ Strophe.Handler = function (handler, ns, name, type, id, from, options)
     this.type = type;
     this.id = id;
     this.options = options || {matchbare: false};
-    
+
     // default matchBare to false if undefined
     if (!this.options.matchBare) {
         this.options.matchBare = false;
@@ -1437,7 +1437,7 @@ Strophe.Handler.prototype = {
     {
         var nsMatch;
         var from = null;
-        
+
         if (this.options.matchBare) {
             from = Strophe.getBareJidFromJid(elem.getAttribute('from'));
         } else {
@@ -2089,10 +2089,10 @@ Strophe.Connection.prototype = {
 
     /** Function: flush
      *  Immediately send any pending outgoing data.
-     *  
+     *
      *  Normally send() queues outgoing data until the next idle period
      *  (100ms), which optimizes network use in the common cases when
-     *  several send()s are called in succession. flush() can be used to 
+     *  several send()s are called in succession. flush() can be used to
      *  immediately send all pending data.
      */
     flush: function ()
@@ -2109,9 +2109,9 @@ Strophe.Connection.prototype = {
      *  Parameters:
      *    (XMLElement) elem - The stanza to send.
      *    (Function) callback - The callback function for a successful request.
-     *    (Function) errback - The callback function for a failed or timed 
+     *    (Function) errback - The callback function for a failed or timed
      *      out request.  On timeout, the stanza will be null.
-     *    (Integer) timeout - The time specified in milliseconds for a 
+     *    (Integer) timeout - The time specified in milliseconds for a
      *      timeout to occur.
      *
      *  Returns:
@@ -2187,7 +2187,7 @@ Strophe.Connection.prototype = {
                 message: "Cannot queue non-DOMElement."
             };
         }
-        
+
         this._data.push(element);
     },
 
@@ -2270,7 +2270,7 @@ Strophe.Connection.prototype = {
      *  boolean). When matchBare is true, the from parameter and the from
      *  attribute on the stanza will be matched as bare JIDs instead of
      *  full JIDs. To use this, pass {matchBare: true} as the value of
-     *  options. The default value for matchBare is false. 
+     *  options. The default value for matchBare is false.
      *
      *  The return value should be saved if you wish to remove the handler
      *  with deleteHandler().
@@ -2883,7 +2883,7 @@ Strophe.Connection.prototype = {
         if (hold) { this.hold = parseInt(hold, 10); }
         var wait = bodyWrap.getAttribute('wait');
         if (wait) { this.wait = parseInt(wait, 10); }
-        
+
 
         var do_sasl_plain = false;
         var do_sasl_digest_md5 = false;
@@ -3083,7 +3083,7 @@ Strophe.Connection.prototype = {
      */
     _quote: function (str)
     {
-        return '"' + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"'; 
+        return '"' + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"';
         //" end string workaround for emacs
     },
 
