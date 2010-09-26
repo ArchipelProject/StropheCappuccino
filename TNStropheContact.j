@@ -231,12 +231,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)getStatus
 {
-    var probe   = [TNStropheStanza presenceWithAttributes:{"from": [_connection JID], "type": "probe", "to": _JID}],
+    var probe   = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"probe", @"to": _JID}],
         params  = [[CPDictionary alloc] init];
 
     [params setValue:@"presence" forKey:@"name"];
     [params setValue:_JID forKey:@"from"];
-    [params setValue:{"matchBare": YES} forKey:@"options"];
+    [params setValue:{@"matchBare": YES} forKey:@"options"];
 
     [_connection registerSelector:@selector(didReceivedStatus:) ofObject:self withDict:params];
     [_connection send:probe];
@@ -262,7 +262,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         case @"error":
             errorCode       = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
             _XMPPShow       = TNStropheContactStatusOffline;
-            _XMPPStatus     = "Error code: " + errorCode;
+            _XMPPStatus     = @"Error code: " + errorCode;
             _statusIcon     = _imageNewError;
             _statusReminder = _imageNewError;
 
@@ -271,7 +271,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             return NO;
         case @"unavailable":
             [_resources removeObject:resource];
-            CPLogConsole("contact become unavailable from resource: "+resource+". Resources left : " + _resources )
+            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources )
 
             if ([_resources count] == 0)
             {
@@ -284,14 +284,14 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
             }
             break;
         case @"subscribe":
-            _XMPPStatus = "Asking subscribtion";
+            _XMPPStatus = @"Asking subscribtion";
             break;
         case @"subscribed":
             break;
         case @"unsubscribe":
             break;
         case @"unsubscribed":
-            _XMPPStatus = "Unauthorized";
+            _XMPPStatus = @"Unauthorized";
             break;
         default:
             _XMPPShow       = TNStropheContactStatusOnline;
@@ -340,14 +340,14 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (void)getVCard
 {
     var uid         = [_connection getUniqueId],
-        vcardStanza = [TNStropheStanza iqWithAttributes:{"from": [_connection JID], "to": _JID, "type": "get", "id": uid}];
+        vcardStanza = [TNStropheStanza iqWithAttributes:{@"from": [_connection JID], @"to": _JID, @"type": @"get", @"id": uid}];
 
-    [vcardStanza addChildWithName:@"vCard" andAttributes:{'xmlns': "vcard-temp"}];
+    [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
 
     var params = [[CPDictionary alloc] init];
     [params setValue:_JID forKey:@"from"];
     [params setValue:uid forKey:@"id"];
-    [params setValue:{"matchBare": YES} forKey:@"options"];
+    [params setValue:{@"matchBare": YES} forKey:@"options"];
 
     [_connection registerSelector:@selector(didReceiveVCard:) ofObject:self withDict:params];
     [_connection send:vcardStanza];
@@ -400,10 +400,10 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     var params              = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
         ret                 = nil,
-        lastKnownResource   = (_fullJID) ? _fullJID.split("/")[1] : nil;
+        lastKnownResource   = (_fullJID) ? _fullJID.split(@"/")[1] : nil;
 
     if (_fullJID && ![_resources containsObject:lastKnownResource])
-        _fullJID = _fullJID.split("/")[0] + "/" + [_resources lastObject];
+        _fullJID = _fullJID.split("/")[0] + @"/" + [_resources lastObject];
 
     [aStanza setTo:_fullJID];
     [aStanza setID:anId];
@@ -443,7 +443,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     [params setValue:@"message" forKey:@"name"];
     [params setValue:_JID forKey:@"from"];
-    [params setValue:{"matchBare": YES} forKey:@"options"];
+    [params setValue:{@"matchBare": YES} forKey:@"options"];
 
     [_connection registerSelector:@selector(_didReceivedMessage:) ofObject:self withDict:params];
 }
@@ -502,7 +502,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)sendMessage:(CPString)aMessage withType:(CPString)aType
 {
-    var messageStanza = [TNStropheStanza messageWithAttributes:{"to":  _JID, "from": [_connection JID], "type":aType}];
+    var messageStanza = [TNStropheStanza messageWithAttributes:{@"to":  _JID, @"from": [_connection JID], @"type":aType}];
 
     [messageStanza addChildWithName:@"body"];
     [messageStanza addTextNode:aMessage];
@@ -617,15 +617,17 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     if ([_messagesQueue count] == 0)
         return Nil;
-
+        
+    var message = [_messagesQueue objectAtIndex:0];
+    
     _numberOfEvents--;
     _statusIcon = _statusReminder;
-
+    
     [_messagesQueue removeObjectAtIndex:0];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageTreatedNotification object:self];
 
-    return [_messagesQueue objectAtIndex:0];
+    return message;
 }
 
 /*! purge all message in queue. Will post TNStropheContactMessageTreatedNotification
@@ -644,7 +646,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)subscribe
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{"from": [_connection JID], "type": "subscribed", "to": _JID}];
+    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"subscribed", @"to": _JID}];
     [_connection send:resp];
 }
 
@@ -652,7 +654,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)unsubscribe
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{"from": [_connection JID], "type": "unsubscribed", "to": _JID}];
+    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"unsubscribed", @"to": _JID}];
     [_connection send:resp];
 }
 
@@ -660,7 +662,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)askSubscription
 {
-    var auth = [TNStropheStanza presenceWithAttributes:{"type": "subscribe", "to": _JID}];
+    var auth = [TNStropheStanza presenceWithAttributes:{@"type": @"subscribe", @"to": _JID}];
     [_connection send:auth];
 }
 
