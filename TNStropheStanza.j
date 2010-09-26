@@ -91,11 +91,6 @@
     _xmlNode = _xmlNode.c(aTagName, attributes);
 }
 
-- (void)addChildName:(CPString)aTagName andAttributes:(CPDictionary)attributes
-{
-    [self addChildWithName:aTagName andAttributes:attributes];
-}
-
 /*! Add a child to the current seletected node
     This will move the stanza object pointer to the child node
     @param aTagName name of the new tag
@@ -105,7 +100,7 @@
     [self addChildWithName:aTagName andAttributes:{}]
 }
 
-- (void)addChildName:(CPString)aTagName
+- (void)addChildWithName:(CPString)aTagName
 {
     [self addChildWithName:aTagName];
 }

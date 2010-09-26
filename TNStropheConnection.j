@@ -363,9 +363,9 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 - (void)publishPEPPayload:(TNXMLNode)aPayload toNode:(CPString)aNode
 {
     var stanza = [TNStropheStanza iqWithAttributes:{"type":"set", "id":[self getUniqueId]}];
-    [stanza addChildName:@"pubsub" withAttributes:{"xmlns":Strophe.NS.PUBSUB}]
-    [stanza addChildName:@"publish" withAttributes:{"node":aNode}];
-    [stanza addChildName:@"item"];
+    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns":Strophe.NS.PUBSUB}]
+    [stanza addChildWithName:@"publish" andAttributes:{"node":aNode}];
+    [stanza addChildWithName:@"item"];
     [stanza addNode:[aPayload tree]];
     [self send:stanza];
 }
