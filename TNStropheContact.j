@@ -278,8 +278,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
                 _XMPPShow       = TNStropheContactStatusOffline;
                 _statusIcon     = _imageOffline;
                 _statusReminder = _imageOffline;
-                
-                
+
                 if (presenceShow)
                     _XMPPStatus = [presenceShow text];
             }
