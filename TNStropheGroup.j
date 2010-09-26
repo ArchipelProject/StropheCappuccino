@@ -1,17 +1,17 @@
-/*  
+/*
  * TNStropheGroup.j
- *    
+ *
  * Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,7 +25,7 @@ TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
 */
-@implementation TNStropheGroup: CPObject 
+@implementation TNStropheGroup: CPObject
 {
     CPArray                 _contacts   @accessors(getter=contacts);
     CPString                _name       @accessors(property=name);
@@ -56,25 +56,22 @@ TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
 
 - (void)changeName:(CPString)aName
 {
-    var center = [CPNotificationCenter defaultCenter];
-    
     _name = aName;
-    
+
     for (var i = 0; i < [self count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
         [contact changeGroupName:aName];
     }
-    
-    [center postNotificationName:TNStropheGroupRenamedNotification object:self];
-}
 
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
+}
 
 - (void)addContact:(TNStropheContact)aContact
 {
     if ([aContact class] != TNStropheContact)
         [CPException raise:"Invalid Object" reason:"You can only add TNStropheContacts"];
-    
+
     [_contacts addObject:aContact];
 }
 
@@ -95,7 +92,7 @@ TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];
-    
+
     if (self)
     {
         _contacts   = [aCoder decodeObjectForKey:@"_contacts"];
@@ -109,4 +106,5 @@ TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
     [aCoder encodeObject:_contacts forKey:@"_contacts"];
     [aCoder encodeObject:_name forKey:@"_name"];
 }
+
 @end

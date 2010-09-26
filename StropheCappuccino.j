@@ -17,13 +17,13 @@
  */
 
 @import "Resources/Strophe/strophe.js"
+@import "Resources/Strophe/sha1.js"
 @import "TNStropheStanza.j"
 @import "TNStropheGroup.j"
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
 @import "TNBase64Image.j"
-
 
 /*! @mainpage
     StropheCappuccino is distributed under the @ref license "AGPL".
