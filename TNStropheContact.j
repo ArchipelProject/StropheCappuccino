@@ -249,7 +249,8 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (BOOL)didReceivedStatus:(TNStropheStanza)aStanza
 {
-    var resource = [aStanza fromResource];
+    var resource = [aStanza fromResource],
+        presenceShow = [aStanza firstChildWithName:@"status"];
 
     _fullJID = [aStanza from];
 
@@ -277,8 +278,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
                 _XMPPShow       = TNStropheContactStatusOffline;
                 _statusIcon     = _imageOffline;
                 _statusReminder = _imageOffline;
-
-                if ([aStanza firstChildWithName:@"status"])
+                
+                
+                if (presenceShow)
                     _XMPPStatus = [presenceShow text];
             }
             break;
@@ -320,7 +322,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
                 }
             }
 
-            if ([aStanza firstChildWithName:@"status"])
+            if (presenceShow)
                 _XMPPStatus = [presenceShow text];
 
             if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
