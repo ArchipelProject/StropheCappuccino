@@ -100,11 +100,6 @@
     [self addChildWithName:aTagName andAttributes:{}]
 }
 
-- (void)addChildWithName:(CPString)aTagName
-{
-    [self addChildWithName:aTagName];
-}
-
 /*! append a node to the current node
     @param aNode the dom element to add.
 */
