@@ -211,7 +211,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _statusIcon         = _imageOffline;
         _XMPPShow           = TNStropheContactStatusOffline;
         _connection         = aConnection;
-        _messagesQueue      = [[CPArray alloc] init];
+        _messagesQueue      = [CPArray dictionary];
         _numberOfEvents     = 0;
         _isComposing        = NO;
 
@@ -232,7 +232,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 - (void)getStatus
 {
     var probe   = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"probe", @"to": _JID}],
-        params  = [[CPDictionary alloc] init];
+        params  = [CPDictionary dictionary];
 
     [params setValue:@"presence" forKey:@"name"];
     [params setValue:_JID forKey:@"from"];
@@ -344,7 +344,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
 
-    var params = [[CPDictionary alloc] init];
+    var params = [CPDictionary dictionary];
     [params setValue:_JID forKey:@"from"];
     [params setValue:uid forKey:@"id"];
     [params setValue:{@"matchBare": YES} forKey:@"options"];
@@ -439,7 +439,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 - (void)getMessages
 {
-    var params = [[CPDictionary alloc] init];
+    var params = [CPDictionary dictionary];
 
     [params setValue:@"message" forKey:@"name"];
     [params setValue:_JID forKey:@"from"];
