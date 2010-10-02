@@ -68,7 +68,11 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     TNStropheConnection     _connection     @accessors(getter=connection);
 
     TNStropheGroup          _defaultGroup;
+}
 
++ (TNStropheRoster)rosterWithConnection:(TNStropheConnection)aConnection
+{
+    return [[TNStropheRoster alloc] initWithConnection:aConnection];
 }
 
 /*! initialize a roster with a valid TNStropheConnection
