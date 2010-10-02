@@ -178,14 +178,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 */
 + (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID groupName:(CPString)aGroupName
 {
-    var contact = [[TNStropheContact alloc] initWithConnection:aConnection];
-    [contact setJID:aJID];
-    [contact setGroupName:aGroupName];
-    [contact setNodeName:aJID.split('@')[0]];
-    [contact setNickname:aJID.split('@')[0]];
-    [contact setDomain:aJID.split('/')[0].split('@')[1]];
-
-    return contact;
+    return [[TNStropheContact alloc] initWithConnection:aConnection JID:aJID groupName:aGroupName];
 }
 
 /*! init a TNStropheContact with a given connection
@@ -193,7 +186,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     @return an initialized TNStropheContact
 */
-- (id)initWithConnection:(TNStropheConnection)aConnection
+- (id)initWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID groupName:(CPString)aGroupName
 {
     if (self = [super init])
     {
@@ -216,6 +209,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _isComposing        = NO;
 
         _resources          = [CPArray array];
+
+        _JID                = aJID;
+        _groupName          = aGroupName;
+        _nodeName           = aJID.split('@')[0];
+        _nickname           = aJID.split('@')[0];
+        _domain             = aJID.split('/')[0].split('@')[1];
     }
 
     return self;
