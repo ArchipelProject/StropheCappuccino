@@ -396,7 +396,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 /*! pause the current connection
 */
-- (void)reset
+- (void)pause
 {
     if (_connection)
         _connection.pause();
