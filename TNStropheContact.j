@@ -204,7 +204,7 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
         _statusIcon         = _imageOffline;
         _XMPPShow           = TNStropheContactStatusOffline;
         _connection         = aConnection;
-        _messagesQueue      = [CPArray dictionary];
+        _messagesQueue      = [CPArray array];
         _numberOfEvents     = 0;
         _isComposing        = NO;
 

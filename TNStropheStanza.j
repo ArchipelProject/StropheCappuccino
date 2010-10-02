@@ -173,7 +173,7 @@
 */
 - (CPArray)childrenWithName:(CPString)aName
 {
-    var nodes       = [CPArray dictionary],
+    var nodes       = [CPArray array],
         elements    = [self tree].getElementsByTagName(aName);
 
     for (var i = 0; i < elements.length; i++)
@@ -188,7 +188,7 @@
 */
 - (CPArray)ownChildrenWithName:(CPString)aName
 {
-    var nodes       = [CPArray dictionary],
+    var nodes       = [CPArray array],
         elements    = [self tree].childNodes;
 
     for (var i = 0; i < elements.length; i++)
