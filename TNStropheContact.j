@@ -656,12 +656,12 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 {
     if ([_messagesQueue count] == 0)
         return Nil;
-        
+
     var message = [_messagesQueue objectAtIndex:0];
-    
+
     _numberOfEvents--;
     _statusIcon = _statusReminder;
-    
+
     [_messagesQueue removeObjectAtIndex:0];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageTreatedNotification object:self];
