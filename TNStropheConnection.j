@@ -173,7 +173,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     if (self = [super init])
     {
         _boshService            = aService;
-        _registeredHandlerDict  = [[CPDictionary alloc] init];
+        _registeredHandlerDict  = [CPDictionary dictionary];
         _soundEnabled           = YES;
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);

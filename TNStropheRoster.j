@@ -87,7 +87,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 
         //[_groups addObject:_defaultGroup];
 
-        var params = [[CPDictionary alloc] init];
+        var params = [CPDictionary dictionary];
         [params setValue:@"presence" forKey:@"name"];
         [params setValue:@"subscribe" forKey:@"type"];
         [params setValue:[_connection JID] forKey:@"to"];
@@ -115,7 +115,7 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 - (void)getRoster
 {
     var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
-        params      = [[CPDictionary alloc] init],
+        params      = [CPDictionary dictionary],
         rosteriq    = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}];
 
     [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
