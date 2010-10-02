@@ -190,11 +190,11 @@
 {
     var nodes       = [CPArray dictionary],
         elements    = [self tree].childNodes;
-    
+
     for (var i = 0; i < elements.length; i++)
         if ((aName === nil) || (aName && elements[i].tagName == aName))
             [nodes addObject:[TNXMLNode nodeWithXMLNode:elements[i]]]
-    
+
     return nodes;
 }
 
