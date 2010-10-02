@@ -221,10 +221,9 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return self;
 }
 
-- (CPString)description
-{
-    return _nickname;
-}
+@end
+
+@implementation TNStropheContact (Status)
 
 /*! probe the contact about its status
     You should never have to use this message if you are using TNStropheRoster
@@ -334,6 +333,73 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return YES;
 }
 
+- (void)sendStatus:(CPString)aStatus
+{
+    var statusStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}];
+
+    [statusStanza addChildWithName:aStatus andAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
+
+    [self sendStanza:statusStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
+}
+
+/*! this allows to send "composing" information to a user. This will never send "paused".
+    you have to handle a timer if you want to automatically send pause after a while.
+*/
+- (void)sendComposing
+{
+    if (!_isComposing)
+    {
+        [self sendStatus:@"composing"];
+        _isComposing = YES;
+    }
+}
+
+/*! this allows to send "paused" information to a user.
+*/
+- (void)sendComposePaused
+{
+    [self sendStatus:@"paused"];
+
+    _isComposing = NO;
+}
+
+@end
+
+@implementation TNStropheContact (Subscription)
+
+/*! subscribe to the contact
+*/
+- (void)subscribe
+{
+    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"subscribed", @"to": _JID}];
+    [_connection send:resp];
+}
+
+/*! unsubscribe from the contact
+*/
+- (void)unsubscribe
+{
+    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"unsubscribed", @"to": _JID}];
+    [_connection send:resp];
+}
+
+/*! ask subscribtion to the contact
+*/
+- (void)askSubscription
+{
+    var auth = [TNStropheStanza presenceWithAttributes:{@"type": @"subscribe", @"to": _JID}];
+    [_connection send:auth];
+}
+
+@end
+
+@implementation TNStropheContact (MetaData)
+
+- (CPString)description
+{
+    return _nickname;
+}
+
 /*! probe the contact's vCard
     you should never have to use this message if you are using TNStropheRoster
 */
@@ -384,6 +450,61 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
 
     return YES;
 }
+
+/*! this allows to change the contact nickname. Will post TNStropheContactNicknameUpdatedNotification
+    @param newNickname the new nickname
+*/
+- (void)changeNickname:(CPString)newNickname
+{
+    _nickname = newNickname;
+
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"group" andAttributes:nil];
+    [stanza addTextNode:_groupName];
+
+    [_connection send:stanza];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
+}
+
+/*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
+*/
+- (void)changeGroup:(TNStropheGroup)newGroup
+{
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"group" andAttributes:nil];
+    [stanza addTextNode:[newGroup name]];
+
+    [_connection send:stanza];
+
+    _groupName = [newGroup name];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+}
+
+- (void)changeGroupName:(CPString)aNewName
+{
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"group" andAttributes:nil];
+    [stanza addTextNode:aNewName];
+
+    [_connection send:stanza];
+
+    _groupName = aNewName;
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+}
+
+@end
+
+@implementation TNStropheContact (Communicating)
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
     in order to use it if you need. You should mostly use the
@@ -527,87 +648,6 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     return NO;
 }
 
-- (void)sendStatus:(CPString)aStatus
-{
-    var statusStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}];
-
-    [statusStanza addChildWithName:aStatus andAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
-
-    [self sendStanza:statusStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
-}
-
-/*! this allows to send "composing" information to a user. This will never send "paused".
-    you have to handle a timer if you want to automatically send pause after a while.
-*/
-- (void)sendComposing
-{
-    if (!_isComposing)
-    {
-        [self sendStatus:@"composing"];
-        _isComposing = YES;
-    }
-}
-
-/*! this allows to send "paused" information to a user.
-*/
-- (void)sendComposePaused
-{
-    [self sendStatus:@"paused"];
-
-    _isComposing = NO;
-}
-
-/*! this allows to change the contact nickname. Will post TNStropheContactNicknameUpdatedNotification
-    @param newNickname the new nickname
-*/
-- (void)changeNickname:(CPString)newNickname
-{
-    _nickname = newNickname;
-
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
-    [stanza addChildWithName:@"group" andAttributes:nil];
-    [stanza addTextNode:_groupName];
-
-    [_connection send:stanza];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
-}
-
-/*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
-*/
-- (void)changeGroup:(TNStropheGroup)newGroup
-{
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
-    [stanza addChildWithName:@"group" andAttributes:nil];
-    [stanza addTextNode:[newGroup name]];
-
-    [_connection send:stanza];
-
-    _groupName = [newGroup name];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
-}
-
-- (void)changeGroupName:(CPString)aNewName
-{
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
-    [stanza addChildWithName:@"group" andAttributes:nil];
-    [stanza addTextNode:aNewName];
-
-    [_connection send:stanza];
-
-    _groupName = aNewName;
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
-}
-
 /*! return the last TNStropheStanza message in the message queue and remove it form the queue.
     Will post TNStropheContactMessageTreatedNotification.
 
@@ -640,30 +680,6 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     [_messagesQueue removeAllObjects];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageTreatedNotification object:self];
-}
-
-/*! subscribe to the contact
-*/
-- (void)subscribe
-{
-    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"subscribed", @"to": _JID}];
-    [_connection send:resp];
-}
-
-/*! unsubscribe from the contact
-*/
-- (void)unsubscribe
-{
-    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"unsubscribed", @"to": _JID}];
-    [_connection send:resp];
-}
-
-/*! ask subscribtion to the contact
-*/
-- (void)askSubscription
-{
-    var auth = [TNStropheStanza presenceWithAttributes:{@"type": @"subscribe", @"to": _JID}];
-    [_connection send:auth];
 }
 
 @end

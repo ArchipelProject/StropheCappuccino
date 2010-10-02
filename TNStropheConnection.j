@@ -113,7 +113,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     #TNStropheConnectionStatusError
 */
 
-@implementation TNStropheConnection: CPObject
+@implementation TNStropheConnection : CPObject
 {
     CPString        _JID                    @accessors(property=JID);
     CPString        _fullJID                @accessors(property=fullJID);
@@ -229,6 +229,10 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     return self;
 }
 
+@end
+
+@implementation TNStropheConnection (Connection)
+
 - (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
 {
     Strophe.addNamespace(aName, aValue)
@@ -290,6 +294,58 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     }, /* wait */ 3600, /* hold */ _maxConnections);
 }
 
+/*! this disconnect the XMPP connection
+*/
+- (void)disconnect
+{
+    _connection.disconnect();
+}
+
+/*! Reset the current connection
+*/
+- (void)reset
+{
+    if (_connection)
+        _connection.reset();
+}
+
+/*! pause the current connection
+*/
+- (void)pause
+{
+    if (_connection)
+        _connection.pause();
+}
+
+/*! resume the current connection if paused
+*/
+- (void)resume
+{
+    if (_connection)
+        _connection.pause();
+}
+
+/*! Immediately send any pending outgoing data
+*/
+- (void)flush
+{
+    _connection.flush();
+}
+
+@end
+
+@implementation TNStropheConnection (Features)
+
+- (void)addFeature:(CPString)aFeatureNamespace
+{
+    [_features addObject:aFeatureNamespace];
+}
+
+- (void)removeFeature:(CPString)aFeatureNamespace
+{
+    [_features removeObjectIdenticalTo:aFeatureNamespace];
+}
+
 - (CPString)_clientVer
 {
     return SHA1.b64_sha1(_features.join());
@@ -305,16 +361,6 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
                   withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type", Strophe.NS.DISCO_INFO, "namespace"]];
 
     [self send:caps];
-}
-
-- (void)addFeature:(CPString)aFeatureNamespace
-{
-    [_features addObject:aFeatureNamespace];
-}
-
-- (void)removeFeature:(CPString)aFeatureNamespace
-{
-    [_features removeObjectIdenticalTo:aFeatureNamespace];
 }
 
 - (BOOL)handleFeaturesDisco:(TNStropheStanza)aStanza
@@ -338,12 +384,9 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     return YES;
 }
 
-/*! this disconnect the XMPP connection
-*/
-- (void)disconnect
-{
-    _connection.disconnect();
-}
+@end
+
+@implementation TNStropheConnection (Sending)
 
 /*! send a TNStropheStanza object
     @param aStanza: the stanza to send
@@ -386,29 +429,15 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     return _connection.getUniqueId(suffix);
 }
 
-/*! Reset the current connection
-*/
-- (void)reset
+- (void)playReceivedSound
 {
-    if (_connection)
-        _connection.reset();
+    if (_soundEnabled)
+        _audioTagReceive.play();
 }
 
-/*! pause the current connection
-*/
-- (void)pause
-{
-    if (_connection)
-        _connection.pause();
-}
+@end
 
-/*! resume the current connection if paused
-*/
-- (void)resume
-{
-    if (_connection)
-        _connection.pause();
-}
+@implementation TNStropheConnection (Handlers)
 
 /*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
     The dictionnary should contains zero to many of the followings :
@@ -507,19 +536,9 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     }
 }
 
-/*! Immediately send any pending outgoing data.
+@end
 
-*/
-- (void)flush
-{
-    _connection.flush();
-}
-
-- (void)playReceivedSound
-{
-    if (_soundEnabled)
-        _audioTagReceive.play();
-}
+@implementation TNStropheConnection (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
@@ -551,4 +570,5 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
     [aCoder encodeObject:_registeredHandlerDict forKey:@"_registeredHandlerDict"];
     [aCoder encodeObject:_audioTagReceive forKey:@"_audioTagReceive"];
 }
+
 @end

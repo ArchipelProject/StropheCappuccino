@@ -97,18 +97,16 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     return self;
 }
 
-/*! message sent when a presence information received
-    send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
-
-    @return YES to keep the selector registred in TNStropheConnection
+/*! sent disconnect message to the TNStropheConnection of the roster
 */
-- (BOOL)_didReceiveSubscription:(id)requestStanza
+- (void)disconnect
 {
-    if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
-        [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
-
-    return YES;
+    [_connection disconnect];
 }
+
+@end
+
+@implementation TNStropheRoster (Fetch)
 
 /*! ask the server to get the roster of the TNStropheConnection user
 */
@@ -165,6 +163,10 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 
     return NO;
 }
+
+@end
+
+@implementation TNStropheRoster (Groups)
 
 /*! add a group to the roster with given name
     @param aGroupName the name of the new group
@@ -273,6 +275,10 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 
     return nil;
 }
+
+@end
+
+@implementation TNStropheRoster (Contacts)
 
 /*! add a new contact to the roster with given information
     @param aJID the JID of the new contact
@@ -411,6 +417,23 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
     [aContact changeGroup:newGroup];
 }
 
+@end
+
+@implementation TNStropheRoster (Subscriptions)
+
+/*! message sent when a presence information received
+    send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
+
+    @return YES to keep the selector registred in TNStropheConnection
+*/
+- (BOOL)_didReceiveSubscription:(id)requestStanza
+{
+    if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
+        [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
+
+    return YES;
+}
+
 /*! subscribe to the given JID and add in into the roster if needed
     @param aJID the JID to subscribe
 */
@@ -460,13 +483,6 @@ TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotif
 
     if (![self containsJID:requester])
         [self addContact:requester withName:requester inGroupWithName:nil];
-}
-
-/*! sent disconnect message to the TNStropheConnection of the roster
-*/
-- (void)disconnect
-{
-    [_connection disconnect];
 }
 
 @end
