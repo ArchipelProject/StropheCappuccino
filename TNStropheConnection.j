@@ -223,7 +223,7 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 {
     if (self = [self initWithService:aService JID:aJID password:aPassword])
     {
-        _resource   = aResource;
+        _resource   = aResource || [self getUniqueId];
     }
 
     return self;
