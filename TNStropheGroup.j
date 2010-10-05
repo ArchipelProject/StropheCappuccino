@@ -22,6 +22,9 @@
 
 
 
+#pragma mark -
+#pragma mark TNStropheGroup
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
 */
@@ -86,6 +89,10 @@
 }
 
 @end
+
+
+#pragma mark -
+#pragma mark TNStropheGroup+codingCompliant
 
 @implementation TNStropheGroup (codingCompliant)
 
