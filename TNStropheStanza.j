@@ -18,6 +18,8 @@
 
 @import <Foundation/Foundation.j>
 
+
+
 /*! @ingroup strophecappuccino
     This is an implementation of an XML node
 */

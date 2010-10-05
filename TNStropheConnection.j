@@ -18,59 +18,11 @@
  */
 
 @import <Foundation/Foundation.j>
+
 @import "TNStropheStanza.j"
 @import "Resources/Strophe/sha1.js"
+@import "TNStropheGlobals.j"
 
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent on connecting
-*/
-TNStropheConnectionStatusConnecting         = @"TNStropheConnectionStatusConnecting";
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent when connected
-*/
-TNStropheConnectionStatusConnected          = @"TNStropheConnectionStatusConnected";
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent on connection fail
-*/
-TNStropheConnectionStatusConnectionFailure  = @"TNStropheConnectionStatusConnectionFailure";
-/*! @global
-    @group TNStropheConnectionStatus
-    Notification sent when authenticating
-
-*/
-TNStropheConnectionStatusAuthenticating     = @"TNStropheConnectionStatusAuthenticating"
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent on auth fail
-*/
-TNStropheConnectionStatusAuthFailure        = @"TNStropheConnectionStatusAuthFailure";
-
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent on disconnecting
-*/
-TNStropheConnectionStatusDisconnecting      = @"TNStropheConnectionStatusDisconnecting";
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent when disconnected
-*/
-TNStropheConnectionStatusDisconnected       = @"TNStropheConnectionStatusDisconnected";
-
-/*!
-    @global
-    @group TNStropheConnectionStatus
-    Notification sent when other error occurs
-*/
-TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 
 /*! @ingroup strophecappuccino

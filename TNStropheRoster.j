@@ -22,39 +22,8 @@
 @import "TNStropheStanza.j";
 @import "TNStropheGroup.j"
 @import "TNStropheContact.j"
+@import "TNStropheGlobals.j"
 
-/*!
-    @global
-    @group TNStropheRoster
-    notification indicates that TNStropheRoster has received the data from the XMPP server
-*/
-TNStropheRosterRetrievedNotification        = @"TNStropheRosterRetrievedNotification";
-/*!
-    @global
-    @group TNStropheRoster
-    notification indicates that a new contact has been added to the TNStropheRoster
-*/
-TNStropheRosterAddedContactNotification     = @"TNStropheRosterAddedContactNotification";
-/*!
-    @global
-    @group TNStropheRoster
-    notification indicates that a new contact has been removed from the TNStropheRoster
-*/
-
-TNStropheRosterRemovedContactNotification   = @"TNStropheRosterRemovedContactNotification";
-/*!
-    @global
-    @group TNStropheRoster
-    notification indicates that a new group has been added to the TNStropheRoster
-*/
-TNStropheRosterAddedGroupNotification       = @"TNStropheRosterAddedGroupNotification";
-
-/*!
-    @global
-    @group TNStropheRoster
-    notification indicates that a new group has been added to the TNStropheRoster
-*/
-TNStropheRosterRemovedGroupNotification     = @"TNStropheRosterRemovedGroupNotification";
 
 
 /*! @ingroup strophecappuccino
