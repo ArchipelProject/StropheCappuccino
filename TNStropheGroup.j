@@ -21,7 +21,6 @@
 @import "TNStropheGlobals.j"
 
 
-
 #pragma mark -
 #pragma mark TNStropheGroup
 

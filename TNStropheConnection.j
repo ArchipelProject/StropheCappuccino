@@ -24,8 +24,6 @@
 @import "TNStropheGlobals.j"
 
 
-
-
 #pragma mark -
 #pragma mark TNStropheConnection
 
@@ -188,7 +186,6 @@
 @end
 
 
-
 #pragma mark -
 #pragma mark TNStropheConnection+Connection
 
@@ -296,7 +293,6 @@
 @end
 
 
-
 #pragma mark -
 #pragma mark TNStropheConnection+Features
 
@@ -353,7 +349,6 @@
 @end
 
 
-
 #pragma mark -
 #pragma mark TNStropheConnection+Sending
 
@@ -407,7 +402,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
@@ -513,7 +507,6 @@
 }
 
 @end
-
 
 
 #pragma mark -

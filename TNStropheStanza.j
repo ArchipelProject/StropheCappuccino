@@ -21,7 +21,6 @@
 @import "TNXMLNode.j"
 
 
-
 #pragma mark -
 #pragma mark TNStropheStanza
 

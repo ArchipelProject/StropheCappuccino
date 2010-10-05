@@ -114,7 +114,6 @@
 @end
 
 
-
 #pragma mark -
 #pragma mark TNStropheContact+Status
 
@@ -261,7 +260,6 @@
 @end
 
 
-
 #pragma mark -
 #pragma mark TNStropheContact+Subscription
 
@@ -292,7 +290,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
@@ -408,7 +405,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
@@ -593,7 +589,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
