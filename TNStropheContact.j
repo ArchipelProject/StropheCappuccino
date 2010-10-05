@@ -24,6 +24,8 @@
 @import "TNStropheGlobals.j"
 
 
+#pragma mark -
+#pragma mark TNStropheContact
 
 /*! @ingroup strophecappuccino
     this is an implementation of a XMPP Contact
@@ -110,6 +112,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheContact+Status
 
 @implementation TNStropheContact (Status)
 
@@ -253,6 +260,11 @@
 
 @end
 
+
+
+#pragma mark -
+#pragma mark TNStropheContact+Subscription
+
 @implementation TNStropheContact (Subscription)
 
 /*! subscribe to the contact
@@ -280,6 +292,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheContact+MetaData
 
 @implementation TNStropheContact (MetaData)
 
@@ -391,6 +408,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheContact+Communicating
 
 @implementation TNStropheContact (Communicating)
 
@@ -571,6 +593,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheContact+codingCompliant
 
 @implementation TNStropheContact (codingCompliant)
 

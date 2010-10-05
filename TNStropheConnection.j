@@ -25,6 +25,10 @@
 
 
 
+
+#pragma mark -
+#pragma mark TNStropheConnection
+
 /*! @ingroup strophecappuccino
     this is an Cappuccino implementation of an XMPP connection
     using javascript library Strophe by Stanziq.
@@ -183,6 +187,11 @@
 
 @end
 
+
+
+#pragma mark -
+#pragma mark TNStropheConnection+Connection
+
 @implementation TNStropheConnection (Connection)
 
 - (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
@@ -286,6 +295,11 @@
 
 @end
 
+
+
+#pragma mark -
+#pragma mark TNStropheConnection+Features
+
 @implementation TNStropheConnection (Features)
 
 - (void)addFeature:(CPString)aFeatureNamespace
@@ -338,6 +352,11 @@
 
 @end
 
+
+
+#pragma mark -
+#pragma mark TNStropheConnection+Sending
+
 @implementation TNStropheConnection (Sending)
 
 /*! send a TNStropheStanza object
@@ -388,6 +407,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheConnection+Handlers
 
 @implementation TNStropheConnection (Handlers)
 
@@ -489,6 +513,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheConnection+CPCoding
 
 @implementation TNStropheConnection (CPCoding)
 

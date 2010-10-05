@@ -26,6 +26,9 @@
 
 
 
+#pragma mark -
+#pragma mark TNStropheRoster
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Roster
 */
@@ -78,6 +81,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheRoster+Fetch
 
 @implementation TNStropheRoster (Fetch)
 
@@ -138,6 +146,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheRoster+Groups
 
 @implementation TNStropheRoster (Groups)
 
@@ -250,6 +263,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheRoster+Contacts
 
 @implementation TNStropheRoster (Contacts)
 
@@ -391,6 +409,11 @@
 }
 
 @end
+
+
+
+#pragma mark -
+#pragma mark TNStropheRoster+Subscriptions
 
 @implementation TNStropheRoster (Subscriptions)
 
