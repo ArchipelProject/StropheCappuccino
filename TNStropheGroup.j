@@ -18,9 +18,9 @@
 
 @import <Foundation/Foundation.j>
 
-TNStropheGroupRenamedNotification = @"TNStropheGroupRenamed";
+@import "TNStropheGlobals.j"
 
-TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
+
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.

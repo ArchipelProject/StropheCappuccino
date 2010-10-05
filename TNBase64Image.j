@@ -18,6 +18,8 @@
 
 @import <Foundation/Foundation.j>
 
+
+
 /*! @ingroup strophecappuccino
     this is a subclass of CPImage that allows to create a CPImage from a image
     encoded in a base64 CPString.
