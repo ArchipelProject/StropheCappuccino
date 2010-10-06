@@ -25,7 +25,6 @@
 @import "TNStropheGlobals.j"
 
 
-
 #pragma mark -
 #pragma mark TNStropheRoster
 
@@ -82,7 +81,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
@@ -166,7 +164,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
@@ -283,7 +280,6 @@
 }
 
 @end
-
 
 
 #pragma mark -
@@ -429,7 +425,6 @@
 }
 
 @end
-
 
 
 #pragma mark -

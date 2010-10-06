@@ -588,7 +588,6 @@
 @end
 
 
-
 #pragma mark -
 #pragma mark TNStropheContact codingCompliant
 
