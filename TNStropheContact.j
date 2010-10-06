@@ -33,6 +33,7 @@
 @implementation TNStropheContact: CPObject
 {
     CPArray             _messagesQueue  @accessors(property=messagesQueue);
+    CPArray             _resources      @accessors(property=resources);
     CPImage             _statusIcon     @accessors(property=statusIcon);
     CPNumber            _numberOfEvents @accessors(property=numberOfEvents);
     CPString            _domain         @accessors(property=domain);
@@ -41,23 +42,21 @@
     CPString            _JID            @accessors(property=JID);
     CPString            _nickname       @accessors(property=nickname);
     CPString            _nodeName       @accessors(property=nodeName);
-    CPArray             _resources      @accessors(property=resources);
-    CPString            _XMPPStatus     @accessors(property=XMPPStatus);
-    CPString            _XMPPShow       @accessors(property=XMPPShow);
     CPString            _type           @accessors(property=type);
     CPString            _vCard          @accessors(property=vCard);
+    CPString            _XMPPShow       @accessors(property=XMPPShow);
+    CPString            _XMPPStatus     @accessors(property=XMPPStatus);
     TNBase64Image       _avatar         @accessors(property=avatar);
     TNStropheConnection _connection     @accessors(property=connection);
 
+    BOOL                _isComposing;
+    CPImage             _imageAway;
+    CPImage             _imageNewError;
+    CPImage             _imageNewMessage;
+    CPImage             _imageNewMessage;
     CPImage             _imageOffline;
     CPImage             _imageOnline;
-    CPImage             _imageAway;
-    CPImage             _imageNewMessage;
-    CPImage             _imageNewMessage;
     CPImage             _statusReminder;
-    CPImage             _imageNewError;
-    BOOL                _isComposing;
-
 }
 
 /*! create a contact using a given connection, JID and group
@@ -114,9 +113,8 @@
 @end
 
 
-
 #pragma mark -
-#pragma mark TNStropheContact+Status
+#pragma mark TNStropheContact Status
 
 @implementation TNStropheContact (Status)
 
@@ -261,9 +259,8 @@
 @end
 
 
-
 #pragma mark -
-#pragma mark TNStropheContact+Subscription
+#pragma mark TNStropheContact Subscription
 
 @implementation TNStropheContact (Subscription)
 
@@ -294,9 +291,8 @@
 @end
 
 
-
 #pragma mark -
-#pragma mark TNStropheContact+MetaData
+#pragma mark TNStropheContact MetaData
 
 @implementation TNStropheContact (MetaData)
 
@@ -410,9 +406,8 @@
 @end
 
 
-
 #pragma mark -
-#pragma mark TNStropheContact+Communicating
+#pragma mark TNStropheContact Communicating
 
 @implementation TNStropheContact (Communicating)
 
@@ -431,18 +426,21 @@
 {
     var params              = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
         ret                 = nil,
-        lastKnownResource   = (_fullJID) ? _fullJID.split(@"/")[1] : nil;
+        lastKnownResource   = (_fullJID) ? _fullJID.split(@"/")[1] : nil,
+        userInfo            = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", anId, @"id"];
 
     if (_fullJID && ![_resources containsObject:lastKnownResource])
         _fullJID = _fullJID.split("/")[0] + @"/" + [_resources lastObject];
 
-    [aStanza setTo:_fullJID];
+    [aStanza setTo:(_fullJID) ? _fullJID : _JID];
     [aStanza setID:anId];
 
     if (aSelector)
         ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params];
 
     [_connection send:aStanza];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
 
     return ret;
 }
@@ -457,12 +455,7 @@
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    var userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"],
-        ret         = [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId]];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
-
-    return ret;
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId]];
 }
 
 /*! register the contact to listen incoming messages
@@ -597,7 +590,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheContact+codingCompliant
+#pragma mark TNStropheContact codingCompliant
 
 @implementation TNStropheContact (codingCompliant)
 
