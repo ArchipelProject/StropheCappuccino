@@ -92,7 +92,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheGroup+codingCompliant
+#pragma mark TNStropheGroup codingCompliant
 
 @implementation TNStropheGroup (codingCompliant)
 
