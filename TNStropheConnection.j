@@ -71,24 +71,24 @@
 
 @implementation TNStropheConnection : CPObject
 {
-    CPString        _JID                    @accessors(property=JID);
-    CPString        _fullJID                @accessors(property=fullJID);
-    CPString        _resource               @accessors(property=resource);
-    CPString        _password               @accessors(property=password);
-    id              _delegate               @accessors(property=delegate);
-    int             _maxConnections         @accessors(property=maxConnections);
+    BOOL            _connected              @accessors(getter=isConnected);
     BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
+    CPArray         _features               @accessors(readonly);
     CPString        _clientNode             @accessors(property=clientNode);
+    CPString        _fullJID                @accessors(property=fullJID);
     CPString        _identityCategory       @accessors(property=identityCategory);
     CPString        _identityName           @accessors(property=identityName);
     CPString        _identityType           @accessors(property=identityType);
-    CPArray         _features               @accessors(readonly);
+    CPString        _JID                    @accessors(property=JID);
+    CPString        _password               @accessors(property=password);
+    CPString        _resource               @accessors(property=resource);
+    id              _delegate               @accessors(property=delegate);
+    int             _maxConnections         @accessors(property=maxConnections);
 
-    CPString        _boshService;
-    id              _connection;
     CPDictionary    _registeredHandlerDict;
-
+    CPString        _boshService;
     id              _audioTagReceive;
+    id              _connection;
 }
 
 /*! instanciate a TNStropheConnection object
@@ -131,6 +131,7 @@
         _boshService            = aService;
         _registeredHandlerDict  = [CPDictionary dictionary];
         _soundEnabled           = YES;
+        _connected              = NO;
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
 
@@ -190,7 +191,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection+Connection
+#pragma mark TNStropheConnection Connection
 
 @implementation TNStropheConnection (Connection)
 
@@ -212,6 +213,10 @@
 
         switch (status)
         {
+            case Strophe.Status.ERROR:
+                selector            = @selector(onStropheError:);
+                notificationName    = TNStropheConnectionStatusError;
+                break;
             case Strophe.Status.CONNECTING:
                 selector            = @selector(onStropheConnecting:);
                 notificationName    = TNStropheConnectionStatusConnecting;
@@ -220,32 +225,29 @@
                 selector            = @selector(onStropheConnectFail:);
                 notificationName    = TNStropheConnectionStatusConnectionFailure;
                 break;
+            case Strophe.Status.AUTHENTICATING:
+                selector            = @selector(onStropheAuthenticating:);
+                notificationName    = TNStropheConnectionStatusAuthenticating;
+                break;
             case Strophe.Status.AUTHFAIL:
                 selector            = @selector(onStropheAuthFail:);
                 notificationName    = TNStropheConnectionStatusAuthFailure;
-                break;
-            case Strophe.Status.ERROR:
-                selector            = @selector(onStropheError:);
-                notificationName    = TNStropheConnectionStatusError;
                 break;
             case Strophe.Status.DISCONNECTING:
                 selector            = @selector(onStropheDisconnecting:);
                 notificationName    = TNStropheConnectionStatusDisconnecting;
                 break;
-            case Strophe.Status.AUTHENTICATING:
-                selector            = @selector(onStropheAuthenticating:);
-                notificationName    = TNStropheConnectionStatusAuthenticating;
-                break;
             case Strophe.Status.DISCONNECTED:
                 selector            = @selector(onStropheDisconnected:);
                 notificationName    = TNStropheConnectionStatusDisconnected;
+                _connected          = NO;
                 break;
             case Strophe.Status.CONNECTED:
                 _connection.send($pres().tree());
                 [self sendCAPS];
-
                 selector            = @selector(onStropheConnected:);
                 notificationName    = TNStropheConnectionStatusConnected;
+                _connected          = YES;
                 break;
         }
         if ([_delegate respondsToSelector:selector])
@@ -298,7 +300,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection+Features
+#pragma mark TNStropheConnection Features
 
 @implementation TNStropheConnection (Features)
 
@@ -355,7 +357,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection+Sending
+#pragma mark TNStropheConnection Sending
 
 @implementation TNStropheConnection (Sending)
 
@@ -405,13 +407,11 @@
     if (_soundEnabled)
         _audioTagReceive.play();
 }
-
 @end
 
 
-
 #pragma mark -
-#pragma mark TNStropheConnection+Handlers
+#pragma mark TNStropheConnection Handlers
 
 @implementation TNStropheConnection (Handlers)
 
@@ -517,7 +517,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection+CPCoding
+#pragma mark TNStropheConnection CPCoding
 
 @implementation TNStropheConnection (CPCoding)
 
