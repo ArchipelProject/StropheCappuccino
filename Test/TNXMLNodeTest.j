@@ -1,17 +1,17 @@
-/*  
+/*
  * TNXMLNodeTest.j
- *    
+ *
  * Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -45,7 +45,7 @@
 {
     [node addChildWithName:@"subnode" andAttributes:{"attr1": "1", "attr2": "2"}];
     [node addTextNode:@"cdata"];
-    
+
     [self assert:@"testnode" equals:[node name]];
     [self assert:1 equals:[[node children] count]];
     [self assert:@"cdata" equals:[[node firstChildWithName:@"subnode"] text]];
@@ -55,11 +55,11 @@
 {
     [node addChildWithName:@"subnode" andAttributes:{"attr1": "1", "attr2": "2"}];
     [node addTextNode:@"cdata"];
-    
+
     var node2 = [node copy];
-    
+
     [node2 addChildWithName:@"subsubnode"];
-    
+
     [self assert:1 equals:[[node children] count]];
     [self assert:2 equals:[[node2 children] count]];
 }
@@ -75,7 +75,7 @@
     [node up];
     [node addChildWithName:@"subnodeA2" andAttributes:{"attr1": "A2"}];
     [node up];
-    
+
     [self assert:"A1" equals:[[node firstChildWithName:@"subnodeA1"] valueForAttribute:@"attr1"]];
     [self assert:2 equals:[[node children] count]];
     [self assert:1 equals:[[[node firstChildWithName:@"subnodeB1"] children] count]];
