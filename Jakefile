@@ -47,6 +47,16 @@ app ("StropheCappuccino", function(task)
         task.setCompilerFlags("-O");
 });
 
+task("test", function()
+{
+    var tests = new FileList('Test/*Test.j');
+    var cmd = ["ojtest"].concat(tests.items());
+    var cmdString = cmd.map(OS.enquote).join(" ");
+
+    var code = OS.system(cmdString);
+    if (code !== 0)
+        OS.exit(code);
+});
 
 task ("documentation", function(task)
 {
