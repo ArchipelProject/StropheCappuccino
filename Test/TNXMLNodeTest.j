@@ -82,6 +82,8 @@
     [self assert:0 equals:[[[node firstChildWithName:@"subnodeB2"] children] count]];
 }
 
-
+- (void)tearDown
+{
+}
 
 @end
