@@ -131,20 +131,7 @@
     [params setValue:{@"matchBare": YES} forKey:@"options"];
 
     [_connection registerSelector:@selector(didReceiveStatus:) ofObject:self withDict:params];
-    [_connection registerTimeoutSelector:@selector(didReceiveStatusTimeout) ofObject:self withDict:params forTimeout:2.0];
     [_connection send:probe];
-}
-
-/*! This message is sent if getStatus timeouts.
-    It will allow to consider that the probe is done and so it will send TNStropheContactPresenceUpdatedNotification.
-
-    @return NO in order to not being recalled.
-*/
-- (BOOL)didReceiveStatusTimeout
-{
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
-
-    return NO;
 }
 
 /*! executed on getStatus result. It populates the status of the contact

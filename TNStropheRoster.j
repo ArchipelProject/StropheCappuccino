@@ -39,7 +39,6 @@
     TNStropheConnection     _connection     @accessors(getter=connection);
 
     TNStropheGroup          _defaultGroup;
-    int                     _numberOfRosterItemsToLoad;
 }
 
 + (TNStropheRoster)rosterWithConnection:(TNStropheConnection)aConnection
@@ -114,8 +113,6 @@
     var query   = [aStanza firstChildWithName:@"query"],
         items   = [query childrenWithName:@"item"];
 
-    _numberOfRosterItemsToLoad = [items count];
-
     for (var i = 0; i < [items count]; i++)
     {
         var item        = [items objectAtIndex:i],
@@ -131,8 +128,6 @@
                 newGroup    = [self groupWithName:groupName orCreate:YES],
                 newContact  = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName];
 
-            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveContactStatus:) name:TNStropheContactPresenceUpdatedNotification object:newContact];
-
             [_contacts addObject:newContact];
             [newGroup addContact:newContact];
 
@@ -143,24 +138,9 @@
         }
     }
 
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
+
     return NO;
-}
-
-/*! This message is triggered by notification TNStropheContactPresenceUpdatedNotification when getting roster.
-    the contact can be considered ready when we get its status. When all contact status has been fetched, then
-    we send TNStropheRosterRetrievedNotification. (otherwise it is possible to try to send message to a not ready contact)
-*/
-- (void)_didReceiveContactStatus:(CPNotification)aNotification
-{
-    var contact = [aNotification object],
-        center  = [CPNotificationCenter defaultCenter];
-
-    [center removeObserver:self name:TNStropheContactPresenceUpdatedNotification object:contact];
-
-    _numberOfRosterItemsToLoad--;
-
-    if (_numberOfRosterItemsToLoad <= 0)
-        [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
 }
 
 @end
