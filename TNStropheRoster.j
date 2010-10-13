@@ -131,7 +131,7 @@
                 newGroup    = [self groupWithName:groupName orCreate:YES],
                 newContact  = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName];
 
-            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveFistContactStatus:) name:TNStropheContactPresenceUpdatedNotification object:newContact];
+            [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveContactStatus:) name:TNStropheContactPresenceUpdatedNotification object:newContact];
 
             [_contacts addObject:newContact];
             [newGroup addContact:newContact];
@@ -150,7 +150,7 @@
     the contact can be considered ready when we get its status. When all contact status has been fetched, then
     we send TNStropheRosterRetrievedNotification. (otherwise it is possible to try to send message to a not ready contact)
 */
-- (void)_didReceiveFistContactStatus:(CPNotification)aNotification
+- (void)_didReceiveContactStatus:(CPNotification)aNotification
 {
     var contact = [aNotification object],
         center  = [CPNotificationCenter defaultCenter];
@@ -159,7 +159,7 @@
 
     _numberOfRosterItemsToLoad--;
 
-    if (_numberOfRosterItemsToLoad === 0)
+    if (_numberOfRosterItemsToLoad <= 0)
         [center postNotificationName:TNStropheRosterRetrievedNotification object:self];
 }
 

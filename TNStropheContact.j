@@ -123,15 +123,28 @@
 */
 - (void)getStatus
 {
-    var probe   = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"probe", @"to": _JID}],
+    var probe   = [TNStropheStanza presenceWithAttributes:{@"type": @"probe", @"to": _JID}],
         params  = [CPDictionary dictionary];
 
     [params setValue:@"presence" forKey:@"name"];
     [params setValue:_JID forKey:@"from"];
     [params setValue:{@"matchBare": YES} forKey:@"options"];
 
-    [_connection registerSelector:@selector(didReceivedStatus:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(didReceiveStatus:) ofObject:self withDict:params];
+    [_connection registerTimeoutSelector:@selector(didReceiveStatusTimeout) ofObject:self withDict:params forTimeout:2.0];
     [_connection send:probe];
+}
+
+/*! This message is sent if getStatus timeouts.
+    It will allow to consider that the probe is done and so it will send TNStropheContactPresenceUpdatedNotification.
+
+    @return NO in order to not being recalled.
+*/
+- (BOOL)didReceiveStatusTimeout
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
+
+    return NO;
 }
 
 /*! executed on getStatus result. It populates the status of the contact
@@ -139,8 +152,9 @@
     You should never have to use this method
     @param aStanza the response TNStropheStanza
 */
-- (BOOL)didReceivedStatus:(TNStropheStanza)aStanza
+- (BOOL)didReceiveStatus:(TNStropheStanza)aStanza
 {
+
     var resource = [aStanza fromResource],
         presenceShow = [aStanza firstChildWithName:@"status"];
 

@@ -448,23 +448,25 @@
     return handlerId;
 }
 
-/*! same than registerSelector:ofObject:withDict but with a timeout
+/*! Registred selector will be performed if the stanza response is not received after a given amout of time.
+    The selector will be performed at every timeout interval until it returns NO.
 
-    @param aSelector the selector to be performed
+    @param aTimeoutSelector the selector to be performed if stanza timeouts
     @param anObject the receiver of the selector
     @param aDict a dictionnary of parameters
-    @timeout CPNumber timeout of the handler
+    @param timeout float timeout of the handler
 
     @return an id of the handler registration used to remove it
 */
-- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict timeout:(CPNumber)aTimeout
+- (id)registerTimeoutSelector:(SEL)aTimeoutSelector ofObject:(CPObject)anObject withDict:(id)aDict forTimeout:(float)aTimeout
 {
-    var handlerId =  _connection.addTimeHandler(aTimeout, function(stanza) {
-                var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
-                CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                CPLog.trace(stanza);
-
-                return [anObject performSelector:aSelector withObject:stanzaObject];
+    var handlerId =  _connection.addTimedHandler(aTimeout, function(stanza) {
+                if (!stanza)
+                {
+                    CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
+                    return [anObject performSelector:aTimeoutSelector];
+                }
+                return NO;
             },
             [aDict valueForKey:@"namespace"],
             [aDict valueForKey:@"name"],
