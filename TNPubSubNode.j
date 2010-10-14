@@ -37,6 +37,18 @@
     id                      _eventSelectorID;
 }
 
+#pragma mark -
+#pragma mark Class methods
+
++ (void)registerSelector:(SEL)aSelector ofObject:(id)anObject forPubSubEventWithConnection:(TNStropheConnection)aConnection
+{
+    var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
+                                                            @"headline", @"type",
+                                                            {"matchBare": YES}, @"options",
+                                                            @"http://jabber.org/protocol/pubsub#event", @"namespace"];
+
+    return [aConnection registerSelector:aSelector ofObject:anObject withDict:params];
+}
 
 #pragma mark -
 #pragma mark Initialization
