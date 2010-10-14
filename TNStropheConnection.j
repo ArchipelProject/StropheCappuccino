@@ -135,6 +135,9 @@
 
         [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
         [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
+        [self addNamespaceWithName:@"PUBSUB_EVENT" value:@"http://jabber.org/protocol/pubsub#event"];
+        [self addNamespaceWithName:@"PUBSUB_OWNER" value:@"http://jabber.org/protocol/pubsub#owner"];
+        [self addNamespaceWithName:@"PUBSUB_NODE_CONFIG" value:@"http://jabber.org/protocol/pubsub#node_config"];
         [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
         [self addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
 

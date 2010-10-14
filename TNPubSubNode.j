@@ -51,7 +51,7 @@
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
                                                             @"headline", @"type",
                                                             {"matchBare": YES}, @"options",
-                                                            @"http://jabber.org/protocol/pubsub#event", @"namespace"];
+                                                            Strophe.NS.PUBSUB_EVENT, @"namespace"];
 
     return [aConnection registerSelector:aSelector ofObject:anObject withDict:params];
 }
@@ -109,7 +109,7 @@
     [stanza setType:@"get"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"items" andAttributes:{@"node": _nodeName}];
 
     [_connection registerSelector:@selector(_didRecoverPubSubNode:) ofObject:self withDict:params];
@@ -145,7 +145,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"create" andAttributes:{@"node": _nodeName}];
 
     [_connection registerSelector:@selector(_didCreatePubSubNode:) ofObject:self withDict:params];
@@ -178,7 +178,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub#owner"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB_OWNER}];
     [stanza addChildWithName:@"delete" andAttributes:{@"node": _nodeName}];
 
     [_connection registerSelector:@selector(didDeletePubSubNode:) ofObject:self withDict:params];
@@ -218,12 +218,12 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub#owner"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB_OWNER}];
     [stanza addChildWithName:@"configure" andAttributes:{@"node": _nodeName}];
     [stanza addChildWithName:@"x" andAttributes:{@"xmlns": "jabber:x:data", @"type": @"submit"}];
     [stanza addChildWithName:@"field" andAttributes:{@"var": @"FORM_TYPE", @"type": @"hidden"}];
     [stanza addChildWithName:@"value"];
-    [stanza addTextNode:@"http://jabber.org/protocol/pubsub#node_config"];
+    [stanza addTextNode:Strophe.NS.PUBSUB_NODE_CONFIG];
     [stanza up];
     [stanza up];
 
@@ -287,7 +287,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"publish" andAttributes:{@"node": _nodeName}];
     [stanza addChildWithName:@"item"];
     [stanza addNode:anItem];
@@ -336,7 +336,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"retract" andAttributes:{@"node": _nodeName}];
     [stanza addChildWithName:@"item" andAttributes:{@"id": anID}];
 
@@ -386,7 +386,7 @@
     [stanza setID:uid];
     [stanza setTo:_pubSubServer];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": @"http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"subscribe" andAttributes:{@"node": _nodeName, @"jid": [_connection JID]}];
 
     [_connection registerSelector:@selector(_didSubscribe:) ofObject:self withDict:params]
@@ -403,7 +403,7 @@
     if ([aStanza type] == @"result")
     {
         var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                                @"http://jabber.org/protocol/pubsub#event", @"namespace",
+                                                                Strophe.NS.PUBSUB_EVENT, @"namespace",
                                                                 @"headline", @"type"];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
@@ -428,7 +428,7 @@
     [stanza setID:uid];
     [stanza setTo:_pubSubServer];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"unsubscribe" andAttributes:{"node": _nodeName, "jid": [_connection JID]}];
 
     [_connection registerSelector:@selector(_didUnsubscribe:) ofObject:self withDict:params];
