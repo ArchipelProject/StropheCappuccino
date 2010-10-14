@@ -39,6 +39,25 @@
     return [[TNXMLNode alloc] initWithNode:aNode];
 }
 
+/*! create an instance of a TNXMLNode from a pure javascript Node
+    @param aName the name of the node
+    @return an instance of TNXMLNode initialized with aName
+*/
++ (TNXMLNode)nodeWithName:(CPString)aName
+{
+    return [[TNXMLNode alloc] initWithName:aName andAttributes:nil];
+}
+
+/*! create an instance of a TNXMLNode from a pure javascript Node
+    @param aName the name of the node
+    @param someAttributes CPDictionary containing the attributes
+    @return an instance of TNXMLNode initialized with aName and attributes
+*/
++ (TNXMLNode)nodeWithName:(CPString)aName andAttributes:(CPDictionary)someAttributes
+{
+    return [[TNXMLNode alloc] initWithName:aName andAttributes:someAttributes];
+}
+
 /*! initialize an instance of a TNXMLNode from a pure javascript Node
     @param aNode a pure Javascript DOM Element
     @return an instance of TNXMLNode initialized with aNode
@@ -101,15 +120,15 @@
 */
 - (void)addChildWithName:(CPString)aTagName
 {
-    [self addChildWithName:aTagName andAttributes:{}]
+    [self addChildWithName:aTagName andAttributes:{}];
 }
 
 /*! append a node to the current node
     @param aNode the dom element to add.
 */
-- (void)addNode:(DOMElement)aNode
+- (void)addNode:(TNXMLNode)aNode
 {
-    _xmlNode.cnode(aNode)
+    _xmlNode.cnode([aNode tree]);
 }
 
 /*! Add text value to the current seletected node
