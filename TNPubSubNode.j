@@ -40,6 +40,12 @@
 #pragma mark -
 #pragma mark Class methods
 
+/*! Register given selector of given object. When any pubsub event event is received, trigger the selector
+    @param aSelector the selector
+    @param anObject the object to use
+    @param aConnection a valid connected TNStropheConnection
+    @return int the id of the registration.
+*/
 + (void)registerSelector:(SEL)aSelector ofObject:(id)anObject forPubSubEventWithConnection:(TNStropheConnection)aConnection
 {
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
