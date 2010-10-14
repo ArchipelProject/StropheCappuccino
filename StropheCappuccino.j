@@ -23,6 +23,7 @@
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
+@import "TNPubSubNode.j"
 @import "TNBase64Image.j"
 
 /*! @mainpage

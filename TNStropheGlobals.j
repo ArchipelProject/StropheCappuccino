@@ -239,3 +239,97 @@ TNStropheGroupRenamedNotification = @"TNStropheGroupRenamed";
     notification indicates that a group has been removed
 */
 TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
+
+
+
+#pragma mark -
+#pragma mark globals for TNPubSubNode
+
+TNStrophePubSubVarTitle                     = @"pubsub#title";
+TNStrophePubSubVarDeliverNotification       = @"pubsub#deliver_notifications";
+TNStrophePubSubVarDeliverPayloads           = @"pubsub#deliver_payloads";
+TNStrophePubSubVarPersistItems              = @"pubsub#persist_items";
+TNStrophePubSubVarMaxItems                  = @"pubsub#max_items";
+TNStrophePubSubVarItemExpire                = @"pubsub#item_expire";
+TNStrophePubSubVarAccessModel               = @"pubsub#access_model";
+TNStrophePubSubVarRosterGroupAllowed        = @"pubsub#roster_groups_allowed";
+TNStrophePubSubVarPublishModel              = @"pubsub#publish_model";
+TNStrophePubSubVarPurgeOffline              = @"pubsub#purge_offline";
+TNStrophePubSubVarSendLastPublishedItem     = @"pubsub#send_last_published_item";
+TNStrophePubSubVarPresenceBasedDelivery     = @"pubsub#presence_based_delivery";
+TNStrophePubSubVarNotificationType          = @"pubsub#notification_type";
+TNStrophePubSubVarNotifyConfig              = @"pubsub#notify_config";
+TNStrophePubSubVarNotifyDelete              = @"pubsub#notify_delete";
+TNStrophePubSubVarNotifyRectract            = @"pubsub#notify_retract";
+TNStrophePubSubVarNotifySub                 = @"pubsub#notify_sub";
+TNStrophePubSubVarMaxPayloadSize            = @"pubsub#max_payload_size";
+TNStrophePubSubVarType                      = @"pubsub#type";
+TNStrophePubSubVarBodyXSLT                  = @"pubsub#body_xslt";
+
+TNStrophePubSubVarAccessModelOpen           = @"open";
+TNStrophePubSubVarAccessModelRoster         = @"roster";
+TNStrophePubSubVarAccessModelAuthorize      = @"authorize";
+TNStrophePubSubVarAccessModelWhitelist      = @"whitelist";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub node has been recovered
+*/
+TNStrophePubSubNodeRecoveredNotification    = @"TNStrophePubSubNodeRecoveredNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub node has been created
+*/
+TNStrophePubSubNodeCreatedNotification      = @"TNStrophePubSubNodeCreatedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub node has been deleted
+*/
+TNStrophePubSubNodeDeletedNotification      = @"TNStrophePubSubNodeDeletedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub node has been configured
+*/
+TNStrophePubSubNodeConfiguredNotification   = @"TNStrophePubSubNodeConfiguredNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub item has been published
+*/
+TNStrophePubSubItemPublishedNotification    = @"TNStrophePubSubItemPublishedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub item has been retracted
+*/
+TNStrophePubSubItemRetractedNotification    = @"TNStrophePubSubItemRetractedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub node has been subscribed
+*/
+TNStrophePubSubNodeSubscribedNotification   = @"TNStrophePubSubNodeSubscribedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub node has been unsubscribed
+*/
+TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that an event has been recieved from the PubSub
+*/
+TNStrophePubSubNodeEventNotification        = @"TNStrophePubSubNodeEventNotification"
