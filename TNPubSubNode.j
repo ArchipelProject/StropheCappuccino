@@ -85,8 +85,6 @@
         _nodeName           = aNodeName;
         _connection         = aConnection;
         _pubSubServer       = aPubSubServer ? aPubSubServer : [_connection JID].split("@")[1].split("/")[0];
-        _content            = nil;
-        _eventSelectorID    = nil;
     }
 
     return self;
