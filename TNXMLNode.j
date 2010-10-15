@@ -19,9 +19,6 @@
 
 @import <Foundation/Foundation.j>
 
-#pragma mark -
-#pragma mark TNXMLNode
-
 /*! @ingroup strophecappuccino
     This is an implementation of a really basic XML node in Cappuccino
 */
@@ -104,25 +101,6 @@
     return [TNXMLNode nodeWithXMLNode:Strophe.copyElement([self tree])];
 }
 
-/*! Add a child to the current seletected node
-    This will move the stanza object pointer to the child node
-    @param aTagName name of the new tag
-    @param attributes CPDictionary contains all attributes
-*/
-- (void)addChildWithName:(CPString)aTagName andAttributes:(CPDictionary)attributes
-{
-    _xmlNode = _xmlNode.c(aTagName, attributes);
-}
-
-/*! Add a child to the current seletected node
-    This will move the stanza object pointer to the child node
-    @param aTagName name of the new tag
-*/
-- (void)addChildWithName:(CPString)aTagName
-{
-    [self addChildWithName:aTagName andAttributes:{}];
-}
-
 /*! append a node to the current node
     @param aNode the dom element to add.
 */
@@ -139,21 +117,20 @@
     _xmlNode = _xmlNode.t(aText);
 }
 
+/*! get the text node value
+    @return CPString of the content of node
+*/
+- (CPString)text
+{
+    return Strophe.getText([self tree]);
+}
+
 /*! return a DOM Element of the TNXMLNode
     @return an DOM Element
 */
 - (id)tree
 {
     return _xmlNode.tree();
-}
-
-/*! convert the TNXMLNode into its string representation
-    @return string representation of the TNXMLNode
-*/
-- (CPString)stringValue
-{
-    //return Strophe.toString(_xmlNode);
-    return Strophe.serialize(_xmlNode);
 }
 
 /*! Move the pointer to the parent of the current node
@@ -167,6 +144,23 @@
     }
     return NO;
 }
+
+/*! convert the TNXMLNode into its string representation
+    @return string representation of the TNXMLNode
+*/
+- (CPString)stringValue
+{
+    //return Strophe.toString(_xmlNode);
+    return Strophe.serialize(_xmlNode);
+}
+
+- (CPString)description
+{
+    return [self stringValue];
+}
+
+#pragma mark -
+#pragma mark Attributes
 
 /*! get value of an attribute of the current node
     @param anAttribute the attribute
@@ -188,6 +182,52 @@
     attr[anAttribute] = aValue;
 
     _xmlNode.attrs(attr);
+}
+
+/*! return the name of the current node
+    @return CPString containing the name of the current node
+*/
+- (CPString)name
+{
+    return [self tree].tagName;
+}
+
+/*! get the xmlns field of the node
+    @return xmlns field of node
+*/
+- (CPString)namespace
+{
+    return [self valueForAttribute:@"xmlns"];
+}
+
+/*! set the xmlns field of the node
+    @param the new xmls value
+*/
+- (void)setNamespace:(CPString)aNamespace
+{
+    [self setValue:aNamespace forAttribute:@"xmlns"];
+}
+
+#pragma mark -
+#pragma mark Children
+
+/*! Add a child to the current seletected node
+    This will move the stanza object pointer to the child node
+    @param aTagName name of the new tag
+    @param attributes CPDictionary contains all attributes
+*/
+- (void)addChildWithName:(CPString)aTagName andAttributes:(CPDictionary)attributes
+{
+    _xmlNode = _xmlNode.c(aTagName, attributes);
+}
+
+/*! Add a child to the current seletected node
+    This will move the stanza object pointer to the child node
+    @param aTagName name of the new tag
+*/
+- (void)addChildWithName:(CPString)aTagName
+{
+    [self addChildWithName:aTagName andAttributes:{}];
 }
 
 /*! get an CPArray of TNXMLNode with matching tag name
@@ -243,47 +283,14 @@
     return [self ownChildrenWithName:nil];
 }
 
-/*! return the name of the current node
-    @return CPString containing the name of the current node
-*/
-- (CPString)name
-{
-    return [self tree].tagName;
-}
-
 - (BOOL)containsChildrenWithName:(CPString)aName
 {
     return ([self firstChildWithName:aName]) ? YES : NO;
 }
 
-/*! get the text node value
-    @return CPString of the content of node
-*/
-- (CPString)text
-{
-    return Strophe.getText([self tree]);
-}
+@end
 
-- (CPString)description
-{
-    return [self stringValue];
-}
-
-/*! get the xmlns field of the node
-    @return xmlns field of node
-*/
-- (CPString)namespace
-{
-    return [self valueForAttribute:@"xmlns"];
-}
-
-/*! set the xmlns field of the node
-    @param the new xmls value
-*/
-- (void)setNamespace:(CPString)aNamespace
-{
-    [self setValue:aNamespace forAttribute:@"xmlns"];
-}
+@implementation TNXMLNode (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

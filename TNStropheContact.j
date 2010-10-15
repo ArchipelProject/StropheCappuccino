@@ -24,9 +24,6 @@
 @import "TNStropheGlobals.j"
 
 
-#pragma mark -
-#pragma mark TNStropheContact
-
 /*! @ingroup strophecappuccino
     this is an implementation of a XMPP Contact
 */
@@ -110,13 +107,9 @@
     return self;
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheContact Status
-
-@implementation TNStropheContact (Status)
+#pragma mark Status
 
 /*! probe the contact about its status
     You should never have to use this message if you are using TNStropheRoster
@@ -257,13 +250,9 @@
     _isComposing = NO;
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheContact Subscription
-
-@implementation TNStropheContact (Subscription)
+#pragma mark Subscription
 
 /*! subscribe to the contact
 */
@@ -289,13 +278,9 @@
     [_connection send:auth];
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheContact MetaData
-
-@implementation TNStropheContact (MetaData)
+#pragma mark MetaData
 
 - (CPString)description
 {
@@ -404,13 +389,9 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheContact Communicating
-
-@implementation TNStropheContact (Communicating)
+#pragma mark Communicating
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
     in order to use it if you need. You should mostly use the
@@ -588,11 +569,7 @@
 
 @end
 
-
-#pragma mark -
-#pragma mark TNStropheContact codingCompliant
-
-@implementation TNStropheContact (codingCompliant)
+@implementation TNStropheContact (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

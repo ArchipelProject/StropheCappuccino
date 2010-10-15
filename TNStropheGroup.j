@@ -17,12 +17,8 @@
  */
 
 @import <Foundation/Foundation.j>
-
 @import "TNStropheGlobals.j"
 
-
-#pragma mark -
-#pragma mark TNStropheGroup
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
@@ -89,11 +85,7 @@
 
 @end
 
-
-#pragma mark -
-#pragma mark TNStropheGroup codingCompliant
-
-@implementation TNStropheGroup (codingCompliant)
+@implementation TNStropheGroup (CPCoding)
 
 - (id)initWithCoder:(CPCoder)aCoder
 {

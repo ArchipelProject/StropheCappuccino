@@ -184,13 +184,9 @@
     return self;
 }
 
-@end
-
 
 #pragma mark -
 #pragma mark TNStropheConnection Connection
-
-@implementation TNStropheConnection (Connection)
 
 - (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
 {
@@ -292,13 +288,9 @@
     _connection.flush();
 }
 
-@end
-
 
 #pragma mark -
 #pragma mark TNStropheConnection Features
-
-@implementation TNStropheConnection (Features)
 
 - (void)addFeature:(CPString)aFeatureNamespace
 {
@@ -348,13 +340,9 @@
     return YES;
 }
 
-@end
-
 
 #pragma mark -
 #pragma mark TNStropheConnection Sending
-
-@implementation TNStropheConnection (Sending)
 
 /*! send a TNStropheStanza object
     @param aStanza: the stanza to send
@@ -403,13 +391,9 @@
         _audioTagReceive.play();
 }
 
-@end
-
 
 #pragma mark -
 #pragma mark TNStropheConnection Handlers
-
-@implementation TNStropheConnection (Handlers)
 
 /*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
     The dictionnary should contains zero to many of the followings :
@@ -511,10 +495,6 @@
 }
 
 @end
-
-
-#pragma mark -
-#pragma mark TNStropheConnection CPCoding
 
 @implementation TNStropheConnection (CPCoding)
 

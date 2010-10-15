@@ -79,13 +79,9 @@
     [_connection disconnect];
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheRoster Fetch
-
-@implementation TNStropheRoster (Fetch)
+#pragma mark Fetch
 
 /*! ask the server to get the roster of the TNStropheConnection user
 */
@@ -143,13 +139,9 @@
     return NO;
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheRoster Groups
-
-@implementation TNStropheRoster (Groups)
+#pragma mark Groups
 
 /*! add a group to the roster with given name
     @param aGroupName the name of the new group
@@ -259,13 +251,9 @@
     return nil;
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheRoster Contacts
-
-@implementation TNStropheRoster (Contacts)
+#pragma mark Contacts
 
 /*! add a new contact to the roster with given information
     @param aJID the JID of the new contact
@@ -404,13 +392,9 @@
     [aContact changeGroup:newGroup];
 }
 
-@end
-
 
 #pragma mark -
-#pragma mark TNStropheRoster Subscriptions
-
-@implementation TNStropheRoster (Subscriptions)
+#pragma mark Subscriptions
 
 /*! message sent when a presence information received
     send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
