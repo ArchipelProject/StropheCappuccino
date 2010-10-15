@@ -527,16 +527,22 @@
 
 - (void)_setEventHandler
 {
+    var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
+                                                            Strophe.NS.PUBSUB_EVENT, @"namespace",
+                                                            @"headline", @"type"];
     _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
 }
 
 /*! this message is send when a new pubsub event is recieved. It will call the delegate
     pubsubNode:receivedEvent: if any selector and send TNStrophePubSubNodeEventNotification notification
     @param aStanza TNStropheStanza contaning the response of the server
-    @return NO in order to unregister the selector from connection
+    @return YES in order to keep the selector registered
 */
 - (BOOL)_didReceiveEvent:(TNStropheStanza)aStanza
 {
+    if (_nodeName != [[[aStanza firstChildWithName:@"event"] firstChildWithName:@"items"] valueForAttribute:@"node"])
+        return YES;
+
     if (_delegate && [_delegate respondsToSelector:@selector(pubsubNode:receivedEvent:)])
         [_delegate pubsubNode:self receivedEvent:aStanza];
 
