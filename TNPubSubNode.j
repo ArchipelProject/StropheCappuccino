@@ -18,10 +18,9 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheGlobals.j";
-@import "TNStropheConnection.j";
-@import "TNStropheStanza.j";
-
+@import "TNStropheGlobals.j"
+@import "TNStropheConnection.j"
+@import "TNStropheStanza.j"
 
 
 /*! @ingroup strophecappuccino
@@ -37,6 +36,7 @@
     id                      _eventSelectorID;
     CPArray                 _subscriptionIDs;
 }
+
 
 #pragma mark -
 #pragma mark Class methods
@@ -56,6 +56,7 @@
 
     return [aConnection registerSelector:aSelector ofObject:anObject withDict:params];
 }
+
 
 #pragma mark -
 #pragma mark Initialization
