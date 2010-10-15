@@ -67,9 +67,7 @@
 */
 + (TNPubSubNode)pubSubNodeWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer
 {
-    var pubsub = [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer];
-
-    return pubsub;
+    return [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer];
 }
 
 /*! initialize and return a new TNPubSubNode
@@ -400,9 +398,6 @@
 {
     if ([aStanza type] == @"result")
     {
-        var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                                Strophe.NS.PUBSUB_EVENT, @"namespace",
-                                                                @"headline", @"type"];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
 
