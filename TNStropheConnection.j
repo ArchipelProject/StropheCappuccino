@@ -89,6 +89,9 @@
     id              _connection;
 }
 
+#pragma mark -
+#pragma mark Class methods
+
 /*! instanciate a TNStropheConnection object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
@@ -117,6 +120,9 @@
 {
     return [[TNStropheConnection alloc] initWithService:aService JID:aJID resource:aResource password:aPassword];
 }
+
+#pragma mark -
+#pragma mark Initialization
 
 /*! initialize the TNStropheConnection
 
@@ -186,7 +192,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection Connection
+#pragma mark Connection
 
 - (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
 {
@@ -290,7 +296,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection Features
+#pragma mark Features
 
 - (void)addFeature:(CPString)aFeatureNamespace
 {
@@ -342,7 +348,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection Sending
+#pragma mark Sending
 
 /*! send a TNStropheStanza object
     @param aStanza: the stanza to send
@@ -393,7 +399,7 @@
 
 
 #pragma mark -
-#pragma mark TNStropheConnection Handlers
+#pragma mark Handlers
 
 /*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
     The dictionnary should contains zero to many of the followings :

@@ -27,6 +27,9 @@
     XMLElement  _xmlNode     @accessors(readonly, getter=xmlNode);
 }
 
+#pragma mark -
+#pragma mark Class methods
+
 /*! create an instance of a TNXMLNode from a pure javascript Node
     @param aNode a pure Javascript DOM Element
     @return an instance of TNXMLNode initialized with aNode
@@ -54,6 +57,9 @@
 {
     return [[TNXMLNode alloc] initWithName:aName andAttributes:someAttributes];
 }
+
+#pragma mark -
+#pragma mark Initialization
 
 /*! initialize an instance of a TNXMLNode from a pure javascript Node
     @param aNode a pure Javascript DOM Element
@@ -92,6 +98,9 @@
 
     return self;
 }
+
+#pragma mark -
+#pragma mark Representation & Navigation
 
 /*! copy the current TNXMLNode
     @return a copy of this

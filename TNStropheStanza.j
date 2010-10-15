@@ -17,17 +17,15 @@
  */
 
 @import <Foundation/Foundation.j>
-
 @import "TNXMLNode.j"
-
-
-#pragma mark -
-#pragma mark TNStropheStanza
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Stanza
 */
 @implementation TNStropheStanza: TNXMLNode
+
+#pragma mark -
+#pragma mark Class methods
 
 /*! instanciate a TNStropheStanza
     @param aName the root name
@@ -107,6 +105,9 @@
 {
     return [[TNStropheStanza alloc] initWithNode:aStanza];
 }
+
+#pragma mark -
+#pragma mark Attributes
 
 /*! get the from field of the stanza
     @return from field of stanza

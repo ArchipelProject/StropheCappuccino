@@ -56,6 +56,9 @@
     CPImage             _statusReminder;
 }
 
+#pragma mark -
+#pragma mark Class methods
+
 /*! create a contact using a given connection, JID and group
     @param aConnection TNStropheConnection to use
     @param aJID the JID of the contact
@@ -67,6 +70,9 @@
 {
     return [[TNStropheContact alloc] initWithConnection:aConnection JID:aJID groupName:aGroupName];
 }
+
+#pragma mark -
+#pragma mark Initialization
 
 /*! init a TNStropheContact with a given connection
     @param aConnection TNStropheConnection to use

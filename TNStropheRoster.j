@@ -24,10 +24,6 @@
 @import "TNStropheContact.j"
 @import "TNStropheGlobals.j"
 
-
-#pragma mark -
-#pragma mark TNStropheRoster
-
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Roster
 */
@@ -41,10 +37,16 @@
     TNStropheGroup          _defaultGroup;
 }
 
+#pragma mark -
+#pragma mark Class methods
+
 + (TNStropheRoster)rosterWithConnection:(TNStropheConnection)aConnection
 {
     return [[TNStropheRoster alloc] initWithConnection:aConnection];
 }
+
+#pragma mark -
+#pragma mark Initialization
 
 /*! initialize a roster with a valid TNStropheConnection
 
