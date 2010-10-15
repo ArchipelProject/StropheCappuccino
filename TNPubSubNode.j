@@ -35,6 +35,7 @@
     CPString                _pubSubServer;
     TNStropheConnection     _connection;
     id                      _eventSelectorID;
+    CPArray                 _subscriptionIDs;
 }
 
 #pragma mark -
@@ -83,6 +84,37 @@
         _nodeName           = aNodeName;
         _connection         = aConnection;
         _pubSubServer       = aPubSubServer ? aPubSubServer : [_connection JID].split("@")[1].split("/")[0];
+        _subscriptionIDs    = [CPArray array];
+    }
+
+    return self;
+}
+
+/*! create and initialize and return a new TNPubSubNode
+    @param  aNodeName the name of the pubsub node
+    @param  aConnection the TNStropheConnection to use to communicate
+    @param  aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
+    @param  aSubscriptionIDs array of the subsciption IDs if already subscribed
+    @return initialized TNPubSubNode
+*/
++ (TNPubSubNode)pubSubNodeWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer subscriptionIDs:(CPArray)aSubscriptionIDs
+{
+    return [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer subscriptionIDs:aSubscriptionIDs];
+}
+
+/*! initialize and return a new TNPubSubNode
+    @param  aNodeName the name of the pubsub node
+    @param  aConnection the TNStropheConnection to use to communicate
+    @param  aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
+    @param  aSubscriptionIDs array of the subsciption IDs if already subscribed
+    @return initialized TNPubSubNode
+*/
+- (TNPubSubNode)initWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer subscriptionIDs:(CPArray)aSubscriptionIDs
+{
+    if (self = [self initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer])
+    {
+        _subscriptionIDs = aSubscriptionIDs;
+        [self _setEventHandler];
     }
 
     return self;
@@ -398,10 +430,13 @@
 {
     if ([aStanza type] == @"result")
     {
+        var subID = [[[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"] valueForAttribute:@"subid"];
+        if ([subID length] > 0)
+            [_subscriptionIDs addObject:subID];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
 
-        _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
+        [self _setEventHandler];
     }
     else
         CPLog.error("Cannot subscribe the pubsub node with name: " + _nodeName);
@@ -409,9 +444,10 @@
     return NO;
 }
 
-/*! Ask the server to unsubscribe from the node in order to recieve event.
+/*! Ask the server to unsubscribe from the node in order to no longer recieve events
+    @param aSubID string representing the specific subscription ID to unsubscribe
 */
-- (void)unsubscribe
+- (void)unsubscribeWithSubID:(CPString)aSubID
 {
     var uid    = [_connection getUniqueId],
         stanza = [TNStropheStanza iq],
@@ -423,9 +459,30 @@
 
     [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"unsubscribe" andAttributes:{"node": _nodeName, "jid": [_connection JID]}];
+    if (aSubID)
+        [stanza setValue:aSubID forAttribute:@"subid"];
 
     [_connection registerSelector:@selector(_didUnsubscribe:) ofObject:self withDict:params];
     [_connection send:stanza];
+}
+
+/*! Remove all known subscriptions
+*/
+- (void)unsubscribe
+{
+    if ([_subscriptionIDs count] > 0)
+    {
+        // Unsubscribe from node for each subscription ID
+        for (var i = 0; i < [_subscriptionIDs count]; i++)
+        {
+            [self unsubscribeWithSubID:_subscriptionIDs[i]];
+        }
+    }
+    else
+    {
+        // There are no registered subscription IDs - send plain unsubscribe
+        [self unsubscribeWithSubID:nil];
+    }
 }
 
 /*! send TNStrophePubSubNodeUnsubscribedNotification if everything is OK and unregister __didReceiveEvent:
@@ -436,12 +493,26 @@
 {
     if ([aStanza type] == @"result")
     {
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeUnsubscribedNotification object:self];
-        if (_eventSelectorID)
+        var params  = [CPDictionary dictionary],
+            subID   = [[[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"] valueForAttribute:@"subid"];
+
+        if ([subID length] > 0)
         {
-            [_connection deleteRegisteredSelector:_eventSelectorID];
-            _eventSelectorID = nil;
+            [_subscriptionIDs removeObject:subID];
+            [params setObject:subID forKey:@"subscriptionID"];
         }
+
+        if ([_subscriptionIDs count] === 0)
+        {
+            // No subscriptions remaining
+            if (_eventSelectorID)
+            {
+                [_connection deleteRegisteredSelector:_eventSelectorID];
+                _eventSelectorID = nil;
+            }
+        }
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeUnsubscribedNotification object:self userInfo:params];
     }
     else
         CPLog.error("Cannot unsubscribe the pubsub node with name: " + _nodeName);
@@ -452,6 +523,11 @@
 
 #pragma mark -
 #pragma mark Event Management
+
+- (void)_setEventHandler
+{
+    _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
+}
 
 /*! this message is send when a new pubsub event is recieved. It will call the delegate
     pubsubNode:receivedEvent: if any selector and send TNStrophePubSubNodeEventNotification notification
