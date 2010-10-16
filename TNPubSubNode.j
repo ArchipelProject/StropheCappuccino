@@ -30,7 +30,7 @@
 {
     CPArray                 _content        @accessors(getter=content);
     id                      _delegate       @accessors(property=delegate);
-    CPString                _nodeName;
+    CPString                _nodeName       @accessors(getter=name);
     CPString                _pubSubServer;
     TNStropheConnection     _connection;
     id                      _eventSelectorID;
