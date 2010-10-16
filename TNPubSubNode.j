@@ -539,6 +539,11 @@
             [_subscriptionIDs removeObject:subID];
             [params setObject:subID forKey:@"subscriptionID"];
         }
+        else if ([_subscriptionIDs count] === 1)
+        {
+            // TODO: Need to establish if subscription id is ever included in unsubscribe confirmation or if this association needs to be made by IQ id
+            [_subscriptionIDs removeAllObjects];
+        }
 
         if ([_subscriptionIDs count] === 0)
         {
