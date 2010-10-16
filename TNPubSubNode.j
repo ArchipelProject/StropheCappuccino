@@ -570,7 +570,7 @@
 - (void)_setEventHandler
 {
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                            Strophe.NS.PUBSUB_EVENT, @"namespace",
+                                                            _pubSubServer, @"from",
                                                             @"headline", @"type"];
     _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
 }
@@ -582,13 +582,17 @@
 */
 - (BOOL)_didReceiveEvent:(TNStropheStanza)aStanza
 {
-    if (_nodeName != [[[aStanza firstChildWithName:@"event"] firstChildWithName:@"items"] valueForAttribute:@"node"])
+    var pubsubEvent = [aStanza firstChildWithName:@"event"];
+    if (_nodeName != [[pubsubEvent firstChildWithName:@"items"] valueForAttribute:@"node"])
+        return YES;
+
+    if ([pubsubEvent namespace] != Strophe.NS.PUBSUB_EVENT)
         return YES;
 
     if (_delegate && [_delegate respondsToSelector:@selector(pubsubNode:receivedEvent:)])
         [_delegate pubsubNode:self receivedEvent:aStanza];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeEventNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeEventNotification object:self userInfo:aStanza];
 
     return YES;
 }
