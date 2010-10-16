@@ -592,21 +592,24 @@
 - (BOOL)_didReceiveEvent:(TNStropheStanza)aStanza
 {
     var pubsubEvent = [aStanza firstChildWithName:@"event"];
-    if (_nodeName != [[pubsubEvent firstChildWithName:@"items"] valueForAttribute:@"node"])
-        return YES;
 
     if ([pubsubEvent namespace] != Strophe.NS.PUBSUB_EVENT)
         return YES;
 
     if ([pubsubEvent containsChildrenWithName:@"subscription"])
     {
-        var status = [[pubsubEvent firstChildWithName:@"subscription"] valueForAttribute:@"subscription"];
+        var subscription    = [pubsubEvent firstChildWithName:@"subscription"],
+            status          = [subscription valueForAttribute:@"subscription"],
+            nodeName        = [subscription valueForAttribute:@"node"];
 
-        if (status === @"subscribed")
+        if (status === @"subscribed" && nodeName === _nodeName)
             [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
 
         return YES;
     }
+
+    if (_nodeName != [[pubsubEvent firstChildWithName:@"items"] valueForAttribute:@"node"])
+        return YES;
 
     if (_delegate && [_delegate respondsToSelector:@selector(pubsubNode:receivedEvent:)])
         [_delegate pubsubNode:self receivedEvent:aStanza];
