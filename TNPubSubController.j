@@ -28,9 +28,10 @@
 */
 @implementation TNPubSubController : CPObject
 {
-    CPArray     _nodes          @accessors(getter=nodes);
-    id          _connection;
-    CPString    _server         @accessors(property=server);
+    CPArray         _nodes                  @accessors(getter=nodes);
+    id              _connection;
+    CPString        _server                 @accessors(property=server);
+    CPDictionary    _subscriptionBatches;
 }
 
 #pragma mark -
@@ -59,9 +60,10 @@
 {
     if (self = [super init])
     {
-        _connection = aConnection;
-        _server     = aPubSubServer;
-        _nodes      = [CPArray array];
+        _connection             = aConnection;
+        _server                 = aPubSubServer;
+        _nodes                  = [CPArray array];
+        _subscriptionBatches    = [CPDictionary dictionary];
     }
 
     return self;
@@ -92,10 +94,59 @@
     }
 }
 
-- (void)subscribeToNode:(CPString)aNodeName
+- (TNPubSubNode)subscribeToNode:(CPString)aNodeName
 {
     var node = [self findOrCreateNodeWithName:aNodeName];
     [node subscribe];
+    return node;
+}
+
+/*! batch subscribe to nodes
+    @param someNodes an array of node names to subscribe to
+        posts TNStrophePubSubBatchSubscribeComplete when all nodes have been subscribed
+    @return batchID an ID for this batch used to establish the relevance of completion notification
+*/
+- (CPString)subscribeToNodes:(CPArray)someNodes
+{
+    var batchID = [_connection getUniqueId];
+
+    [_subscriptionBatches setValue:someNodes forKey:batchID];
+
+    for (var i = 0; i < [someNodes count]; i++)
+    {
+        var nodeName    = someNodes[i],
+            node        = [self subscribeToNode:nodeName];
+
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_monitorBatchSubscriptions:) name:TNStrophePubSubNodeSubscribedNotification object:node];
+    }
+
+    return batchID;
+}
+
+- (void)_monitorBatchSubscriptions:(CPNotification)aNotification
+{
+    var node    = [aNotification object],
+        batchID = [self _findBatchIdForNode:node],
+        batch   = [_subscriptionBatches valueForKey:batchID],
+        params  = [CPDictionary dictionaryWithObject:batchID forKey:@"batchID"];
+
+    [batch removeObjectIdenticalTo:[node name]];
+
+    if ([batch count] === 0)
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchSubscribeComplete object:self userInfo:params];
+}
+
+- (CPString)_findBatchIdForNode:(TNPubSubNode)aNode
+{
+    var keys = [_subscriptionBatches allKeys];
+    for (var i = 0; i < [keys count]; i++)
+    {
+        var batchID = keys[i],
+            batch   = [_subscriptionBatches valueForKey:key];
+
+        if ([batch containsObject:aNode])
+            return batchID;
+    }
 }
 
 

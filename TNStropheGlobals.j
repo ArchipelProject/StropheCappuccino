@@ -351,3 +351,10 @@ TNStrophePubSubSubscriptionsRetrievedNotification   = @"TNStrophePubSubSubscript
     notification indicates that all subscriptions have been unsubscribed
 */
 TNStrophePubSubNoOldSubscriptionsLeftNotification   = @"TNStrophePubSubNoOldSubscriptionsLeft";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that all subscriptions in a batch have been completed
+*/
+TNStrophePubSubBatchSubscribeComplete               = @"TNStrophePubSubBatchSubscribeComplete";
