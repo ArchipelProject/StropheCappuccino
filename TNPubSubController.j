@@ -111,9 +111,9 @@
     [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"subscriptions"];
 
-    [connection registerSelector:@selector(_didRetrieveSubscriptions:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didRetrieveSubscriptions:) ofObject:self withDict:params];
 
-    [connection send:stanza];
+    [_connection send:stanza];
 }
 
 - (BOOL)_didRetrieveSubscriptions:(TNStropheStanza)aStanza
