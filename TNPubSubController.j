@@ -142,7 +142,7 @@
     for (var i = 0; i < [keys count]; i++)
     {
         var batchID = keys[i],
-            batch   = [_subscriptionBatches valueForKey:key];
+            batch   = [_subscriptionBatches valueForKey:batchID];
 
         if ([batch containsObject:aNode])
             return batchID;
