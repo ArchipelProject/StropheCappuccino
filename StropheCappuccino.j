@@ -24,6 +24,7 @@
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
 @import "TNPubSubNode.j"
+@import "TNPubSubController.j"
 @import "TNBase64Image.j"
 
 [TNStropheConnection addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
