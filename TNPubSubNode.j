@@ -125,10 +125,10 @@
 #pragma mark -
 #pragma mark Node Management
 
-/*! recover the content of the PubSub node from the server and call _didRecoverPubSubNode selector
-    You should use this method to populate the content property
+/*! retrieve the content of the PubSub node from the server and call _didRetrievePubSubNode selector
+    You should use this method to get past content
 */
-- (void)recover
+- (void)retrieveItems
 {
     var uid     = [_connection getUniqueId],
         stanza  = [TNStropheStanza iq],
@@ -141,23 +141,23 @@
     [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"items" andAttributes:{@"node": _nodeName}];
 
-    [_connection registerSelector:@selector(_didRecoverPubSubNode:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didRetrievePubSubNode:) ofObject:self withDict:params];
     [_connection send:stanza];
 }
 
-/*! send TNStrophePubSubNodeRecoveredNotification if everything is ok
+/*! send TNStrophePubSubNodeRetrievedNotification if everything is ok
     @param aStanza TNStropheStanza contaning the response of the server
     @return NO in order to unregister the selector from connection
 */
-- (BOOL)_didRecoverPubSubNode:(TNStropheStanza)aStanza
+- (BOOL)_didRetrievePubSubNode:(TNStropheStanza)aStanza
 {
     if ([aStanza type] == @"result")
     {
         _content = [aStanza childrenWithName:@"item"];
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeRecoveredNotification object:self];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeRetrievedNotification object:self];
     }
     else
-        CPLog.error("Cannot recover the pubsub node with name: " + _nodeName);
+        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
 
     return NO;
 }

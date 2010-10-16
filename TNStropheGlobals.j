@@ -276,7 +276,7 @@ TNStrophePubSubVarAccessModelWhitelist      = @"whitelist";
     @group TNPubSub
     notification indicates that a pubsub node has been recovered
 */
-TNStrophePubSubNodeRecoveredNotification    = @"TNStrophePubSubNodeRecoveredNotification";
+TNStrophePubSubNodeRetrievedNotification    = @"TNStrophePubSubNodeRetrievedNotification";
 
 /*!
     @global
