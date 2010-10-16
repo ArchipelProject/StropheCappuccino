@@ -479,7 +479,7 @@
 
 - (void)addSubscriptionID:(CPString)aSubscriptionID
 {
-    [_subscriptionIDs addValue:aSubscriptionID];
+    [_subscriptionIDs addObject:aSubscriptionID];
 }
 
 /*! Ask the server to unsubscribe from the node in order to no longer recieve events
