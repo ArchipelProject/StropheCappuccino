@@ -140,4 +140,18 @@
     return NO;
 }
 
+- (void)removeAllExistingSubscriptions
+{
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(unsubscribeFromAllNodes:) name:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
+    [self retrieveAllSubscriptions];
+}
+
+- (void)unsubscribeFromAllNodes:(CPNotification)aNotification
+{
+    for (var i = 0; i < [_nodes count]; i++)
+    {
+        [_nodes[i] unsubscribe];
+    }
+}
+
 @end
