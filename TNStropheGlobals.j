@@ -344,3 +344,10 @@ TNStrophePubSubNodeEventNotification        = @"TNStrophePubSubNodeEventNotifica
     notification indicates that the list of current subscriptions has been recieved from the PubSub
 */
 TNStrophePubSubSubscriptionsRetrievedNotification   = @"TNStrophePubSubSubscriptionsReceivedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that all subscriptions have been unsubscribed
+*/
+TNStrophePubSubNoOldSubscriptionsLeftNotification   = @"TNStrophePubSubNoOldSubscriptionsLeft";
