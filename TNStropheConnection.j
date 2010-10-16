@@ -89,8 +89,10 @@
     id              _connection;
 }
 
-#pragma mark -
-#pragma mark Class methods
++ (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
+{
+    Strophe.addNamespace(aName, aValue);
+}
 
 /*! instanciate a TNStropheConnection object
 
@@ -138,11 +140,6 @@
         _connected              = NO;
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
-
-        [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
-        [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
-        [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
-        [self addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
 
         _clientNode             = @"http://cappuccino.org";
         _identityCategory       = @"client";
@@ -194,10 +191,7 @@
 #pragma mark -
 #pragma mark Connection
 
-- (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
-{
-    Strophe.addNamespace(aName, aValue)
-}
+@implementation TNStropheConnection (Connection)
 
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 */

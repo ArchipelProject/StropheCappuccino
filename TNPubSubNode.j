@@ -18,11 +18,11 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheGlobals.j";
-@import "TNStropheConnection.j";
-@import "TNStropheStanza.j";
+@import "TNStropheGlobals.j"
+@import "TNStropheConnection.j"
+@import "TNStropheStanza.j"
 
-
+// TODO: Abstract out subscription related stuff into TNPubSubNodeSubscription in order to handle multiple node subscriptions better
 
 /*! @ingroup strophecappuccino
     this is an implementation of a XMPP Publish-Subscribe node
@@ -31,11 +31,13 @@
 {
     CPArray                 _content        @accessors(getter=content);
     id                      _delegate       @accessors(property=delegate);
-    CPString                _nodeName;
+    CPString                _nodeName       @accessors(getter=name);
     CPString                _pubSubServer;
     TNStropheConnection     _connection;
     id                      _eventSelectorID;
+    CPArray                 _subscriptionIDs;
 }
+
 
 #pragma mark -
 #pragma mark Class methods
@@ -51,10 +53,11 @@
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
                                                             @"headline", @"type",
                                                             {"matchBare": YES}, @"options",
-                                                            @"http://jabber.org/protocol/pubsub#event", @"namespace"];
+                                                            Strophe.NS.PUBSUB_EVENT, @"namespace"];
 
     return [aConnection registerSelector:aSelector ofObject:anObject withDict:params];
 }
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -67,9 +70,7 @@
 */
 + (TNPubSubNode)pubSubNodeWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer
 {
-    var pubsub = [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer];
-
-    return pubsub;
+    return [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer];
 }
 
 /*! initialize and return a new TNPubSubNode
@@ -85,8 +86,37 @@
         _nodeName           = aNodeName;
         _connection         = aConnection;
         _pubSubServer       = aPubSubServer ? aPubSubServer : [_connection JID].split("@")[1].split("/")[0];
-        _content            = nil;
-        _eventSelectorID    = nil;
+        _subscriptionIDs    = [CPArray array];
+    }
+
+    return self;
+}
+
+/*! create and initialize and return a new TNPubSubNode
+    @param  aNodeName the name of the pubsub node
+    @param  aConnection the TNStropheConnection to use to communicate
+    @param  aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
+    @param  aSubscriptionIDs array of the subsciption IDs if already subscribed
+    @return initialized TNPubSubNode
+*/
++ (TNPubSubNode)pubSubNodeWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer subscriptionIDs:(CPArray)aSubscriptionIDs
+{
+    return [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer subscriptionIDs:aSubscriptionIDs];
+}
+
+/*! initialize and return a new TNPubSubNode
+    @param  aNodeName the name of the pubsub node
+    @param  aConnection the TNStropheConnection to use to communicate
+    @param  aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
+    @param  aSubscriptionIDs array of the subsciption IDs if already subscribed
+    @return initialized TNPubSubNode
+*/
+- (TNPubSubNode)initWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer subscriptionIDs:(CPArray)aSubscriptionIDs
+{
+    if (self = [self initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer])
+    {
+        _subscriptionIDs = aSubscriptionIDs;
+        [self _setEventHandler];
     }
 
     return self;
@@ -96,10 +126,10 @@
 #pragma mark -
 #pragma mark Node Management
 
-/*! recover the content of the PubSub node from the server and call _didRecoverPubSubNode selector
-    You should use this method to populate the content property
+/*! retrieve the content of the PubSub node from the server and call _didRetrievePubSubNode selector
+    You should use this method to get past content
 */
-- (void)recover
+- (void)retrieveItems
 {
     var uid     = [_connection getUniqueId],
         stanza  = [TNStropheStanza iq],
@@ -109,26 +139,26 @@
     [stanza setType:@"get"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"items" andAttributes:{@"node": _nodeName}];
 
-    [_connection registerSelector:@selector(_didRecoverPubSubNode:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didRetrievePubSubNode:) ofObject:self withDict:params];
     [_connection send:stanza];
 }
 
-/*! send TNStrophePubSubNodeRecoveredNotification if everything is ok
+/*! send TNStrophePubSubNodeRetrievedNotification if everything is ok
     @param aStanza TNStropheStanza contaning the response of the server
     @return NO in order to unregister the selector from connection
 */
-- (BOOL)_didRecoverPubSubNode:(TNStropheStanza)aStanza
+- (BOOL)_didRetrievePubSubNode:(TNStropheStanza)aStanza
 {
     if ([aStanza type] == @"result")
     {
         _content = [aStanza childrenWithName:@"item"];
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeRecoveredNotification object:self];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeRetrievedNotification object:self];
     }
     else
-        CPLog.error("Cannot recover the pubsub node with name: " + _nodeName);
+        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
 
     return NO;
 }
@@ -145,7 +175,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"create" andAttributes:{@"node": _nodeName}];
 
     [_connection registerSelector:@selector(_didCreatePubSubNode:) ofObject:self withDict:params];
@@ -178,7 +208,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub#owner"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB_OWNER}];
     [stanza addChildWithName:@"delete" andAttributes:{@"node": _nodeName}];
 
     [_connection registerSelector:@selector(didDeletePubSubNode:) ofObject:self withDict:params];
@@ -218,12 +248,12 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub#owner"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB_OWNER}];
     [stanza addChildWithName:@"configure" andAttributes:{@"node": _nodeName}];
     [stanza addChildWithName:@"x" andAttributes:{@"xmlns": "jabber:x:data", @"type": @"submit"}];
     [stanza addChildWithName:@"field" andAttributes:{@"var": @"FORM_TYPE", @"type": @"hidden"}];
     [stanza addChildWithName:@"value"];
-    [stanza addTextNode:@"http://jabber.org/protocol/pubsub#node_config"];
+    [stanza addTextNode:Strophe.NS.PUBSUB_NODE_CONFIG];
     [stanza up];
     [stanza up];
 
@@ -287,7 +317,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"publish" andAttributes:{@"node": _nodeName}];
     [stanza addChildWithName:@"item"];
     [stanza addNode:anItem];
@@ -336,7 +366,7 @@
     [stanza setType:@"set"];
     [stanza setID:uid];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"retract" andAttributes:{@"node": _nodeName}];
     [stanza addChildWithName:@"item" andAttributes:{@"id": anID}];
 
@@ -374,9 +404,17 @@
 #pragma mark -
 #pragma mark Subscription Management
 
-/*! Ask the server to subscribe to the node in order to recieve event.
+/*! Ask the server to subscribe to the node in order to recieve events
 */
 - (void)subscribe
+{
+    [self subscribeWithOptions:nil];
+}
+
+/*! Ask the server to subscribe to the node in order to recieve events
+    @param options key value pairs of subscription options
+*/
+- (void)subscribeWithOptions:(CPDictionary)options
 {
     var uid    = [_connection getUniqueId],
         stanza = [TNStropheStanza iq],
@@ -386,8 +424,32 @@
     [stanza setID:uid];
     [stanza setTo:_pubSubServer];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": @"http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"subscribe" andAttributes:{@"node": _nodeName, @"jid": [_connection JID]}];
+
+    if (options && [options count] > 0)
+    {
+        [subscribeStanza up];
+        [subscribeStanza addChildWithName:@"options"];
+        [subscribeStanza addChildWithName:@"x" andAttributes:{"xmlns":Strophe.NS.X_DATA, "type":"submit"}];
+        [subscribeStanza addChildWithName:@"field" andAttributes:{"var":"FORM_TYPE", "type":"hidden"}];
+        [subscribeStanza addChildWithName:@"value"];
+        [subscribeStanza addTextNode:Strophe.NS.PUBSUB_SUBSCRIBE_OPTIONS];
+        [subscribeStanza up];
+        [subscribeStanza up];
+
+        var keys = [options allKeys];
+        for (var i = 0; i < [keys count]; i++)
+        {
+            var key     = keys[i],
+                value   = [options valueForKey:key];
+            [subscribeStanza addChildWithName:@"field" andAttributes:{"var":key}];
+            [subscribeStanza addChildWithName:@"value"];
+            [subscribeStanza addTextNode:value];
+            [subscribeStanza up];
+            [subscribeStanza up];
+        }
+    }
 
     [_connection registerSelector:@selector(_didSubscribe:) ofObject:self withDict:params]
     [_connection send:stanza];
@@ -402,13 +464,17 @@
 {
     if ([aStanza type] == @"result")
     {
-        var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                                @"http://jabber.org/protocol/pubsub#event", @"namespace",
-                                                                @"headline", @"type"];
+        var subscription    = [[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"],
+            subID           = [subscription valueForAttribute:@"subid"],
+            status          = [subscription valueForAttribute:@"subscription"];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
+        if ([subID length] > 0)
+            [_subscriptionIDs addObject:subID];
 
-        _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
+        if (status === @"subscribed")
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
+
+        [self _setEventHandler];
     }
     else
         CPLog.error("Cannot subscribe the pubsub node with name: " + _nodeName);
@@ -416,9 +482,15 @@
     return NO;
 }
 
-/*! Ask the server to unsubscribe from the node in order to recieve event.
+- (void)addSubscriptionID:(CPString)aSubscriptionID
+{
+    [_subscriptionIDs addObject:aSubscriptionID];
+}
+
+/*! Ask the server to unsubscribe from the node in order to no longer recieve events
+    @param aSubID string representing the specific subscription ID to unsubscribe
 */
-- (void)unsubscribe
+- (void)unsubscribeWithSubID:(CPString)aSubID
 {
     var uid    = [_connection getUniqueId],
         stanza = [TNStropheStanza iq],
@@ -428,11 +500,32 @@
     [stanza setID:uid];
     [stanza setTo:_pubSubServer];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": "http://jabber.org/protocol/pubsub"}];
+    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"unsubscribe" andAttributes:{"node": _nodeName, "jid": [_connection JID]}];
+    if (aSubID)
+        [stanza setValue:aSubID forAttribute:@"subid"];
 
     [_connection registerSelector:@selector(_didUnsubscribe:) ofObject:self withDict:params];
     [_connection send:stanza];
+}
+
+/*! Remove all known subscriptions
+*/
+- (void)unsubscribe
+{
+    if ([_subscriptionIDs count] > 0)
+    {
+        // Unsubscribe from node for each subscription ID
+        for (var i = 0; i < [_subscriptionIDs count]; i++)
+        {
+            [self unsubscribeWithSubID:_subscriptionIDs[i]];
+        }
+    }
+    else
+    {
+        // There are no registered subscription IDs - send plain unsubscribe
+        [self unsubscribeWithSubID:nil];
+    }
 }
 
 /*! send TNStrophePubSubNodeUnsubscribedNotification if everything is OK and unregister __didReceiveEvent:
@@ -443,12 +536,31 @@
 {
     if ([aStanza type] == @"result")
     {
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeUnsubscribedNotification object:self];
-        if (_eventSelectorID)
+        var params  = [CPDictionary dictionary],
+            subID   = [[[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"] valueForAttribute:@"subid"];
+
+        if ([subID length] > 0)
         {
-            [_connection deleteRegisteredSelector:_eventSelectorID];
-            _eventSelectorID = nil;
+            [_subscriptionIDs removeObject:subID];
+            [params setObject:subID forKey:@"subscriptionID"];
         }
+        else if ([_subscriptionIDs count] === 1)
+        {
+            // TODO: Need to establish if subscription id is ever included in unsubscribe confirmation or if this association needs to be made by IQ id
+            [_subscriptionIDs removeAllObjects];
+        }
+
+        if ([_subscriptionIDs count] === 0)
+        {
+            // No subscriptions remaining
+            if (_eventSelectorID)
+            {
+                [_connection deleteRegisteredSelector:_eventSelectorID];
+                _eventSelectorID = nil;
+            }
+        }
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeUnsubscribedNotification object:self userInfo:params];
     }
     else
         CPLog.error("Cannot unsubscribe the pubsub node with name: " + _nodeName);
@@ -456,21 +568,53 @@
     return NO;
 }
 
+- (int)numberOfSubscriptions
+{
+    return [_subscriptionIDs count];
+}
+
 
 #pragma mark -
 #pragma mark Event Management
 
+- (void)_setEventHandler
+{
+    var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
+                                                            _pubSubServer, @"from"];
+    _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
+}
+
 /*! this message is send when a new pubsub event is recieved. It will call the delegate
     pubsubNode:receivedEvent: if any selector and send TNStrophePubSubNodeEventNotification notification
     @param aStanza TNStropheStanza contaning the response of the server
-    @return NO in order to unregister the selector from connection
+    @return YES in order to keep the selector registered
 */
 - (BOOL)_didReceiveEvent:(TNStropheStanza)aStanza
 {
+    var pubsubEvent = [aStanza firstChildWithName:@"event"];
+
+    if ([pubsubEvent namespace] != Strophe.NS.PUBSUB_EVENT)
+        return YES;
+
+    if ([pubsubEvent containsChildrenWithName:@"subscription"])
+    {
+        var subscription    = [pubsubEvent firstChildWithName:@"subscription"],
+            status          = [subscription valueForAttribute:@"subscription"],
+            nodeName        = [subscription valueForAttribute:@"node"];
+
+        if (status === @"subscribed" && nodeName === _nodeName)
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
+
+        return YES;
+    }
+
+    if (_nodeName != [[pubsubEvent firstChildWithName:@"items"] valueForAttribute:@"node"])
+        return YES;
+
     if (_delegate && [_delegate respondsToSelector:@selector(pubsubNode:receivedEvent:)])
         [_delegate pubsubNode:self receivedEvent:aStanza];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeEventNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeEventNotification object:self userInfo:aStanza];
 
     return YES;
 }

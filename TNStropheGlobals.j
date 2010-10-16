@@ -276,7 +276,7 @@ TNStrophePubSubVarAccessModelWhitelist      = @"whitelist";
     @group TNPubSub
     notification indicates that a pubsub node has been recovered
 */
-TNStrophePubSubNodeRecoveredNotification    = @"TNStrophePubSubNodeRecoveredNotification";
+TNStrophePubSubNodeRetrievedNotification    = @"TNStrophePubSubNodeRetrievedNotification";
 
 /*!
     @global
@@ -333,3 +333,28 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
     notification indicates that an event has been recieved from the PubSub
 */
 TNStrophePubSubNodeEventNotification        = @"TNStrophePubSubNodeEventNotification"
+
+
+#pragma mark -
+#pragma mark globals for TNPubSubController
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that the list of current subscriptions has been recieved from the PubSub
+*/
+TNStrophePubSubSubscriptionsRetrievedNotification   = @"TNStrophePubSubSubscriptionsReceivedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that all subscriptions have been unsubscribed
+*/
+TNStrophePubSubNoOldSubscriptionsLeftNotification   = @"TNStrophePubSubNoOldSubscriptionsLeft";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that all subscriptions in a batch have been completed
+*/
+TNStrophePubSubBatchSubscribeComplete               = @"TNStrophePubSubBatchSubscribeComplete";
