@@ -24,9 +24,6 @@
 @import "TNStropheGlobals.j"
 
 
-#pragma mark -
-#pragma mark TNStropheConnection
-
 /*! @ingroup strophecappuccino
     this is an Cappuccino implementation of an XMPP connection
     using javascript library Strophe by Stanziq.
@@ -88,6 +85,9 @@
     id              _audioTagReceive;
     id              _connection;
 }
+
+#pragma mark -
+#pragma mark Class methods
 
 + (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
 {
