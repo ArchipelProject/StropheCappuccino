@@ -98,4 +98,46 @@
     [node subscribe];
 }
 
+
+#pragma mark -
+#pragma mark Subscription Management
+
+- (void)retrieveAllSubscriptions
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{"type": "get", "to": _server, "id": uid}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid,@"id"];
+
+    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
+    [stanza addChildWithName:@"subscriptions"];
+
+    [connection registerSelector:@selector(_didRetrieveSubscriptions:) ofObject:self withDict:params];
+
+    [connection send:stanza];
+}
+
+- (BOOL)_didRetrieveSubscriptions:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+    {
+        var subscriptions = [[[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscriptions"] childrenWithName:@"subscription"];
+
+        for (var i = 0; i < [subscriptions count]; i++)
+        {
+            var subscription    = subscriptions[i],
+                nodeName        = [subscription valueForAttribute:@"node"],
+                subid           = [subscription valueForAttribute:@"subid"],
+                node            = [self findOrCreateNodeWithName:nodeName];
+
+            [node addSubscriptionID:subid];
+        }
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
+    }
+    else
+        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
+
+    return NO;
+}
+
 @end

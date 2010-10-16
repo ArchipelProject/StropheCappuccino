@@ -333,3 +333,14 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
     notification indicates that an event has been recieved from the PubSub
 */
 TNStrophePubSubNodeEventNotification        = @"TNStrophePubSubNodeEventNotification"
+
+
+#pragma mark -
+#pragma mark globals for TNPubSubController
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that the list of current subscriptions has been recieved from the PubSub
+*/
+TNStrophePubSubSubscriptionsRetrievedNotification   = @"TNStrophePubSubSubscriptionsReceivedNotification";

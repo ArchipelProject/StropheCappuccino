@@ -477,6 +477,11 @@
     return NO;
 }
 
+- (void)addSubscriptionID:(CPString)aSubscriptionID
+{
+    [_subscriptionIDs addValue:aSubscriptionID];
+}
+
 /*! Ask the server to unsubscribe from the node in order to no longer recieve events
     @param aSubID string representing the specific subscription ID to unsubscribe
 */
