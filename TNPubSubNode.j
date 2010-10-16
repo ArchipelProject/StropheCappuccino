@@ -580,8 +580,7 @@
 - (void)_setEventHandler
 {
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                            _pubSubServer, @"from",
-                                                            @"headline", @"type"];
+                                                            _pubSubServer, @"from"];
     _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
 }
 
