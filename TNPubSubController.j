@@ -149,6 +149,13 @@
 - (void)unsubscribeFromAllNodes:(CPNotification)aNotification
 {
     [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(monitorUnsubscriptions:) name:TNStrophePubSubNodeUnsubscribedNotification object:nil];
+
+    if ([_nodes count] < 1)
+    {
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNoOldSubscriptionsLeftNotification object:self];
+        return;
+    }
+
     for (var i = 0; i < [_nodes count]; i++)
     {
         [_nodes[i] unsubscribe];
