@@ -22,6 +22,7 @@
 @import "TNStropheConnection.j"
 @import "TNStropheStanza.j"
 
+// TODO: Abstract out subscription related stuff into TNPubSubNodeSubscription in order to handle multiple node subscriptions better
 
 /*! @ingroup strophecappuccino
     this is an implementation of a XMPP Publish-Subscribe node
@@ -463,11 +464,15 @@
 {
     if ([aStanza type] == @"result")
     {
-        var subID = [[[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"] valueForAttribute:@"subid"];
+        var subscription    = [[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"],
+            subID           = [subscription valueForAttribute:@"subid"],
+            status          = [subscription valueForAttribute:@"subscription"];
+
         if ([subID length] > 0)
             [_subscriptionIDs addObject:subID];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
+        if (status === @"subscribed")
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
 
         [self _setEventHandler];
     }
@@ -593,6 +598,16 @@
 
     if ([pubsubEvent namespace] != Strophe.NS.PUBSUB_EVENT)
         return YES;
+
+    if ([pubsubEvent containsChildrenWithName:@"subscription"])
+    {
+        var status = [[pubsubEvent firstChildWithName:@"subscription"] valueForAttribute:@"subscription"];
+
+        if (status === @"subscribed")
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
+
+        return YES;
+    }
 
     if (_delegate && [_delegate respondsToSelector:@selector(pubsubNode:receivedEvent:)])
         [_delegate pubsubNode:self receivedEvent:aStanza];
