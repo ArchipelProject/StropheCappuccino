@@ -34,6 +34,7 @@
 [TNStropheConnection addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
 [TNStropheConnection addNamespaceWithName:@"PUBSUB_SUBSCRIBE OPTIONS" value:@"http://jabber.org/protocol/pubsub#subscribe_options"];
 [TNStropheConnection addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
+[TNStropheConnection addNamespaceWithName:@"X_DATA" value:@"jabber:x:data"];
 
 /*! @mainpage
     StropheCappuccino is distributed under the @ref license "AGPL".

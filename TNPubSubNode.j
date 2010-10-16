@@ -403,9 +403,17 @@
 #pragma mark -
 #pragma mark Subscription Management
 
-/*! Ask the server to subscribe to the node in order to recieve event.
+/*! Ask the server to subscribe to the node in order to recieve events
 */
 - (void)subscribe
+{
+    [self subscribeWithOptions:nil];
+}
+
+/*! Ask the server to subscribe to the node in order to recieve events
+    @param options key value pairs of subscription options
+*/
+- (void)subscribeWithOptions:(CPDictionary)options
 {
     var uid    = [_connection getUniqueId],
         stanza = [TNStropheStanza iq],
@@ -417,6 +425,30 @@
 
     [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"subscribe" andAttributes:{@"node": _nodeName, @"jid": [_connection JID]}];
+
+    if (options && [options count] > 0)
+    {
+        [subscribeStanza up];
+        [subscribeStanza addChildWithName:@"options"];
+        [subscribeStanza addChildWithName:@"x" andAttributes:{"xmlns":Strophe.NS.X_DATA, "type":"submit"}];
+        [subscribeStanza addChildWithName:@"field" andAttributes:{"var":"FORM_TYPE", "type":"hidden"}];
+        [subscribeStanza addChildWithName:@"value"];
+        [subscribeStanza addTextNode:Strophe.NS.PUBSUB_SUBSCRIBE_OPTIONS];
+        [subscribeStanza up];
+        [subscribeStanza up];
+
+        var keys = [options allKeys];
+        for (var i = 0; i < [keys count]; i++)
+        {
+            var key     = keys[i],
+                value   = [options valueForKey:key];
+            [subscribeStanza addChildWithName:@"field" andAttributes:{"var":key}];
+            [subscribeStanza addChildWithName:@"value"];
+            [subscribeStanza addTextNode:value];
+            [subscribeStanza up];
+            [subscribeStanza up];
+        }
+    }
 
     [_connection registerSelector:@selector(_didSubscribe:) ofObject:self withDict:params]
     [_connection send:stanza];
