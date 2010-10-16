@@ -199,7 +199,7 @@
 
 - (void)unsubscribeFromAllNodes:(CPNotification)aNotification
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(monitorUnsubscriptions:) name:TNStrophePubSubNodeUnsubscribedNotification object:nil];
+    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_monitorUnsubscriptions:) name:TNStrophePubSubNodeUnsubscribedNotification object:nil];
 
     if ([_nodes count] < 1)
     {
@@ -213,11 +213,11 @@
     }
 }
 
-- (void)monitorUnsubscriptions:(CPNotification)aNotification
+- (void)_monitorUnsubscriptions:(CPNotification)aNotification
 {
     var numberOfOutstandingSubscriptions = 0;
     for (var i = 0; i < [_nodes count]; i++)
-        numberOfOutstandingSubscriptions += [[_nodes[i] subscriptionIDs] count];
+        numberOfOutstandingSubscriptions += [_nodes[i] numberOfSubscriptions];
 
     if (numberOfOutstandingSubscriptions === 0)
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNoOldSubscriptionsLeftNotification object:self];

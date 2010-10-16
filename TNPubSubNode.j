@@ -558,6 +558,11 @@
     return NO;
 }
 
+- (int)numberOfSubscriptions
+{
+    return [_subscriptionIDs count];
+}
+
 
 #pragma mark -
 #pragma mark Event Management
