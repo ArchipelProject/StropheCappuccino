@@ -144,7 +144,7 @@
         var batchID = keys[i],
             batch   = [_subscriptionBatches valueForKey:batchID];
 
-        if ([batch containsObject:aNode])
+        if ([batch containsObject:[aNode name]])
             return batchID;
     }
 }
