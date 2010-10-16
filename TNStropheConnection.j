@@ -89,6 +89,11 @@
     id              _connection;
 }
 
++ (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
+{
+    Strophe.addNamespace(aName, aValue);
+}
+
 /*! instanciate a TNStropheConnection object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
@@ -132,14 +137,6 @@
         _connected              = NO;
         _maxConnections         = 10;
         _connection             = new Strophe.Connection(_boshService);
-
-        [self addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
-        [self addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
-        [self addNamespaceWithName:@"PUBSUB_EVENT" value:@"http://jabber.org/protocol/pubsub#event"];
-        [self addNamespaceWithName:@"PUBSUB_OWNER" value:@"http://jabber.org/protocol/pubsub#owner"];
-        [self addNamespaceWithName:@"PUBSUB_NODE_CONFIG" value:@"http://jabber.org/protocol/pubsub#node_config"];
-        [self addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
-        [self addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
 
         _clientNode             = @"http://cappuccino.org";
         _identityCategory       = @"client";
@@ -194,11 +191,6 @@
 #pragma mark TNStropheConnection Connection
 
 @implementation TNStropheConnection (Connection)
-
-- (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
-{
-    Strophe.addNamespace(aName, aValue)
-}
 
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 */
