@@ -191,8 +191,6 @@
 #pragma mark -
 #pragma mark Connection
 
-@implementation TNStropheConnection (Connection)
-
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 */
 - (void)connect
