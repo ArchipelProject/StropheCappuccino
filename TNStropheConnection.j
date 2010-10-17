@@ -363,7 +363,7 @@
     [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns":Strophe.NS.PUBSUB}]
     [stanza addChildWithName:@"publish" andAttributes:{"node":aNode}];
     [stanza addChildWithName:@"item"];
-    [stanza addNode:[aPayload tree]];
+    [stanza addNode:aPayload];
     [self send:stanza];
 }
 
