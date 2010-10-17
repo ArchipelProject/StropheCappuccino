@@ -1,5 +1,5 @@
 /*
- * TNMUCRoom.j
+ * TNStropheMUCRoom.j
  *
  * Copyright (C) 2010 Antoine Mercadal <antoine.mercadal@inframonde.eu>
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 /*! @ingroup strophecappuccino
     this is an implementation of an XMPP multi-user chat room
 */
-@implementation TNMUCRoom : CPObject
+@implementation TNStropheMUCRoom : CPObject
 {
     CPString                _roomName           @accessors(getter=name);
     CPString                _service            @accessors(getter=service);
@@ -49,9 +49,9 @@
     @param aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
     @return initialized TNPubSubNode
 */
-+ (XMPPMUCSession)joinRoom:(CPString)aRoom onService:(CPString)aService usingConnection:(TNStropheConnection)aConnection withNick:(CPString)aNick
++ (TNStropheMUCRoom)joinRoom:(CPString)aRoom onService:(CPString)aService usingConnection:(TNStropheConnection)aConnection withNick:(CPString)aNick
 {
-    return [[TNMUCRoom alloc] initWithRoom:aRoom
+    return [[TNStropheMUCRoom alloc] initWithRoom:aRoom
                                  onService:aService
                            usingConnection:aConnection
                                   withNick:aNick];

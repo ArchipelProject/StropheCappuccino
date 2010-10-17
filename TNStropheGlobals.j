@@ -360,32 +360,32 @@ TNStrophePubSubNoOldSubscriptionsLeftNotification   = @"TNStrophePubSubNoOldSubs
 TNStrophePubSubBatchSubscribeComplete               = @"TNStrophePubSubBatchSubscribeComplete";
 
 #pragma mark -
-#pragma mark globals for TNMUCRoom
+#pragma mark globals for TNStropheMUCRoom
 
 /*!
     @global
-    @group TNMUCRoom
+    @group TNStropheMUCRoom
     notification indicates that an event has been recieved from the PubSub
 */
 TNStropheMUCRosterWasUpdatedNotification            = @"TNStropheMUCRosterWasUpdatedNotification";
 
 /*!
     @global
-    @group TNMUCRoom
+    @group TNStropheMUCRoom
     notification indicates that an event has been recieved from the PubSub
 */
 TNStropheMUCConversationWasUpdatedNotification      = @"TNStropheMUCConversationWasUpdatedNotification";
 
 /*!
     @global
-    @group TNMUCRoom
+    @group TNStropheMUCRoom
     notification indicates that an event has been recieved from the PubSub
 */
 TNStropheMUCSubjectWasUpdatedNotification           = @"TNStropheMUCSubjectWasUpdatedNotification";
 
 /*!
     @global
-    @group TNMUCRoom
+    @group TNStropheMUCRoom
     notification indicates that an event has been recieved from the PubSub
 */
 TNStropheMUCPrivateMessageWasReceivedNotification   = @"TNStropheMUCPrivateMessageWasReceivedNotification";
