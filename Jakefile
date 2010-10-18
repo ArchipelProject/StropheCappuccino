@@ -34,7 +34,7 @@ framework ("StropheCappuccino", function(task)
     task.setBuildPath(FILE.join("Build", configuration));
 
     task.setProductName("StropheCappuccino");
-    task.setIdentifier("org.StropheCappuccinoprpoject.StropheCappuccinoClient");
+    task.setIdentifier("org.archipelproject.strophecappuccino");
     task.setVersion("1.0");
     task.setAuthor("Antoine Mercadal");
     task.setEmail("antoine.mercadal @nospam@ inframonde.eu");
