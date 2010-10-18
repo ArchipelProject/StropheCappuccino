@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+require("./common.jake")
 
 var ENV = require("system").env,
     FILE = require("file"),
@@ -25,8 +26,11 @@ var ENV = require("system").env,
     task = JAKE.task,
     CLEAN = require("jake/clean").CLEAN,
     FileList = JAKE.FileList,
+    stream = require("narwhal/term").stream,
     framework = require("cappuccino/jake").framework,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Release";
+
+$DOCUMENTATION_BUILD = FILE.join("Build", "Documentation");
 
 framework ("StropheCappuccino", function(task)
 {
@@ -65,7 +69,41 @@ task("release", function()
 
 task ("documentation", function()
 {
-   OS.system("doxygen StropheCappuccino.doxygen")
+    // try to find a doxygen executable in the PATH;
+    var doxygen = executableExists("doxygen");
+
+    // If the Doxygen application is installed on Mac OS X, use that
+    if (!doxygen && executableExists("mdfind"))
+    {
+        var p = OS.popen(["mdfind", "kMDItemContentType == 'com.apple.application-bundle' && kMDItemCFBundleIdentifier == 'org.doxygen'"]);
+        if (p.wait() === 0)
+        {
+            var doxygenApps = p.stdout.read().split("\n");
+            if (doxygenApps[0])
+                doxygen = FILE.join(doxygenApps[0], "Contents/Resources/doxygen");
+        }
+    }
+
+    if (doxygen && FILE.exists(doxygen))
+    {
+        stream.print("\0green(Using " + doxygen + " for doxygen binary.\0)");
+
+        var documentationDir = FILE.join("Doxygen");
+
+        if (OS.system([FILE.join(documentationDir, "make_headers.sh")]))
+            OS.exit(1); //rake abort if ($? != 0)
+
+        if (!OS.system([doxygen, FILE.join(documentationDir, "StropheCappuccino.doxygen")]))
+        {
+            rm_rf($DOCUMENTATION_BUILD);
+            // mv("debug.txt", FILE.join("Documentation", "debug.txt"));
+            mv("Documentation", $DOCUMENTATION_BUILD);
+        }
+
+        OS.system(["ruby", FILE.join(documentationDir, "cleanup_headers")]);
+    }
+    else
+        stream.print("\0yellow(Doxygen not installed, skipping documentation generation.\0)");
 });
 
 task("test", function()
