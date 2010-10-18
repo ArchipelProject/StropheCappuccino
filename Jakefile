@@ -21,12 +21,14 @@
 var ENV = require("system").env,
     FILE = require("file"),
 	OS = require("os"),
-    task = require("jake").task,
-    FileList = require("jake").FileList,
-    app = require("cappuccino/jake").app,
+	JAKE = require("jake"),
+    task = JAKE.task,
+    CLEAN = require("jake/clean").CLEAN,
+    FileList = JAKE.FileList,
+    framework = require("cappuccino/jake").framework,
     configuration = ENV["CONFIG"] || ENV["CONFIGURATION"] || ENV["c"] || "Release";
 
-app ("StropheCappuccino", function(task)
+framework ("StropheCappuccino", function(task)
 {
     task.setBuildIntermediatesPath(FILE.join("Build", "StropheCappuccino.build", configuration));
     task.setBuildPath(FILE.join("Build", configuration));
@@ -47,6 +49,25 @@ app ("StropheCappuccino", function(task)
         task.setCompilerFlags("-O");
 });
 
+task("build", ["StropheCappuccino"]);
+
+task("debug", function()
+{
+    ENV["CONFIG"] = "Debug"
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task("release", function()
+{
+    ENV["CONFIG"] = "Release"
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task ("documentation", function()
+{
+   OS.system("doxygen StropheCappuccino.doxygen")
+});
+
 task("test", function()
 {
     var tests = new FileList('Test/*Test.j');
@@ -58,11 +79,6 @@ task("test", function()
         OS.exit(code);
 });
 
-task ("documentation", function(task)
-{
-   OS.system("doxygen StropheCappuccino.doxygen")
-});
-
-task ("default", ["StropheCappuccino"]);
-task ("docs", ["documentation"]);
-task ("all", ["StropheCappuccino", "documentation"]);
+task ("default", ["release"]);
+task ("docs", ["release", "documentation"]);
+task ("all", ["release", "debug", "documentation"]);
