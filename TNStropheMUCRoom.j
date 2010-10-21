@@ -38,6 +38,7 @@
 
     TNStropheConnection     _connection;
     CPArray                 _handlerIDs;
+    id                      _delegate           @accessors(property=delegate);
 }
 
 #pragma mark -
@@ -170,25 +171,36 @@
     [_connection send:aStanza];
 }
 
-- (BOOL)receiveMessage:(TNStropheStanza)aMessage
+- (BOOL)receiveMessage:(TNStropheStanza)aStanza
 {
-    if ([aMessage containsChildrenWithName:@"subject"])
+    if ([aStanza containsChildrenWithName:@"subject"])
     {
-        _subject = [[aMessage firstChildWithName:@"subject"] text];
+        _subject = [[aStanza firstChildWithName:@"subject"] text];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCSubjectWasUpdatedNotification object:self];
+        if (_delegate && [_delegate respondsToSelector:@selector(mucRoom:receivedNewSubject:)])
+            [_delegate mucRoom:self receivedNewSubject:_subject];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCSubjectWasUpdatedNotification object:self userInfo:aStanza];
     }
 
-    if ([aMessage containsChildrenWithName:@"body"])
+    if ([aStanza containsChildrenWithName:@"body"])
     {
-        var body    = [[aMessage firstChildWithName:@"body"] text],
+        var body    = [[aStanza firstChildWithName:@"body"] text],
             message = [CPDictionary dictionaryWithObjectsAndKeys:body,@"body",
-                                                                 [aMessage fromResource],@"from",
-                                                                 [aMessage delayTime],@"time"];
+                                                                 [aStanza fromResource],@"from",
+                                                                 [aStanza delayTime],@"time"];
         [_messages addObject:message];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCConversationWasUpdatedNotification object:self];
+        if (_delegate && [_delegate respondsToSelector:@selector(mucRoom:receivedMessage:)])
+            [_delegate mucRoom:self receivedMessage:message];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCConversationWasUpdatedNotification object:self userInfo:aStanza];
     }
+
+    if (_delegate && [_delegate respondsToSelector:@selector(mucRoom:receivedData:)])
+        [_delegate mucRoom:self receivedData:aStanza];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCDataReceivedNotification object:self userInfo:aStanza];
 
     return YES;
 }

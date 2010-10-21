@@ -365,27 +365,34 @@ TNStrophePubSubBatchSubscribeComplete               = @"TNStrophePubSubBatchSubs
 /*!
     @global
     @group TNStropheMUCRoom
-    notification indicates that an event has been recieved from the PubSub
+    notification indicates that an MUC room roster has been updated
 */
 TNStropheMUCRosterWasUpdatedNotification            = @"TNStropheMUCRosterWasUpdatedNotification";
 
 /*!
     @global
     @group TNStropheMUCRoom
-    notification indicates that an event has been recieved from the PubSub
+    notification indicates that someone has spoken in the MUC room
 */
 TNStropheMUCConversationWasUpdatedNotification      = @"TNStropheMUCConversationWasUpdatedNotification";
 
 /*!
     @global
     @group TNStropheMUCRoom
-    notification indicates that an event has been recieved from the PubSub
+    notification indicates that a MUC room subject has been updated
 */
 TNStropheMUCSubjectWasUpdatedNotification           = @"TNStropheMUCSubjectWasUpdatedNotification";
 
 /*!
     @global
     @group TNStropheMUCRoom
-    notification indicates that an event has been recieved from the PubSub
+    notification indicates that data has been received by the MUC (may be non-standard)
+*/
+TNStropheMUCDataReceivedNotification                = @"TNStropheMUCDataReceivedNotification";
+
+/*!
+    @global
+    @group TNStropheMUCRoom
+    notification indicates that a MUC member has sent a private message
 */
 TNStropheMUCPrivateMessageWasReceivedNotification   = @"TNStropheMUCPrivateMessageWasReceivedNotification";
