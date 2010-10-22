@@ -18,11 +18,12 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheConnection.j";
-@import "TNStropheStanza.j";
-@import "TNStropheGroup.j"
-@import "TNStropheContact.j"
-@import "TNStropheGlobals.j"
+@import "../TNStropheConnection.j"
+@import "../TNStropheStanza.j"
+@import "../TNStropheGroup.j"
+@import "../TNStropheGlobals.j"
+
+
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Multi-User Chat Roster

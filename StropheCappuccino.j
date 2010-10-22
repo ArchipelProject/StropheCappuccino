@@ -25,6 +25,7 @@
 @import "TNStropheRoster.j"
 @import "TNBase64Image.j"
 @import "TNPubSub.j"
+@import "MUC/TNStropheMUCRoom.j"
 
 [TNStropheConnection addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
 [TNStropheConnection addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];

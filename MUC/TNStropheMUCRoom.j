@@ -18,9 +18,10 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheGlobals.j";
-@import "TNStropheConnection.j";
-@import "TNStropheStanza.j";
+@import "../TNStropheGlobals.j"
+@import "../TNStropheConnection.j"
+@import "../TNStropheStanza.j"
+@import "TNStropheMUCRoster.j"
 
 
 
