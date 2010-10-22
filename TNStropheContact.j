@@ -399,11 +399,6 @@
 
 - (void)sendStanza:(TNStropheStanza)aStanza withUserInfo:(CPDictionary)userInfo
 {
-    var lastKnownResource = (_fullJID) ? _fullJID.split(@"/")[1] : nil;
-
-    if (_fullJID && ![_resources containsObject:lastKnownResource])
-        _fullJID = _fullJID.split("/")[0] + @"/" + [_resources lastObject];
-
     [aStanza setTo:(_fullJID) ? _fullJID : _JID];
 
     [_connection send:aStanza];
