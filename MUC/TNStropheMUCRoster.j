@@ -47,7 +47,7 @@
 
 + (TNStropheMUCRoster)rosterWithConnection:(TNStropheConnection)aConnection forRoom:(TNStropheMUCRoom)aRoom
 {
-    return [[TNStropheRoster alloc] initWithConnection:aConnection forRoom:aRoom];
+    return [[TNStropheMUCRoster alloc] initWithConnection:aConnection forRoom:aRoom];
 }
 
 #pragma mark -
