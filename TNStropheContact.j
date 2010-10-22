@@ -393,6 +393,25 @@
 #pragma mark -
 #pragma mark Communicating
 
+- (void)sendStanza:(TNStropheStanza)aStanza
+{
+    [self sendStanza:aStanza withUserInfo:nil];
+}
+
+- (void)sendStanza:(TNStropheStanza)aStanza withUserInfo:(CPDictionary)userInfo
+{
+    var lastKnownResource = (_fullJID) ? _fullJID.split(@"/")[1] : nil;
+
+    if (_fullJID && ![_resources containsObject:lastKnownResource])
+        _fullJID = _fullJID.split("/")[0] + @"/" + [_resources lastObject];
+
+    [aStanza setTo:(_fullJID) ? _fullJID : _JID];
+
+    [_connection send:aStanza];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
+}
+
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten. This message uses a given stanza id
     in order to use it if you need. You should mostly use the
     You should never have to use the method sendStanza:andRegisterSelector:ofObject: in most of the case
@@ -406,23 +425,16 @@
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId
 {
-    var params              = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
-        ret                 = nil,
-        lastKnownResource   = (_fullJID) ? _fullJID.split(@"/")[1] : nil,
-        userInfo            = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", anId, @"id"];
+    var params      = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
+        userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", anId, @"id"],
+        ret;
 
-    if (_fullJID && ![_resources containsObject:lastKnownResource])
-        _fullJID = _fullJID.split("/")[0] + @"/" + [_resources lastObject];
-
-    [aStanza setTo:(_fullJID) ? _fullJID : _JID];
     [aStanza setID:anId];
 
     if (aSelector)
         ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params];
 
-    [_connection send:aStanza];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
+    [self sendStanza:aStanza withUserInfo:userInfo];
 
     return ret;
 }
