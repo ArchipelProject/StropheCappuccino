@@ -127,7 +127,7 @@
                                                              _JID, @"from",
                                                              {matchBare: true}, @"options"];
 
-    [_connection registerSelector:@selector(didReceiveStatus:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didReceiveStatus:) ofObject:self withDict:params];
     [_connection send:probe];
 }
 
@@ -136,9 +136,8 @@
     You should never have to use this method
     @param aStanza the response TNStropheStanza
 */
-- (BOOL)didReceiveStatus:(TNStropheStanza)aStanza
+- (BOOL)_didReceiveStatus:(TNStropheStanza)aStanza
 {
-
     var resource = [aStanza fromResource],
         presenceShow = [aStanza firstChildWithName:@"status"];
 
