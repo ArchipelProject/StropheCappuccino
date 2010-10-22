@@ -184,9 +184,7 @@
 {
     for (var i = 0; i < [_groups count]; i++)
     {
-        var group = [_groups objectAtIndex:i];
-
-        if (group == aGroup)
+        if ([_groups objectAtIndex:i] == aGroup)
             return YES;
     }
     return NO;
@@ -198,9 +196,7 @@
 */
 - (BOOL)containsGroupWithName:(CPString)aGroupName
 {
-    var group = [self groupWithName:aGroupName];
-
-    return [self containsGroup:group];
+    return [self containsGroup:[self groupWithName:aGroupName]];
 }
 
 /*! return TNStropheGroup object according to the given name
@@ -227,7 +223,7 @@
 {
     var newGroup = [self groupWithName:aGroupName];
 
-    if ((shouldCreate) && !(newGroup))
+    if (shouldCreate && !newGroup)
         return [self addGroupWithName:aGroupName];
 
     return newGroup;
@@ -282,9 +278,7 @@
     [contact getStatus];
     [contact getMessages];
 
-    var group = [self groupWithName:aGroupName orCreate:YES];
-
-    [group addContact:contact];
+    [[self groupWithName:aGroupName orCreate:YES] addContact:contact];
     [_contacts addObject:contact];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedContactNotification object:contact];
@@ -318,9 +312,7 @@
 */
 - (void)removeContactWithJID:(CPString)aJID
 {
-    var contact = [self contactWithJID:aJID];
-
-    [self removeContact:contact];
+    [self removeContact:[self contactWithJID:aJID]];
 }
 
 /*! return a TNStropheContact object according to the given JID
@@ -348,9 +340,7 @@
     //@each (var contact in _contacts)
     for (var i = 0; i < [_contacts count]; i++)
     {
-        var contact = [_contacts objectAtIndex:i];
-
-        if ([[contact JID] lowercaseString] == [aJID lowercaseString])
+        if ([[[_contacts objectAtIndex:i] JID] lowercaseString] == [aJID lowercaseString])
             return YES;
     }
     return NO;
@@ -371,9 +361,7 @@
 */
 - (void)changeNickname:(CPString)aName ofContactWithJID:(CPString)aJID
 {
-    var contact = [self contactWithJID:aJID];
-
-    [self changeNickname:aName ofContact:contact];
+    [self changeNickname:aName ofContact:[self contactWithJID:aJID]];
 }
 
 /*! changes the group of the contact with the given JID
@@ -382,9 +370,7 @@
 */
 - (void)changeGroup:(TNStropheGroup)newGroup ofContact:(TNStropheContact)aContact
 {
-    var oldGroup = [self groupOfContact:aContact];
-
-    [oldGroup removeContact:aContact];
+    [[self groupOfContact:aContact] removeContact:aContact];
 
     [newGroup addContact:aContact];
     [aContact changeGroup:newGroup];
@@ -425,8 +411,7 @@
 */
 - (void)unauthorizeJID:(CPString)aJID
 {
-    var contact = [self contactWithJID:aJID];
-    [contact unsubscribe];
+    [[self contactWithJID:aJID] unsubscribe];
 }
 
 /*! ask subscribtion to the given JID
@@ -434,8 +419,7 @@
 */
 - (void)askAuthorizationTo:(CPString)aJID
 {
-    var contact = [self contactWithJID:aJID];
-    [contact askSubscription];
+    [[self contactWithJID:aJID] askSubscription];
 }
 
 /*! answer to a pending subscription request.

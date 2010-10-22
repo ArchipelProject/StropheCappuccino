@@ -23,7 +23,7 @@
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Group.
 */
-@implementation TNStropheGroup: CPObject
+@implementation TNStropheGroup : CPObject
 {
     CPArray     _contacts   @accessors(getter=contacts);
     CPString    _name       @accessors(property=name);
@@ -55,10 +55,7 @@
     _name = aName;
 
     for (var i = 0; i < [self count]; i++)
-    {
-        var contact = [_contacts objectAtIndex:i];
-        [contact changeGroupName:aName];
-    }
+        [[_contacts objectAtIndex:i] changeGroupName:aName];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
 }
