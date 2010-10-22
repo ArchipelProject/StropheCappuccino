@@ -72,7 +72,7 @@
         _owners         = [TNStropheGroup stropheGroupWithName:@"Owners"];
 
         var params      = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                                     [room roomJID], @"from",
+                                                                     [_room roomJID], @"from",
                                                                      {matchBare: true}, @"options"];
         [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:params];
     }
