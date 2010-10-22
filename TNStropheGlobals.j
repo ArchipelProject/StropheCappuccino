@@ -396,3 +396,13 @@ TNStropheMUCDataReceivedNotification                = @"TNStropheMUCDataReceived
     notification indicates that a MUC member has sent a private message
 */
 TNStropheMUCPrivateMessageWasReceivedNotification   = @"TNStropheMUCPrivateMessageWasReceivedNotification";
+
+#pragma mark -
+#pragma mark globals for TNStropheMUCRoster
+
+/*!
+    @global
+    @group TNStropheMUCRoster
+    notification indicates that a MUC member's status has changed
+*/
+TNStropheMUCPresenceRetrievedNotification           = @"TNStropheMUCPresenceRetrievedNotification";

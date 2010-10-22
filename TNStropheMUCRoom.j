@@ -34,7 +34,7 @@
     CPString                _nick               @accessors(getter=nick);
     CPString                _subject            @accessors(getter=subject);
     CPArray                 _messages           @accessors(getter=messages);
-    CPArray                 _roster             @accessors(getter=roster);
+    TNStropheMUCRoster      _roster             @accessors(getter=roster);
 
     TNStropheConnection     _connection;
     CPArray                 _handlerIDs;
@@ -75,7 +75,7 @@
         _nick           = aNick;
         _handlerIDs     = [CPArray array];
         _messages       = [CPArray array];
-        _roster         = [CPArray array];
+        _roster         = [TNStropheMUCRoster rosterWithConnection:_connection forRoom:self];
     }
     return self;
 }
@@ -102,14 +102,6 @@
 
 - (void)join
 {
-    // Handle room roster
-    var rosterParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"presence",@"name",
-                                                                     [self roomJID],@"from",
-                                                                     @"unavailable",@"type",
-                                                                     {matchBare: true},@"options"],
-        rosterHandler   = [_connection registerSelector:@selector(presenceReceived:) ofObject:self withDict:rosterParams];
-    [_handlerIDs addObject:rosterHandler];
-
     // Handle messages sent to room
     var messageParams   = [CPDictionary dictionaryWithObjectsAndKeys:@"message",@"name",
                                                                      [self roomJID],@"from",
