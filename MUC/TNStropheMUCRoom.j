@@ -190,10 +190,17 @@
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCConversationWasUpdatedNotification object:self userInfo:aStanza];
     }
 
-    if (_delegate && [_delegate respondsToSelector:@selector(mucRoom:receivedData:)])
-        [_delegate mucRoom:self receivedData:aStanza];
+    var otherChildren = [aStanza children];
+    [otherChildren removeObjectsInArray:[aStanza childrenWithName:@"body"]];
+    [otherChildren removeObjectsInArray:[aStanza childrenWithName:@"subject"]];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCDataReceivedNotification object:self userInfo:aStanza];
+    if ([otherChildren count] > 0)
+    {
+        if (_delegate && [_delegate respondsToSelector:@selector(mucRoom:receivedData:)])
+            [_delegate mucRoom:self receivedData:aStanza];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCDataReceivedNotification object:self userInfo:aStanza];
+    }
 
     return YES;
 }
