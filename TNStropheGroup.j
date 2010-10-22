@@ -25,23 +25,21 @@
 */
 @implementation TNStropheGroup: CPObject
 {
-    CPArray                 _contacts   @accessors(getter=contacts);
-    CPString                _name       @accessors(property=name);
-    TNStropheConnection     _connection @accessors(property=connection);
+    CPArray     _contacts   @accessors(getter=contacts);
+    CPString    _name       @accessors(property=name);
 }
 
-+ (TNStropheGroup)stropheGroupWithName:(CPString)aName connection:(TNStropheConnection)aConnection
++ (TNStropheGroup)stropheGroupWithName:(CPString)aName
 {
-    return [[TNStropheGroup alloc] initWithName:aName connection:aConnection];
+    return [[TNStropheGroup alloc] initWithName:aName];
 }
 
-- (TNStropheGroup)initWithName:(CPString)aName connection:(TNStropheConnection)aConnection
+- (TNStropheGroup)initWithName:(CPString)aName
 {
     if (self = [super init])
     {
         _contacts   = [CPArray array];
         _name       = aName;
-        _connection = aConnection;
     }
 
     return self;

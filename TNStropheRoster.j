@@ -60,7 +60,7 @@
         _contacts       = [CPArray array];
         _groups         = [CPArray array];
 
-        _defaultGroup   = [TNStropheGroup stropheGroupWithName:@"General" connection:_connection];
+        _defaultGroup   = [TNStropheGroup stropheGroupWithName:@"General"];
 
         //[_groups addObject:_defaultGroup];
 
@@ -160,14 +160,10 @@
 
 - (TNStropheGroup)addGroupWithName:(CPString)aGroupName
 {
-    if (![self containsGroupWithName:aGroupName])
-    {
-        var newGroup = [TNStropheGroup stropheGroupWithName:aGroupName connection:_connection];
+    if ([self containsGroupWithName:aGroupName])
+        return nil;
 
-        return [self addGroup:newGroup];
-    }
-
-    return nil;
+    return [self addGroup:[TNStropheGroup stropheGroupWithName:aGroupName]];
 }
 
 /*! remove a group from the roster with given name
