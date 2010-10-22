@@ -518,29 +518,12 @@
 */
 - (void)sendMessage:(CPString)aMessage withType:(CPString)aType
 {
-    var messageStanza = [TNStropheStanza messageWithAttributes:{@"to":  _JID, @"from": [_connection JID], @"type":aType}];
+    var messageStanza = [TNStropheStanza messageWithAttributes:{@"type":aType}];
 
     [messageStanza addChildWithName:@"body"];
     [messageStanza addTextNode:aMessage];
 
-    [self sendStanza:messageStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
-}
-
-/*! message sent when a message has been sent. It posts appropriate notification with userInfo
-    containing the stanza under the key "stanza"
-    you should never use this message
-
-    @param aStanza the response stanza
-
-    @return NO to remove the registering of the selector
-*/
-- (BOOL)_didSendMessage:(id)aStanza
-{
-    var userInfo = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza"];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageSentNotification object:self userInfo:userInfo];
-
-    return NO;
+    [self sendStanza:messageStanza];
 }
 
 /*! return the last TNStropheStanza message in the message queue and remove it form the queue.
