@@ -18,8 +18,8 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheGlobals.j"
-@import "TNStropheConnection.j"
+@import "../TNStropheGlobals.j"
+@import "../TNStropheConnection.j"
 @import "TNPubSubNode.j"
 
 

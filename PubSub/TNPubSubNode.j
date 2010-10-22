@@ -18,9 +18,9 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheGlobals.j"
-@import "TNStropheConnection.j"
-@import "TNStropheStanza.j"
+@import "../TNStropheGlobals.j"
+@import "../TNStropheConnection.j"
+@import "../TNStropheStanza.j"
 
 // TODO: Abstract out subscription related stuff into TNPubSubNodeSubscription in order to handle multiple node subscriptions better
 
