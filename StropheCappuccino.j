@@ -23,17 +23,10 @@
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
-@import "TNPubSubNode.j"
-@import "TNPubSubController.j"
 @import "TNBase64Image.j"
+@import "TNPubSub.j"
 
 [TNStropheConnection addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
-[TNStropheConnection addNamespaceWithName:@"PUBSUB" value:@"http://jabber.org/protocol/pubsub"];
-[TNStropheConnection addNamespaceWithName:@"PUBSUB_EVENT" value:@"http://jabber.org/protocol/pubsub#event"];
-[TNStropheConnection addNamespaceWithName:@"PUBSUB_OWNER" value:@"http://jabber.org/protocol/pubsub#owner"];
-[TNStropheConnection addNamespaceWithName:@"PUBSUB_NODE_CONFIG" value:@"http://jabber.org/protocol/pubsub#node_config"];
-[TNStropheConnection addNamespaceWithName:@"PUBSUB_NOTIFY" value:@"http://jabber.org/protocol/pubsub+notify"];
-[TNStropheConnection addNamespaceWithName:@"PUBSUB_SUBSCRIBE OPTIONS" value:@"http://jabber.org/protocol/pubsub#subscribe_options"];
 [TNStropheConnection addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
 [TNStropheConnection addNamespaceWithName:@"X_DATA" value:@"jabber:x:data"];
 
