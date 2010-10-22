@@ -204,45 +204,4 @@
     return YES;
 }
 
-
-#pragma mark -
-#pragma mark Roster
-
-- (BOOL)presenceReceived:(TNStropheStanza)aPresence
-{
-    var nick        = [aPresence fromResource],
-        meta        = [aPresence firstChildWithName:@"x"],
-        affiliation = [[meta firstChildWithName:@"item"] valueForAttribute:@"affiliation"],
-        role        = [[meta firstChildWithName:@"item"] valueForAttribute:@"role"],
-        statusCode  = [[meta firstChildWithName:@"status"] valueForAttribute:@"code"];
-
-    if ([meta namespace] != @"http://jabber.org/protocol/muc#user")
-    {
-        CPLog.error("MUC received presence with incorect meta-data namespace");
-        return NO;
-    }
-
-    // TODO: Remove user from roster
-
-    // TODO: Add user back into roster with correct meta-data
-    if ([aPresence type] === @"unavailable")
-    {
-        // TODO: Assert nature (voluntary?)
-        switch (statusCode)
-        {
-            case @"307":
-            // User was temporarily kicked from room
-            break;
-            default:
-            // Leaving was voluntary
-        }
-    }
-
-    [roster addObject:nick];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:XMPPMUCRosterWasUpdatedNotification object:self];
-
-    return YES;
-}
-
 @end
