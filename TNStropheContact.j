@@ -149,13 +149,11 @@
     switch ([aStanza type])
     {
         case @"error":
-            errorCode       = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
+            var errorCode   = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
             _XMPPShow       = TNStropheContactStatusOffline;
             _XMPPStatus     = @"Error code: " + errorCode;
             _statusIcon     = _imageNewError;
             _statusReminder = _imageNewError;
-
-            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactPresenceUpdatedNotification object:self];
 
             return NO;
         case @"unavailable":
