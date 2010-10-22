@@ -123,11 +123,9 @@
 - (void)getStatus
 {
     var probe   = [TNStropheStanza presenceWithAttributes:{@"type": @"probe", @"to": _JID}],
-        params  = [CPDictionary dictionary];
-
-    [params setValue:@"presence" forKey:@"name"];
-    [params setValue:_JID forKey:@"from"];
-    [params setValue:{@"matchBare": YES} forKey:@"options"];
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
+                                                             _JID, @"from",
+                                                             {matchBare: true}, @"options"];
 
     [_connection registerSelector:@selector(didReceiveStatus:) ofObject:self withDict:params];
     [_connection send:probe];
@@ -264,24 +262,21 @@
 */
 - (void)subscribe
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"subscribed", @"to": _JID}];
-    [_connection send:resp];
+    [_connection send:[TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"subscribed", @"to": _JID}]];
 }
 
 /*! unsubscribe from the contact
 */
 - (void)unsubscribe
 {
-    var resp = [TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"unsubscribed", @"to": _JID}];
-    [_connection send:resp];
+    [_connection send:[TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"unsubscribed", @"to": _JID}]];
 }
 
 /*! ask subscribtion to the contact
 */
 - (void)askSubscription
 {
-    var auth = [TNStropheStanza presenceWithAttributes:{@"type": @"subscribe", @"to": _JID}];
-    [_connection send:auth];
+    [_connection send:[TNStropheStanza presenceWithAttributes:{@"type": @"subscribe", @"to": _JID}]];
 }
 
 
@@ -303,10 +298,9 @@
 
     [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
 
-    var params = [CPDictionary dictionary];
-    [params setValue:_JID forKey:@"from"];
-    [params setValue:uid forKey:@"id"];
-    [params setValue:{@"matchBare": YES} forKey:@"options"];
+    var params = [CPDictionary dictionaryWithObjectsAndKeys:_JID, @"from",
+                                                            uid, @"id",
+                                                            {matchBare: true}, @"options"];
 
     [_connection registerSelector:@selector(didReceiveVCard:) ofObject:self withDict:params];
     [_connection send:vcardStanza];
@@ -451,11 +445,9 @@
 */
 - (void)getMessages
 {
-    var params = [CPDictionary dictionary];
-
-    [params setValue:@"message" forKey:@"name"];
-    [params setValue:_JID forKey:@"from"];
-    [params setValue:{@"matchBare": YES} forKey:@"options"];
+    var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
+                                                            _JID, @"from",
+                                                            {matchBare: true}, @"options"];
 
     [_connection registerSelector:@selector(_didReceivedMessage:) ofObject:self withDict:params];
 }
@@ -566,7 +558,7 @@
 - (void)freeMessagesQueue
 {
     _numberOfEvents = 0;
-    _statusIcon = _statusReminder;
+    _statusIcon     = _statusReminder;
 
     [_messagesQueue removeAllObjects];
 
