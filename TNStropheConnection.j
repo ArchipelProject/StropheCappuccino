@@ -329,7 +329,7 @@
 
     for (var i = 0; i < [_features count]; i++)
     {
-        [resp addChildWithName:@"feature" andAttributes:{"var":_features[i]}];
+        [resp addChildWithName:@"feature" andAttributes:{"var":[_features objectAtIndex:i]}];
         [resp up];
     }
 

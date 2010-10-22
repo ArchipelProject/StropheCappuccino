@@ -441,7 +441,7 @@
         var keys = [options allKeys];
         for (var i = 0; i < [keys count]; i++)
         {
-            var key     = keys[i],
+            var key     = [keys objectAtIndex:i],
                 value   = [options valueForKey:key];
             [subscribeStanza addChildWithName:@"field" andAttributes:{"var":key}];
             [subscribeStanza addChildWithName:@"value"];
@@ -518,7 +518,7 @@
         // Unsubscribe from node for each subscription ID
         for (var i = 0; i < [_subscriptionIDs count]; i++)
         {
-            [self unsubscribeWithSubID:_subscriptionIDs[i]];
+            [self unsubscribeWithSubID:[_subscriptionIDs objectAtIndex:i]];
         }
     }
     else

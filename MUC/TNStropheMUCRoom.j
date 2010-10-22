@@ -131,7 +131,7 @@
 
     // Remove room handlers
     for (var i = 0; i < [_handlerIds count]; i++)
-        [_connection deleteRegisteredSelector:handlerIDs[i]];
+        [_connection deleteRegisteredSelector:[_handlerIDs objectAtIndex:i]];
 }
 
 

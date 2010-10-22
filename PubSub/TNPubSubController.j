@@ -88,7 +88,7 @@
 {
     for (var i = 0; i < [_nodes count]; i++)
     {
-        var node = _nodes[i];
+        var node = [_nodes objectAtIndex:i];
         if ([node name] === aNodeName)
             return node;
     }
@@ -114,7 +114,7 @@
 
     for (var i = 0; i < [someNodes count]; i++)
     {
-        var nodeName    = someNodes[i],
+        var nodeName    = [someNodes objectAtIndex:i],
             node        = [self subscribeToNode:nodeName];
 
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_monitorBatchSubscriptions:) name:TNStrophePubSubNodeSubscribedNotification object:node];
@@ -141,7 +141,7 @@
     var keys = [_subscriptionBatches allKeys];
     for (var i = 0; i < [keys count]; i++)
     {
-        var batchID = keys[i],
+        var batchID = [keys objectAtIndex:i],
             batch   = [_subscriptionBatches valueForKey:batchID];
 
         if ([batch containsObject:[aNode name]])
@@ -175,7 +175,7 @@
 
         for (var i = 0; i < [subscriptions count]; i++)
         {
-            var subscription    = subscriptions[i],
+            var subscription    = [subscriptions objectAtIndex:i],
                 nodeName        = [subscription valueForAttribute:@"node"],
                 subid           = [subscription valueForAttribute:@"subid"],
                 node            = [self findOrCreateNodeWithName:nodeName];
@@ -209,7 +209,7 @@
 
     for (var i = 0; i < [_nodes count]; i++)
     {
-        [_nodes[i] unsubscribe];
+        [[_nodes objectAtIndex:i] unsubscribe];
     }
 }
 
@@ -217,7 +217,7 @@
 {
     var numberOfOutstandingSubscriptions = 0;
     for (var i = 0; i < [_nodes count]; i++)
-        numberOfOutstandingSubscriptions += [_nodes[i] numberOfSubscriptions];
+        numberOfOutstandingSubscriptions += [[_nodes objectAtIndex:i] numberOfSubscriptions];
 
     if (numberOfOutstandingSubscriptions === 0)
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNoOldSubscriptionsLeftNotification object:self];

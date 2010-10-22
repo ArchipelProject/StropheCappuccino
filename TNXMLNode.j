@@ -249,7 +249,7 @@
         elements    = [self tree].getElementsByTagName(aName);
 
     for (var i = 0; i < elements.length; i++)
-        [nodes addObject:[TNXMLNode nodeWithXMLNode:elements[i]]]
+        [nodes addObject:[TNXMLNode nodeWithXMLNode:[elements objectAtIndex:i]]]
 
     return nodes;
 }
@@ -264,8 +264,8 @@
         elements    = [self tree].childNodes;
 
     for (var i = 0; i < elements.length; i++)
-        if ((aName === nil) || (aName && elements[i].tagName == aName))
-            [nodes addObject:[TNXMLNode nodeWithXMLNode:elements[i]]]
+        if ((aName === nil) || (aName && [elements objectAtIndex:i].tagName == aName))
+            [nodes addObject:[TNXMLNode nodeWithXMLNode:[elements objectAtIndex:i]]]
 
     return nodes;
 }
