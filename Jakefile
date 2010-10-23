@@ -43,7 +43,7 @@ framework ("StropheCappuccino", function(task)
     task.setAuthor("Antoine Mercadal");
     task.setEmail("antoine.mercadal @nospam@ inframonde.eu");
     task.setSummary("StropheCappuccino");
-    task.setSources(new FileList("*.j", "StropheCappuccino/*.j"));
+    task.setSources(new FileList("*.j", "MUC/*.j", "PubSub/*.j"));
     task.setResources(new FileList("Resources/*"));
     task.setInfoPlistPath("Info.plist");
 
