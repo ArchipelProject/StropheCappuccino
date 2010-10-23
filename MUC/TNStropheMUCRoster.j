@@ -175,7 +175,7 @@
     [_contacts removeObject:aContact];
     [[self groupOfContact:aContact] removeContact:aContact];
 
-    var userInfo = [CPDictionary dictionaryWithObjectAndKeys:aStatusCode, @"statusCode",
+    var userInfo = [CPDictionary dictionaryWithObjectsAndKeys:aStatusCode, @"statusCode",
                                                              aContact, @"contact"];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCContactLeftNotification object:self userInfo:userInfo];
