@@ -119,7 +119,7 @@
 
     if (!contact)
     {
-        contact = [self addContact:[aStanza from] withName:nil inGroup:group];
+        contact = [self addContact:[aStanza from] withName:[aStanza from].split("/")[1] inGroup:group];
         [contact getStatus];
     }
 
