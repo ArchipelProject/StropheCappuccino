@@ -22,6 +22,7 @@
 @import "../TNStropheStanza.j"
 @import "../TNStropheGroup.j"
 @import "../TNStropheGlobals.j"
+@import "../TNStropheContact.j"
 
 
 
@@ -96,7 +97,8 @@
 */
 - (BOOL)_didReceivePresence:(id)aStanza
 {
-    var data    = [aStanza containsChildrenWithName:@"x"],
+    var contact = [self contactWithJID:[aStanza from]],
+        data    = [aStanza firstChildWithName:@"x"],
         group;
 
     if (data && [data namespace] == @"http://jabber.org/protocol/muc#user")
@@ -115,9 +117,20 @@
         }
     }
 
-    var contact = [self addContact:[aStanza from] withName:nil inGroup:group];
+    if (!contact)
+    {
+        contact = [self addContact:[aStanza from] withName:nil inGroup:group];
+        [contact getStatus];
+    }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCPresenceRetrievedNotification object:self userInfo:contact];
+    if ([aStanza type] === @"unavailable")
+    {
+        var statusCode;
+        if ([data containsChildrenWithName:@"status"])
+            statusCode = [[data firstChildWithName:@"status"] valueForAttribute:@"code"];
+
+        [self removeContact:contact withStatusCode:statusCode];
+    }
 
     return YES;
 }
@@ -146,7 +159,9 @@
     [aGroup addContact:contact];
     [_contacts addObject:contact];
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedContactNotification object:contact];
+    var userInfo = [CPDictionary dictionaryWithObject:contact forKey:@"contact"];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCContactJoinedNotification object:self userInfo:userInfo];
 
     return contact;
 }
@@ -155,20 +170,15 @@
 
     @param aJID the JID of the contact to remove
 */
-- (void)removeContact:(TNStropheContact)aContact
+- (void)removeContact:(TNStropheContact)aContact withStatusCode:(CPString)aStatusCode
 {
-    var group       = [self groupOfContact:aContact],
-        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
-
     [_contacts removeObject:aContact];
-    [group removeContact:aContact];
+    [[self groupOfContact:aContact] removeContact:aContact];
 
-    [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [removeReq addChildWithName:@"item" andAttributes:{'jid': [aContact JID], 'subscription': 'remove'}];
+    var userInfo = [CPDictionary dictionaryWithObjectAndKeys:aStatusCode, @"statusCode",
+                                                             aContact, @"contact"];
 
-    [_connection send:removeReq];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedContactNotification object:aContact];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCContactLeftNotification object:self userInfo:userInfo];
 }
 
 /*! remove a contact from the roster according to its JID

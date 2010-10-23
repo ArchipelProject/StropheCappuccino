@@ -403,6 +403,13 @@ TNStropheMUCPrivateMessageWasReceivedNotification   = @"TNStropheMUCPrivateMessa
 /*!
     @global
     @group TNStropheMUCRoster
-    notification indicates that a MUC member's status has changed
+    notification indicates that a MUC member has entered the room
 */
-TNStropheMUCPresenceRetrievedNotification           = @"TNStropheMUCPresenceRetrievedNotification";
+TNStropheMUCContactJoinedNotification               = @"TNStropheMUCContactJoinedNotification";
+
+/*!
+    @global
+    @group TNStropheMUCRoster
+    notification indicates that a MUC member has left the room
+*/
+TNStropheMUCContactLeftNotification                 = @"TNStropheMUCContactLeftNotification";
