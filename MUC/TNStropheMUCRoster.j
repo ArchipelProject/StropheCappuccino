@@ -25,12 +25,11 @@
 */
 @implementation TNStropheMUCRoster : TNStropheRosterBase
 {
-    TNStropheGroup          _visitors       @accessors(getter=visitors);
-    TNStropheGroup          _participants   @accessors(getter=participants);
-    TNStropheGroup          _moderators     @accessors(getter=moderators);
     TNStropheGroup          _admins         @accessors(getter=admins);
+    TNStropheGroup          _moderators     @accessors(getter=moderators);
     TNStropheGroup          _owners         @accessors(getter=owners);
-
+    TNStropheGroup          _participants   @accessors(getter=participants);
+    TNStropheGroup          _visitors       @accessors(getter=visitors);
     TNStropheMUCRoom        _room           @accessors(getter=room);
 }
 
@@ -168,7 +167,7 @@
 */
 - (TNStropheGroup)groupOfContact:(TNStropheContact)aContact
 {
-    var groups = {_visitors, _participants, _moderators, _admins, _owners};
+    var groups = [CPArray arrayWithObjects:_visitors, _participants, _moderators, _admins, _owners];
     for (var i = 0; i < [groups count]; i++)
     {
         var group = [groups objectAtIndex:i];
