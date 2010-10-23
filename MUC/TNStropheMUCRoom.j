@@ -130,7 +130,7 @@
     [_connection send:leavePresence];
 
     // Remove room handlers
-    for (var i = 0; i < [_handlerIds count]; i++)
+    for (var i = 0; i < [_handlerIDs count]; i++)
         [_connection deleteRegisteredSelector:[_handlerIDs objectAtIndex:i]];
 }
 
