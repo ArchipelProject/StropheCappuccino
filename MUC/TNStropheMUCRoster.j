@@ -17,29 +17,20 @@
  */
 
 @import <Foundation/Foundation.j>
-
-@import "../TNStropheConnection.j"
-@import "../TNStropheStanza.j"
-@import "../TNStropheGroup.j"
-@import "../TNStropheGlobals.j"
-@import "../TNStropheContact.j"
-
+@import "../TNStropheRosterBase.j"
 
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Multi-User Chat Roster
 */
-@implementation TNStropheMUCRoster : CPObject
+@implementation TNStropheMUCRoster : TNStropheRosterBase
 {
-    CPArray                 _contacts       @accessors(getter=contacts);
-    CPArray                 _groups         @accessors(getter=groups);
     TNStropheGroup          _visitors       @accessors(getter=visitors);
     TNStropheGroup          _participants   @accessors(getter=participants);
     TNStropheGroup          _moderators     @accessors(getter=moderators);
     TNStropheGroup          _admins         @accessors(getter=admins);
     TNStropheGroup          _owners         @accessors(getter=owners);
-    id                      _delegate       @accessors(property=delegate);
-    TNStropheConnection     _connection     @accessors(getter=connection);
+
     TNStropheMUCRoom        _room           @accessors(getter=room);
 }
 
@@ -56,15 +47,13 @@
 
 /*! initialize a roster with a valid TNStropheConnection
 
-    @return initialized instance of TNStropheRoster
+    @return initialized instance of TNStropheMUCRoster
 */
 - (id)initWithConnection:(TNStropheConnection)aConnection forRoom:(TNStropheMUCRoom)aRoom
 {
-    if (self = [super init])
+    if (self = [super initWithConnection:aConnection])
     {
-        _connection     = aConnection;
         _room           = aRoom;
-        _contacts       = [CPArray array];
 
         _visitors       = [TNStropheGroup stropheGroupWithName:@"Visitors"];
         _participants   = [TNStropheGroup stropheGroupWithName:@"Participants"];
@@ -79,13 +68,6 @@
     }
 
     return self;
-}
-
-/*! sent disconnect message to the TNStropheConnection of the roster
-*/
-- (void)disconnect
-{
-    [_connection disconnect];
 }
 
 
@@ -172,71 +154,12 @@
 */
 - (void)removeContact:(TNStropheContact)aContact withStatusCode:(CPString)aStatusCode
 {
-    [_contacts removeObject:aContact];
-    [[self groupOfContact:aContact] removeContact:aContact];
+    [super removeContact:aContact];
 
     var userInfo = [CPDictionary dictionaryWithObjectsAndKeys:aStatusCode, @"statusCode",
                                                              aContact, @"contact"];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheMUCContactLeftNotification object:self userInfo:userInfo];
-}
-
-/*! remove a contact from the roster according to its JID
-
-    @param aJID the JID of the contact to remove
-*/
-- (void)removeContactWithJID:(CPString)aJID
-{
-    [self removeContact:[self contactWithJID:aJID]];
-}
-
-/*! return a TNStropheContact object according to the given JID
-    @param aJID CPString containing the JID
-    @return TNStropheContact the contact with the given JID
-*/
-- (TNStropheContact)contactWithJID:(CPString)aJID
-{
-    for (var i = 0; i < [_contacts count]; i++)
-    {
-        var contact = [_contacts objectAtIndex:i];
-        if ([contact JID] == aJID)
-            return contact;
-    }
-
-    return nil;
-}
-
-/*! check if roster contains a contact with a given JID
-    @param aJID the JID to search
-    @return YES is JID is in roster, NO otherwise
-*/
-- (BOOL)containsJID:(CPString)aJID
-{
-    //@each (var contact in _contacts)
-    for (var i = 0; i < [_contacts count]; i++)
-    {
-        if ([[[_contacts objectAtIndex:i] JID] lowercaseString] == [aJID lowercaseString])
-            return YES;
-    }
-    return NO;
-}
-
-/*! changes the nickname of the contact with the given JID
-    @param aName the new nickname
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeNickname:(CPString)aName ofContact:(TNStropheContact)aContact
-{
-    [aContact changeNickname:aName];
-}
-
-/*! changes the nickname of the contact with the given JID
-    @param aName the new nickname
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeNickname:(CPString)aName ofContactWithJID:(CPString)aJID
-{
-    [self changeNickname:aName ofContact:[self contactWithJID:aJID]];
 }
 
 /*! return the group of given contact
@@ -245,26 +168,15 @@
 */
 - (TNStropheGroup)groupOfContact:(TNStropheContact)aContact
 {
-    for (var i = 0; i < [_groups count]; i++)
+    var groups = {_visitors, _participants, _moderators, _admins, _owners};
+    for (var i = 0; i < [groups count]; i++)
     {
-        var group = [_groups objectAtIndex:i];
+        var group = [groups objectAtIndex:i];
         if ([[group contacts] containsObject:aContact])
             return group;
     }
 
     return nil;
-}
-
-/*! changes the group of the contact with the given JID
-    @param aGroup the new group
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeGroup:(TNStropheGroup)newGroup ofContact:(TNStropheContact)aContact
-{
-    [[self groupOfContact:aContact] removeContact:aContact];
-
-    [newGroup addContact:aContact];
-    [aContact changeGroup:newGroup];
 }
 
 @end

@@ -18,24 +18,16 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheConnection.j";
-@import "TNStropheStanza.j";
-@import "TNStropheGroup.j"
-@import "TNStropheContact.j"
-@import "TNStropheGlobals.j"
+@import "TNStropheRosterBase.j"
 
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Roster
 */
-@implementation TNStropheRoster : CPObject
+@implementation TNStropheRoster : TNStropheRosterBase
 {
-    CPArray                 _contacts       @accessors(getter=contacts);
-    CPArray                 _groups         @accessors(getter=groups);
-    id                      _delegate       @accessors(property=delegate);
-    TNStropheConnection     _connection     @accessors(getter=connection);
-
-    TNStropheGroup          _defaultGroup;
+    CPArray _groups @accessors(getter=groups);
 }
+
 
 #pragma mark -
 #pragma mark Class methods
@@ -44,6 +36,7 @@
 {
     return [[TNStropheRoster alloc] initWithConnection:aConnection];
 }
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -54,31 +47,17 @@
 */
 - (id)initWithConnection:(TNStropheConnection)aConnection
 {
-    if (self = [super init])
+    if (self = [super initWithConnection:aConnection])
     {
-        _connection     = aConnection;
-        _contacts       = [CPArray array];
-        _groups         = [CPArray array];
+        _groups = [CPArray array];
 
-        _defaultGroup   = [TNStropheGroup stropheGroupWithName:@"General"];
-
-        //[_groups addObject:_defaultGroup];
-
-        var params = [CPDictionary dictionary];
-        [params setValue:@"presence" forKey:@"name"];
-        [params setValue:@"subscribe" forKey:@"type"];
-        [params setValue:[_connection JID] forKey:@"to"];
+        var params = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
+                                                                @"subscribe", @"type",
+                                                                [_connection JID],@"to"];
         [_connection registerSelector:@selector(_didReceiveSubscription:) ofObject:self withDict:params];
     }
 
     return self;
-}
-
-/*! sent disconnect message to the TNStropheConnection of the roster
-*/
-- (void)disconnect
-{
-    [_connection disconnect];
 }
 
 
@@ -245,7 +224,6 @@
     return nil;
 }
 
-
 #pragma mark -
 #pragma mark Contacts
 
@@ -288,15 +266,13 @@
 
 /*! remove a TNStropheContact from the roster
 
-    @param aJID the JID of the contact to remove
+    @param aContact the contact to remove
 */
 - (void)removeContact:(TNStropheContact)aContact
 {
-    var group       = [self groupOfContact:aContact],
-        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
+    [super removeContact:aContact];
 
-    [_contacts removeObject:aContact];
-    [group removeContact:aContact];
+    var removeReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
 
     [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [removeReq addChildWithName:@"item" andAttributes:{'jid': [aContact JID], 'subscription': 'remove'}];
@@ -304,76 +280,6 @@
     [_connection send:removeReq];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedContactNotification object:aContact];
-}
-
-/*! remove a contact from the roster according to its JID
-
-    @param aJID the JID of the contact to remove
-*/
-- (void)removeContactWithJID:(CPString)aJID
-{
-    [self removeContact:[self contactWithJID:aJID]];
-}
-
-/*! return a TNStropheContact object according to the given JID
-    @param aJID CPString containing the JID
-    @return TNStropheContact the contact with the given JID
-*/
-- (TNStropheContact)contactWithJID:(CPString)aJID
-{
-    for (var i = 0; i < [_contacts count]; i++)
-    {
-        var contact = [_contacts objectAtIndex:i];
-        if ([contact JID] == aJID)
-            return contact;
-    }
-
-    return nil;
-}
-
-/*! check if roster contains a contact with a given JID
-    @param aJID the JID to search
-    @return YES is JID is in roster, NO otherwise
-*/
-- (BOOL)containsJID:(CPString)aJID
-{
-    //@each (var contact in _contacts)
-    for (var i = 0; i < [_contacts count]; i++)
-    {
-        if ([[[_contacts objectAtIndex:i] JID] lowercaseString] == [aJID lowercaseString])
-            return YES;
-    }
-    return NO;
-}
-
-/*! changes the nickname of the contact with the given JID
-    @param aName the new nickname
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeNickname:(CPString)aName ofContact:(TNStropheContact)aContact
-{
-    [aContact changeNickname:aName];
-}
-
-/*! changes the nickname of the contact with the given JID
-    @param aName the new nickname
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeNickname:(CPString)aName ofContactWithJID:(CPString)aJID
-{
-    [self changeNickname:aName ofContact:[self contactWithJID:aJID]];
-}
-
-/*! changes the group of the contact with the given JID
-    @param aGroup the new group
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeGroup:(TNStropheGroup)newGroup ofContact:(TNStropheContact)aContact
-{
-    [[self groupOfContact:aContact] removeContact:aContact];
-
-    [newGroup addContact:aContact];
-    [aContact changeGroup:newGroup];
 }
 
 
