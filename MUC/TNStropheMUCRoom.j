@@ -181,8 +181,9 @@
     if ([aStanza containsChildrenWithName:@"body"])
     {
         var body    = [[aStanza firstChildWithName:@"body"] text],
+            contact = [_roster contactWithJID:[aStanza from]],
             message = [CPDictionary dictionaryWithObjectsAndKeys:body,@"body",
-                                                                 [aStanza fromResource],@"from",
+                                                                 contact,@"from",
                                                                  [aStanza delayTime],@"time"];
         [_messages addObject:message];
 
