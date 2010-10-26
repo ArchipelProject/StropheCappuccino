@@ -100,11 +100,10 @@
         }
     }
 
-    if (!contact)
-    {
+    if (contact)
+        [contact _didReceivePresence:aStanza];
+    else
         contact = [self addContact:[aStanza from] withName:[aStanza from].split("/")[1] inGroup:group];
-        [contact getStatus];
-    }
 
     if ([aStanza type] === @"unavailable")
     {

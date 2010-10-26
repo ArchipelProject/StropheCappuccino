@@ -27,7 +27,8 @@
 */
 @implementation TNStropheRoster : TNStropheRosterBase
 {
-    CPArray _groups @accessors(getter=groups);
+    CPArray _groups             @accessors(getter=groups);
+    CPArray _pendingPresence    @accessors(getter=pendingPresence);
 }
 
 
@@ -51,12 +52,12 @@
 {
     if (self = [super initWithConnection:aConnection])
     {
-        _groups = [CPArray array];
+        _groups             = [CPArray array];
+        _pendingPresence    = [CPArray array];
 
         var params = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                                @"subscribe", @"type",
                                                                 [_connection JID],@"to"];
-        [_connection registerSelector:@selector(_didReceiveSubscription:) ofObject:self withDict:params];
+        [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:params];
     }
 
     return self;
@@ -103,15 +104,18 @@
 
         if (![self containsJID:theJID])
         {
-            var groupName   = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General",
-                newGroup    = [self groupWithName:groupName orCreate:YES],
-                newContact  = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName];
+            var groupName       = ([item firstChildWithName:@"group"] != null) ? [[item firstChildWithName:@"group"] text] : "General",
+                newGroup        = [self groupWithName:groupName orCreate:YES],
+                newContact      = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
+                queuedPresence  = [self pendingPresenceForJID:theJID];
 
             [_contacts addObject:newContact];
             [newGroup addContact:newContact];
 
+            for (var j = 0; j < [queuedPresence count]; j++)
+                [newContact _didReceiveStatus:[queuedPresence objectAtIndex:j]];
+
             [newContact setNickname:nickname];
-            [newContact getStatus];
             [newContact getMessages];
             [newContact getVCard];
         }
@@ -120,6 +124,41 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
 
     return NO;
+}
+
+/*! message sent when a presence information received
+    send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
+
+    @return YES to keep the selector registred in TNStropheConnection
+*/
+- (BOOL)_didReceivePresence:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] === @"subscribe")
+    {
+        if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
+            [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
+    }
+    else
+    {
+        if ([self containsJID:[aStanza fromBare]])
+            [[self contactWithJID:[aStanza fromBare]] _didReceiveStatus:aStanza];
+        else
+            [_pendingPresence addObject:aStanza];
+    }
+
+    return YES;
+}
+
+- (CPArray)pendingPresenceForJID:(CPString)aJID
+{
+    var temp = [CPArray array];
+    for (var i = 0; i < [_pendingPresence count]; i++)
+    {
+        var presence = [_pendingPresence objectAtIndex:i];
+        if ([presence fromBare] === aJID)
+            [temp addObject:presence];
+    }
+    return temp;
 }
 
 
@@ -255,7 +294,6 @@
     var contact = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
     [contact setNickname:aName];
     [contact getVCard];
-    [contact getStatus];
     [contact getMessages];
 
     [[self groupWithName:aGroupName orCreate:YES] addContact:contact];
@@ -287,19 +325,6 @@
 
 #pragma mark -
 #pragma mark Subscriptions
-
-/*! message sent when a presence information received
-    send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
-
-    @return YES to keep the selector registred in TNStropheConnection
-*/
-- (BOOL)_didReceiveSubscription:(id)requestStanza
-{
-    if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
-        [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
-
-    return YES;
-}
 
 /*! subscribe to the given JID and add in into the roster if needed
     @param aJID the JID to subscribe
