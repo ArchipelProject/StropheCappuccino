@@ -80,6 +80,7 @@
     CPString        _resource               @accessors(property=resource);
     id              _delegate               @accessors(property=delegate);
     int             _maxConnections         @accessors(property=maxConnections);
+    int             _connectionTimeout      @accessors(property=connectionTimeout);
 
     CPDictionary    _registeredHandlerDict;
     CPString        _boshService;
@@ -140,6 +141,7 @@
         _soundEnabled           = YES;
         _connected              = NO;
         _maxConnections         = 10;
+        _connectionTimeout      = 3600;
         _connection             = new Strophe.Connection(_boshService);
 
         _clientNode             = @"http://cappuccino.org";
@@ -246,13 +248,14 @@
             [_delegate performSelector:selector withObject:self];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
-    }, /* wait */ 3600, /* hold */ _maxConnections);
+    }, /* wait */ _connectionTimeout, /* hold */ _maxConnections);
 }
 
 /*! this disconnect the XMPP connection
 */
 - (void)disconnect
 {
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusWillDisconnect object:self];
     _connection.disconnect();
 }
 

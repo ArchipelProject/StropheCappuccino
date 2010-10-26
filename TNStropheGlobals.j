@@ -55,9 +55,17 @@ TNStropheConnectionStatusAuthFailure        = @"TNStropheConnectionStatusAuthFai
 /*!
     @global
     @group TNStropheConnectionStatus
+    Notification when strophe is going to disconnect (but it is still connected)
+*/
+TNStropheConnectionStatusWillDisconnect      = @"TNStropheConnectionStatusWillDisconnect";
+
+/*!
+    @global
+    @group TNStropheConnectionStatus
     Notification sent on disconnecting
 */
 TNStropheConnectionStatusDisconnecting      = @"TNStropheConnectionStatusDisconnecting";
+
 /*!
     @global
     @group TNStropheConnectionStatus
