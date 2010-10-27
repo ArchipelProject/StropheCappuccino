@@ -337,7 +337,7 @@
     if ([aStanza type] == @"result")
     {
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didUpdateContentAfterPublishing:) name:TNStrophePubSubNodeRetrievedNotification object:self];
-        [self recover];
+        [self retrieveItems];
     }
     else
         CPLog.error("Cannot publish the pubsub item in node with name: " + _nodeName);
@@ -385,7 +385,7 @@
     if ([aStanza type] == @"result")
     {
         [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didUpdateContentAfterRetracting:) name:TNStrophePubSubNodeRetrievedNotification object:self];
-        [self recover];
+        [self retrieveItems];
     }
     else
         CPLog.error("Cannot remove the pubsub item in node with name: " + _nodeName);
