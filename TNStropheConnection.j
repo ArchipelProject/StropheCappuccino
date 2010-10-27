@@ -363,12 +363,27 @@
 */
 - (void)publishPEPPayload:(TNXMLNode)aPayload toNode:(CPString)aNode
 {
-    var stanza = [TNStropheStanza iqWithAttributes:{"type":"set", "id":[self getUniqueId]}];
+    var uid     = [self getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{"type":"set", "id":uid}],
+        params  = [CPDictionary dictionaryWithObject:uid forKey:@"id"];
+
     [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns":Strophe.NS.PUBSUB}]
     [stanza addChildWithName:@"publish" andAttributes:{"node":aNode}];
     [stanza addChildWithName:@"item"];
     [stanza addNode:aPayload];
+
+    [self registerSelector:@selector(_didPublishPEP:) ofObject:self withDict:params]
     [self send:stanza];
+}
+
+- (void)_didPublishPEP:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+        CPLog.debug("Publish succeeded!");
+    else
+        CPLog.error("Cannot publish the pubsub item in node with name: " + _nodeName);
+
+    return NO;
 }
 
 /*! generates an unique identifier

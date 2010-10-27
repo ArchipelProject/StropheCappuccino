@@ -119,21 +119,7 @@
 #pragma mark -
 #pragma mark Status
 
-/*! probe the contact about its status
-    You should never have to use this message if you are using TNStropheRoster
-*/
-- (void)getStatus
-{
-    var probe   = [TNStropheStanza presenceWithAttributes:{@"type": @"probe", @"to": _JID}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                             _JID, @"from",
-                                                             {matchBare: true}, @"options"];
-
-    [_connection registerSelector:@selector(_didReceiveStatus:) ofObject:self withDict:params];
-    [_connection send:probe];
-}
-
-/*! executed on getStatus result. It populates the status of the contact
+/*! Processes presence. It populates the status of the contact
     and send notifications
     You should never have to use this method
     @param aStanza the response TNStropheStanza
