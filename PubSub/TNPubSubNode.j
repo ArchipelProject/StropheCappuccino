@@ -336,7 +336,7 @@
 {
     if ([aStanza type] == @"result")
     {
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didUpdateContentAfterPublishing:) name:TNStrophePubSubNodeRecoveredNotification object:self];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didUpdateContentAfterPublishing:) name:TNStrophePubSubNodeRetrievedNotification object:self];
         [self recover];
     }
     else
@@ -350,7 +350,7 @@
 */
 - (void)_didUpdateContentAfterPublishing:(CPNotification)aNotification
 {
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:TNStrophePubSubNodeRecoveredNotification object:self];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:TNStrophePubSubNodeRetrievedNotification object:self];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubItemPublishedNotification object:self];
 }
 
@@ -384,7 +384,7 @@
 {
     if ([aStanza type] == @"result")
     {
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didUpdateContentAfterRetracting:) name:TNStrophePubSubNodeRecoveredNotification object:self];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didUpdateContentAfterRetracting:) name:TNStrophePubSubNodeRetrievedNotification object:self];
         [self recover];
     }
     else
@@ -398,7 +398,7 @@
 */
 - (void)_didUpdateContentAfterRetracting:(CPNotification)aNotification
 {
-    [[CPNotificationCenter defaultCenter] removeObserver:self name:TNStrophePubSubNodeRecoveredNotification object:self];
+    [[CPNotificationCenter defaultCenter] removeObserver:self name:TNStrophePubSubNodeRetrievedNotification object:self];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubItemRetractedNotification object:self];
 }
 
