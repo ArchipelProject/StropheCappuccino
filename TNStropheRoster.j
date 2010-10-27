@@ -117,7 +117,6 @@
 
             [newContact setNickname:nickname];
             [newContact getMessages];
-            [newContact getVCard];
         }
     }
 
@@ -293,7 +292,6 @@
 
     var contact = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
     [contact setNickname:aName];
-    [contact getVCard];
     [contact getMessages];
 
     [[self groupWithName:aGroupName orCreate:YES] addContact:contact];
