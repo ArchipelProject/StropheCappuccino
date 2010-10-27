@@ -136,7 +136,7 @@
     if ([aStanza type] === @"subscribe")
     {
         if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
-            [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:requestStanza];
+            [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:aStanza];
     }
     else
     {
