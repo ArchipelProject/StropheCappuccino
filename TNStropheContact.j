@@ -53,7 +53,6 @@
     CPImage             _imageAway;
     CPImage             _imageNewError;
     CPImage             _imageNewMessage;
-    CPImage             _imageNewMessage;
     CPImage             _imageOffline;
     CPImage             _imageOnline;
     CPImage             _statusReminder;
@@ -172,8 +171,9 @@
             break;
         default:
             _XMPPShow       = TNStropheContactStatusOnline;
-            _statusIcon     = _imageOnline;
             _statusReminder = _imageOnline;
+            if (_numberOfEvents === 0)
+                _statusIcon = _imageOnline;
 
             if ([aStanza firstChildWithName:@"show"])
             {
@@ -181,11 +181,11 @@
                 switch (_XMPPShow)
                 {
                     case TNStropheContactStatusBusy:
-                        _statusIcon     = _imageBusy
+                        _statusIcon     = _imageBusy;
                         _statusReminder = _imageBusy;
                         break;
                     case TNStropheContactStatusAway:
-                        _statusIcon     = _imageAway
+                        _statusIcon     = _imageAway;
                         _statusReminder = _imageAway;
                         break;
                     case TNStropheContactStatusDND:
@@ -529,7 +529,8 @@
     var message = [_messagesQueue objectAtIndex:0];
 
     _numberOfEvents--;
-    _statusIcon = _statusReminder;
+    if (_numberOfEvents === 0)
+        _statusIcon = _statusReminder;
 
     [_messagesQueue removeObjectAtIndex:0];
 
