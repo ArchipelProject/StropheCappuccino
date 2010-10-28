@@ -48,6 +48,19 @@
     return img;
 }
 
++ (TNBase64Image)base64ImageWithContentType:(CPString)aContentType data:(CPString)someBase64Data delegate:(id)aDelegate
+{
+    var img = [[TNBase64Image alloc] init];
+
+    [img setBase64EncodedData:someBase64Data];
+    [img setContentType:aContentType];
+    [img setDelegate:aDelegate];
+
+    [img load];
+
+    return img;
+}
+
 /*! override the CPImage load message.
 */
 - (void)load
