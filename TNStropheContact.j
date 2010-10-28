@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -49,6 +49,7 @@
     TNStropheConnection _connection     @accessors(property=connection);
 
     BOOL                _isComposing;
+    BOOL                _askingVCard;
     CPImage             _imageAway;
     CPImage             _imageNewError;
     CPImage             _imageNewMessage;
@@ -102,6 +103,7 @@
         _messagesQueue      = [CPArray array];
         _numberOfEvents     = 0;
         _isComposing        = NO;
+        _askingVCard        = NO;
 
         _resources          = [CPArray array];
 
@@ -127,7 +129,7 @@
 - (BOOL)_didReceiveStatus:(TNStropheStanza)aStanza
 {
     var resource = [aStanza fromResource],
-        presenceShow = [aStanza firstChildWithName:@"status"];
+        presenceStatus = [aStanza firstChildWithName:@"status"];
 
     _fullJID = [aStanza from];
 
@@ -154,8 +156,8 @@
                 _statusIcon     = _imageOffline;
                 _statusReminder = _imageOffline;
 
-                if (presenceShow)
-                    _XMPPStatus = [presenceShow text];
+                if (presenceStatus)
+                    _XMPPStatus = [presenceStatus text];
             }
             break;
         case @"subscribe":
@@ -173,34 +175,35 @@
             _statusIcon     = _imageOnline;
             _statusReminder = _imageOnline;
 
-            _XMPPStatus = [aStanza firstChildWithName:@"show"];
-            if (_XMPPStatus)
+            if ([aStanza firstChildWithName:@"show"])
             {
-                switch ([_XMPPStatus text])
+                _XMPPShow = [[aStanza firstChildWithName:@"show"] text];
+                switch (_XMPPShow)
                 {
                     case TNStropheContactStatusBusy:
-                        _XMPPShow       = TNStropheContactStatusBusy;
                         _statusIcon     = _imageBusy
                         _statusReminder = _imageBusy;
                         break;
                     case TNStropheContactStatusAway:
-                        _XMPPShow       = TNStropheContactStatusAway;
                         _statusIcon     = _imageAway
                         _statusReminder = _imageAway;
                         break;
                     case TNStropheContactStatusDND:
-                        _XMPPShow       = TNStropheContactStatusDND;
                         _statusIcon     = _imageDND;
                         _statusReminder = _imageDND;
                         break;
                 }
             }
 
-            if (presenceShow)
-                _XMPPStatus = [presenceShow text];
+            if (presenceStatus)
+                _XMPPStatus = [presenceStatus text];
 
             if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
                 [self getVCard];
+
+            if (!_vCard && !_askingVCard)
+                [self getVCard];
+
             break;
     }
 
@@ -279,13 +282,14 @@
 - (void)getVCard
 {
     var uid         = [_connection getUniqueId],
-        vcardStanza = [TNStropheStanza iqWithAttributes:{@"from": [_connection JID], @"to": _JID, @"type": @"get", @"id": uid}];
+        vcardStanza = [TNStropheStanza iqWithAttributes:{@"from": [_connection JID], @"to": _JID, @"type": @"get", @"id": uid}],
+        params      = [CPDictionary dictionaryWithObjectsAndKeys:_JID, @"from",
+                                                                  uid, @"id",
+                                                                  {matchBare: true}, @"options"];
 
     [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
 
-    var params = [CPDictionary dictionaryWithObjectsAndKeys:_JID, @"from",
-                                                            uid, @"id",
-                                                            {matchBare: true}, @"options"];
+    _askingVCard = YES;
 
     [_connection registerSelector:@selector(didReceiveVCard:) ofObject:self withDict:params];
     [_connection send:vcardStanza];
@@ -300,6 +304,8 @@
 - (BOOL)didReceiveVCard:(TNStropheStanza)aStanza
 {
     var aVCard = [aStanza firstChildWithName:@"vCard"];
+
+    _askingVCard = NO;
 
     if (aVCard)
     {
