@@ -311,19 +311,23 @@
     {
         _vCard = aVCard;
 
+        if ((_nickname == _nodeName) && ([aVCard firstChildWithName:@"NAME"]))
+            _nickname = [[aVCard firstChildWithName:@"NAME"] text];
+
         var photoNode;
         if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
         {
             var contentType = [[photoNode firstChildWithName:@"TYPE"] text],
                 data        = [[photoNode firstChildWithName:@"BINVAL"] text];
 
-            _avatar = [TNBase64Image base64ImageWithContentType:contentType andData:data];
+            // the delegate will send the TNStropheContactVCardReceivedNotification when image will be ready
+            _avatar = [TNBase64Image base64ImageWithContentType:contentType data:data delegate:self];
         }
-
-        if ((_nickname == _nodeName) && ([aVCard firstChildWithName:@"NAME"]))
-            _nickname = [[aVCard firstChildWithName:@"NAME"] text];
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
+        else
+        {
+            // otherwise we send the notification right now.
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
+        }
     }
 
     return YES;
@@ -544,6 +548,19 @@
     [_messagesQueue removeAllObjects];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactMessageTreatedNotification object:self];
+}
+
+
+#pragma mark -
+#pragma mark Delegates
+
+/*! this method is called when the avatar image is ready.
+    @param anImage the image that sent the message
+*/
+- (void)imageDidLoad:(TNBase64Image)anImage
+{
+    [anImage setDelegate:nil];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
 }
 
 @end
