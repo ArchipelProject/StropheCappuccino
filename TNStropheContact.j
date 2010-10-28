@@ -291,7 +291,7 @@
 
     _askingVCard = YES;
 
-    [_connection registerSelector:@selector(didReceiveVCard:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didReceiveVCard:) ofObject:self withDict:params];
     [_connection send:vcardStanza];
 }
 
@@ -301,7 +301,7 @@
     You should never have to use this method
     @param aStanza the response TNStropheStanza
 */
-- (BOOL)didReceiveVCard:(TNStropheStanza)aStanza
+- (BOOL)_didReceiveVCard:(TNStropheStanza)aStanza
 {
     var aVCard = [aStanza firstChildWithName:@"vCard"];
 
@@ -311,8 +311,10 @@
     {
         _vCard = aVCard;
 
-        if ((_nickname == _nodeName) && ([aVCard firstChildWithName:@"NAME"]))
+        if ([aVCard firstChildWithName:@"NAME"])
             _nickname = [[aVCard firstChildWithName:@"NAME"] text];
+        else
+            _nickname = _JID.split('@')[0];
 
         var photoNode;
         if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
@@ -325,6 +327,7 @@
         }
         else
         {
+            _avatar = nil;
             // otherwise we send the notification right now.
             [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
         }
