@@ -63,6 +63,13 @@
     return self;
 }
 
+- (void)clear
+{
+    [_groups removeAllObjects];
+    [_pendingPresence removeAllObjects];
+    [super clear];
+}
+
 
 #pragma mark -
 #pragma mark Fetch

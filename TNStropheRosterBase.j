@@ -73,6 +73,11 @@
     [_connection disconnect];
 }
 
+- (void)clear
+{
+    [_contacts removeAllObjects];
+}
+
 
 #pragma mark -
 #pragma mark Contacts
