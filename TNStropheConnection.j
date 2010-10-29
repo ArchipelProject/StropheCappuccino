@@ -200,6 +200,8 @@
 {
     _fullJID = _JID + @"/" + _resource;
 
+    [self registerSelector:@selector(_didReceivePing:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"]];
+
     _connection.connect(_fullJID, _password, function (status, errorCond)
     {
         var selector,
@@ -288,6 +290,16 @@
 - (void)flush
 {
     _connection.flush();
+}
+
+- (BOOL)_didReceivePing:(TNStropheStanza)aStanza
+{
+    if ([aStanza containsChildrenWithName:@"ping"] && [[aStanza firstChildWithName:@"ping"] namespace] == Strophe.NS.PING)
+    {
+        CPLog.debug("Ping received. Sending pong.");
+        [self send:[TNStropheStanza iqWithAttributes:{'to': [aStanza from], 'id': [aStanza ID], 'type': 'result'}]];
+    }
+    return YES;
 }
 
 

@@ -32,6 +32,7 @@
 [TNStropheConnection addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
 [TNStropheConnection addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
 [TNStropheConnection addNamespaceWithName:@"X_DATA" value:@"jabber:x:data"];
+[TNStropheConnection addNamespaceWithName:@"PING" value:@"urn:xmpp:ping"];
 
 /*! @mainpage
     StropheCappuccino is distributed under the @ref license "AGPL".
