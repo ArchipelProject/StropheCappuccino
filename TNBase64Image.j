@@ -72,10 +72,11 @@
 
     _loadStatus = CPImageLoadStatusLoading;
     _image      = new Image();
+    _image.addEventListener('load', function(){
+        [self _imageDidLoad];
+    });
     _filename   = data;
     _image.src  = data;
-
-    [self _imageDidLoad];
 }
 
 @end
