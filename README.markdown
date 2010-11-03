@@ -28,3 +28,8 @@ Simply include the StropheCappuccino framework in your Frameworks directory and 
 To generate the documentation execute the following :
 
     # jake docs
+
+
+## Help / Suggestion
+
+You can reach us at irc://irc.freenode.net/#archipel
