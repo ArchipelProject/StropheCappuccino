@@ -54,10 +54,6 @@
     {
         _groups             = [CPArray array];
         _pendingPresence    = [CPArray array];
-
-        var params = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                                [_connection JID],@"to"];
-        [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:params];
     }
 
     return self;
@@ -78,16 +74,18 @@
 */
 - (void)getRoster
 {
-    var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
-        params      = [CPDictionary dictionary],
-        rosteriq    = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}];
+    var uid             = [_connection getUniqueIdWithSuffix:@"roster"],
+        rosteriq        = [TNStropheStanza iqWithAttributes:{'id':uid, 'type':'get'}],
+        rosterParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name",
+                                                                 @"result", @"type",
+                                                                 uid, @"id"],
+        presenceParams  = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
+                                                                     [_connection JID],@"to"];
 
     [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
 
-    [params setValue:@"iq" forKey:@"name"];
-    [params setValue:@"result" forKey:@"type"];
-    [params setValue:uid forKey:@"id"];
-    [_connection registerSelector:@selector(_didReceiveRoster:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didReceiveRoster:) ofObject:self withDict:rosterParams];
+    [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:presenceParams];
 
     [_connection send:rosteriq];
 }
