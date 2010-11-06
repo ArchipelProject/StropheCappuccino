@@ -380,23 +380,29 @@
 {
     [super removeContact:aContact];
 
-    var uid = [_connection getUniqueIdWithSuffix:@"roster"],
-        removeReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
-        params = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+    var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
+        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
     [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [removeReq addChildWithName:@"item" andAttributes:{'jid': [[aContact JID] bare], 'subscription': 'remove'}];
 
     [_connection registerSelector:@selector(_didRemoveContact:userInfo:) ofObject:self withDict:params userInfo:aContact];
+
     [_connection send:removeReq];
 }
 
-- (void)_didRemoveContact:(TNStropheStanza)aStanza userInfo:(TNStropheContact)theContact
+- (BOOL)_didRemoveContact:(TNStropheStanza)aStanza userInfo:(TNStropheContact)theContact
 {
     if ([aStanza type] === @"result")
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedContactNotification object:theContact];
+        CPLog.debug("Contact was removed from roster!");
     else
-        CPLog.error("Cannot remove contact: " + aStanza)
+    {
+        CPLog.error("Error removing contact from roster!");
+        CPLog.error(theContact);
+    }
+
+    return NO;
 }
 
 
