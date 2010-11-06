@@ -351,12 +351,16 @@
     if (!aGroupName)
         aGroupName = @"General";
 
-    var addReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
+    var uid         = [_connection getUniqueId],
+        addReq      = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
+        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
     [addReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
     [addReq addChildWithName:@"item" andAttributes:{"JID": [aJID full], "name": aName}];
     [addReq addChildWithName:@"group" andAttributes:nil];
     [addReq addTextNode:aGroupName];
+
+    [_connection registerSelector:@selector(_didAddContact:userInfo:) ofObject:self withDict:params userInfo:aJID];
 
     [_connection send:addReq];
 
@@ -370,6 +374,16 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedContactNotification object:contact];
 
     return contact;
+}
+
+- (BOOL)_didAddContact:(TNStropheStanza)aStanza userInfo:(TNStropheJID)theJID
+{
+    if ([aStanza type] === @"result")
+        CPLog.debug("Contact with JID " + theJID + " was added to roster!");
+    else
+        CPLog.error("Error adding contact with JID " + theJID + " to roster!");
+
+    return NO;
 }
 
 /*! remove a TNStropheContact from the roster
