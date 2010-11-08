@@ -298,6 +298,26 @@
     return tempArray;
 }
 
+- (int)populatedGroupsCount
+{
+    return [[self populatedGroups] count];
+}
+
+- (CPArray)populatedGroups
+{
+    var tempGroups = [CPArray array];
+
+    for (var i = 0; i < [_groups count]; i++)
+    {
+        var group = [_groups objectAtIndex:i];
+        if ([group count] > 0)
+            [tempGroups addObject:group];
+    }
+
+    return tempGroups;
+}
+
+
 #pragma mark -
 #pragma mark Contacts
 
