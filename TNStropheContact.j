@@ -488,7 +488,6 @@
     {
         _statusIcon = _imageNewMessage;
         [_messagesQueue addObject:aStanza];
-        [_connection playReceivedSound];
 
         _numberOfEvents++;
         [center postNotificationName:TNStropheContactMessageReceivedNotification object:self userInfo:userInfo];

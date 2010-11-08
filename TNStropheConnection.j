@@ -68,7 +68,6 @@
 @implementation TNStropheConnection : CPObject
 {
     BOOL            _connected              @accessors(getter=isConnected);
-    BOOL            _soundEnabled           @accessors(getter=isSoundEnabled, setter=setSoundEnabled:);
     CPArray         _features               @accessors(readonly);
     CPString        _clientNode             @accessors(property=clientNode);
     CPString        _fullJID                @accessors(property=fullJID);
@@ -84,7 +83,6 @@
 
     CPDictionary    _registeredHandlerDict;
     CPString        _boshService;
-    id              _audioTagReceive;
     id              _connection;
 }
 
@@ -138,7 +136,6 @@
     {
         _boshService            = aService;
         _registeredHandlerDict  = [CPDictionary dictionary];
-        _soundEnabled           = YES;
         _connected              = NO;
         _maxConnections         = 10;
         _connectionTimeout      = 3600;
@@ -152,12 +149,12 @@
                                     Strophe.NS.DISCO_INFO,
                                     Strophe.NS.DISCO_ITEMS];
 
-        var sound = [[CPBundle bundleForClass:[self class]] pathForResource:@"Receive.mp3"];
-
-        _audioTagReceive = document.createElement('audio');
-        _audioTagReceive.setAttribute("src", sound);
-        _audioTagReceive.setAttribute("autobuffer", "autobuffer");
-        document.body.appendChild(_audioTagReceive);
+        // var sound = [[CPBundle bundleForClass:[self class]] pathForResource:@"Receive.mp3"];
+        // 
+        // _audioTagReceive = document.createElement('audio');
+        // _audioTagReceive.setAttribute("src", sound);
+        // _audioTagReceive.setAttribute("autobuffer", "autobuffer");
+        // document.body.appendChild(_audioTagReceive);
     }
 
     return self;
@@ -414,12 +411,6 @@
     return _connection.getUniqueId(suffix);
 }
 
-- (void)playReceivedSound
-{
-    if (_soundEnabled)
-        _audioTagReceive.play();
-}
-
 
 #pragma mark -
 #pragma mark Handlers
@@ -537,7 +528,6 @@
         _password           = [aCoder decodeObjectForKey:@"_password"];
         _resource           = [aCoder decodeObjectForKey:@"_resource"];
         _delegate           = [aCoder decodeObjectForKey:@"_delegate"];
-        _soundEnabled       = [aCoder decodeBoolForKey:@"_soundEnabled"];
         _boshService        = [aCoder decodeObjectForKey:@"_boshService"];
         _connection         = [aCoder decodeObjectForKey:@"_connection"];
         _audioTagReceive    = [aCoder decodeObjectForKey:@"_audioTagReceive"];
@@ -551,7 +541,6 @@
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_password forKey:@"_password"];
     [aCoder encodeObject:_resource forKey:@"_resource"];
-    [aCoder encodeBool:_soundEnabled forKey:@"_soundEnabled"];
     [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
     [aCoder encodeObject:_registeredHandlerDict forKey:@"_registeredHandlerDict"];
