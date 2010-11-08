@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -148,13 +148,6 @@
         _features               = [ Strophe.NS.CAPS,
                                     Strophe.NS.DISCO_INFO,
                                     Strophe.NS.DISCO_ITEMS];
-
-        // var sound = [[CPBundle bundleForClass:[self class]] pathForResource:@"Receive.mp3"];
-        // 
-        // _audioTagReceive = document.createElement('audio');
-        // _audioTagReceive.setAttribute("src", sound);
-        // _audioTagReceive.setAttribute("autobuffer", "autobuffer");
-        // document.body.appendChild(_audioTagReceive);
     }
 
     return self;
