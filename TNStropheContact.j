@@ -20,6 +20,7 @@
 
 @import <Foundation/Foundation.j>
 
+@import "TNStropheJID.j"
 @import "TNStropheGroup.j"
 @import "TNStropheConnection.j"
 @import "TNBase64Image.j"
@@ -35,10 +36,8 @@
     CPArray             _resources      @accessors(property=resources);
     CPImage             _statusIcon     @accessors(property=statusIcon);
     CPNumber            _numberOfEvents @accessors(property=numberOfEvents);
-    CPString            _domain         @accessors(property=domain);
-    CPString            _fullJID        @accessors(property=fullJID);
+    TNStropheJID        _JID            @accessors(property=JID);
     CPString            _groupName      @accessors(property=groupName);
-    CPString            _JID            @accessors(property=JID);
     CPString            _nickname       @accessors(property=nickname);
     CPString            _nodeName       @accessors(property=nodeName);
     CPString            _type           @accessors(property=type);
@@ -81,7 +80,7 @@
 
     @return an initialized TNStropheContact
 */
-- (id)initWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID groupName:(CPString)aGroupName
+- (id)initWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID groupName:(CPString)aGroupName
 {
     if (self = [super init])
     {
@@ -107,10 +106,8 @@
         _resources          = [CPArray array];
 
         _JID                = aJID;
+        _nickname           = [_JID node];
         _groupName          = aGroupName;
-        _nodeName           = aJID.split('@')[0];
-        _nickname           = aJID.split('@')[0];
-        _domain             = aJID.split('/')[0].split('@')[1];
     }
 
     return self;
@@ -130,9 +127,9 @@
     var resource = [aStanza fromResource],
         presenceStatus = [aStanza firstChildWithName:@"status"];
 
-    _fullJID = [aStanza from];
+    [_JID setResource:[[aStanza from] resource]]
 
-    if (resource && (resource != @"") && ![_resources containsObject:resource])
+    if ([_JID resource] && ([_JID resource] != @"") && ![_resources containsObject:resource])
         [_resources addObject:resource];
 
     switch ([aStanza type])
@@ -214,7 +211,7 @@
 
 - (void)sendStatus:(CPString)aStatus
 {
-    var statusStanza = [TNStropheStanza messageWithAttributes:{"to": _JID, "from": [_connection JID], "type": "chat"}];
+    var statusStanza = [TNStropheStanza messageTo:_JID withAttributes:{"type": "chat"}];
 
     [statusStanza addChildWithName:aStatus andAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
 
@@ -250,21 +247,21 @@
 */
 - (void)subscribe
 {
-    [_connection send:[TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"subscribed", @"to": _JID}]];
+    [_connection send:[TNStropheStanza presenceTo:_JID withAttributes:{@"type": @"subscribed"} bare:YES]];
 }
 
 /*! unsubscribe from the contact
 */
 - (void)unsubscribe
 {
-    [_connection send:[TNStropheStanza presenceWithAttributes:{@"from": [_connection JID], @"type": @"unsubscribed", @"to": _JID}]];
+    [_connection send:[TNStropheStanza presenceTo:_JID WwthAttributes:{@"type": @"unsubscribed"} bare:YES]];
 }
 
 /*! ask subscribtion to the contact
 */
 - (void)askSubscription
 {
-    [_connection send:[TNStropheStanza presenceWithAttributes:{@"type": @"subscribe", @"to": _JID}]];
+    [_connection send:[TNStropheStanza presenceTo:_JID withAttributes:{@"type": @"subscribe"} bare:YES]];
 }
 
 
@@ -282,10 +279,8 @@
 - (void)getVCard
 {
     var uid         = [_connection getUniqueId],
-        vcardStanza = [TNStropheStanza iqWithAttributes:{@"from": [_connection JID], @"to": _JID, @"type": @"get", @"id": uid}],
-        params      = [CPDictionary dictionaryWithObjectsAndKeys:_JID, @"from",
-                                                                  uid, @"id",
-                                                                  {matchBare: true}, @"options"];
+        vcardStanza = [TNStropheStanza iqTo:_JID withAttributes:{@"type": @"get", @"id": uid} bare:YES],
+        params      = [CPDictionary dictionaryWithObjectsAndKeys: uid, @"id"];
 
     [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
 
@@ -314,7 +309,7 @@
         if ([aVCard firstChildWithName:@"NAME"])
             _nickname = [[aVCard firstChildWithName:@"NAME"] text];
         else
-            _nickname = _JID.split('@')[0];
+            _nickname = [_JID node]
 
         var photoNode;
         if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
@@ -345,7 +340,7 @@
 
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
     [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
     [stanza addChildWithName:@"group" andAttributes:nil];
     [stanza addTextNode:_groupName];
 
@@ -360,7 +355,7 @@
 {
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
     [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
     [stanza addChildWithName:@"group" andAttributes:nil];
     [stanza addTextNode:[newGroup name]];
 
@@ -376,7 +371,7 @@
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
 
     [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": _JID, "name": _nickname}];
+    [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
     [stanza addChildWithName:@"group" andAttributes:nil];
     [stanza addTextNode:aNewName];
 
@@ -398,7 +393,7 @@
 
 - (void)sendStanza:(TNStropheStanza)aStanza withUserInfo:(CPDictionary)userInfo
 {
-    [aStanza setTo:(_fullJID) ? _fullJID : _JID];
+    [aStanza setTo:_JID];
 
     [_connection send:aStanza];
 
@@ -451,10 +446,10 @@
 - (void)getMessages
 {
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                            _JID, @"from",
+                                                            [_JID bare], @"from",
                                                             {matchBare: true}, @"options"];
 
-    [_connection registerSelector:@selector(_didReceivedMessage:) ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didReceiveMessage:) ofObject:self withDict:params];
 }
 
 /*! message sent when contact listening its message (using getMessages) and send appropriates notifications
@@ -464,7 +459,7 @@
 
     @return YES in order to listen again
 */
-- (BOOL)_didReceivedMessage:(id)aStanza
+- (BOOL)_didReceiveMessage:(id)aStanza
 {
     var center      = [CPNotificationCenter defaultCenter],
         userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", [CPDate date], @"date"];
@@ -578,7 +573,6 @@
     {
         _JID            = [aCoder decodeObjectForKey:@"_JID"];
         _nodeName       = [aCoder decodeObjectForKey:@"_nodeName"];
-        _domain         = [aCoder decodeObjectForKey:@"_domain"];
         _groupName      = [aCoder decodeObjectForKey:@"_groupName"];
         _nickname       = [aCoder decodeObjectForKey:@"_nickname"];
         _XMPPStatus     = [aCoder decodeObjectForKey:@"_XMPPStatus"];
@@ -586,7 +580,6 @@
         _XMPPShow       = [aCoder decodeObjectForKey:@"_XMPPShow"];
         _statusIcon     = [aCoder decodeObjectForKey:@"_statusIcon"];
         _type           = [aCoder decodeObjectForKey:@"_type"];
-        _fullJID        = [aCoder decodeObjectForKey:@"_fullJID"];
         _vCard          = [aCoder decodeObjectForKey:@"_vCard"];
         _messageQueue   = [aCoder decodeObjectForKey:@"_messagesQueue"];
         _numberOfEvents = [aCoder decodeObjectForKey:@"_numberOfEvents"];
@@ -600,7 +593,6 @@
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_nodeName forKey:@"_nodeName"];
     [aCoder encodeObject:_groupName forKey:@"_groupName"];
-    [aCoder encodeObject:_domain forKey:@"_domain"];
     [aCoder encodeObject:_nickname forKey:@"_nickname"];
     [aCoder encodeObject:_XMPPStatus forKey:@"_XMPPStatus"];
     [aCoder encodeObject:_XMPPShow forKey:@"_XMPPShow"];
@@ -611,9 +603,6 @@
 
     if (_resources)
         [aCoder encodeObject:_resources forKey:@"_resources"];
-
-    if (_fullJID)
-        [aCoder encodeObject:_fullJID forKey:@"_fullJID"];
 
     if (_vCard)
         [aCoder encodeObject:_vCard forKey:@"_vCard"];

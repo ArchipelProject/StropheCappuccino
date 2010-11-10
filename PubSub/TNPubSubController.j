@@ -12,7 +12,7 @@
   * but WITHOUT ANY WARRANTY; without even the implied warranty of
   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   * Lesser General Public License for more details.
-  * 
+  *
   * You should have received a copy of the GNU Lesser General Public
   * License along with this library; if not, write to the Free Software
   * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -86,6 +86,7 @@
     return node;
 }
 
+
 - (TNPubSubNode)nodeWithName:(CPString)aNodeName
 {
     for (var i = 0; i < [_nodes count]; i++)
@@ -154,6 +155,44 @@
 
 #pragma mark -
 #pragma mark Subscription Management
+
+- (void)retrieveSubscriptionsForNode:(TNPubSubNode)aNode
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{"type": "get", "to": _server, "id": uid}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid,@"id"];
+
+    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
+    [stanza addChildWithName:@"subscriptions"];
+    [stanza setValue:[aNode name] forAttribute:@"node"]
+
+    [_connection registerSelector:@selector(_didRetrieveNodeSubscriptions:userInfo:) ofObject:self withDict:params userInfo:aNode];
+
+    [_connection send:stanza];
+}
+
+- (BOOL)_didRetrieveNodeSubscriptions:(TNStropheStanza)aStanza userInfo:(TNPubSubNode)aNode
+{
+    if ([aStanza type] == @"result")
+    {
+        var subscriptions = [aStanza childrenWithName:@"subscription"];
+
+        for (var i = 0; i < [subscriptions count]; i++)
+        {
+            var subscription    = [subscriptions objectAtIndex:i],
+                subid           = [subscription valueForAttribute:@"subid"];
+
+            [aNode addSubscriptionID:subid];
+        }
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
+    }
+    else
+        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
+
+    return NO;
+}
+
 
 - (void)retrieveAllSubscriptions
 {

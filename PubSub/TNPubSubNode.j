@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -87,7 +87,7 @@
     {
         _nodeName           = aNodeName;
         _connection         = aConnection;
-        _pubSubServer       = aPubSubServer ? aPubSubServer : [_connection JID].split("@")[1].split("/")[0];
+        _pubSubServer       = aPubSubServer ? aPubSubServer : [[_connection JID] domain];
         _subscriptionIDs    = [CPArray array];
     }
 
@@ -158,6 +158,7 @@
     {
         _content = [aStanza childrenWithName:@"item"];
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeRetrievedNotification object:self];
+
     }
     else
         CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
@@ -427,7 +428,7 @@
     [stanza setTo:_pubSubServer];
 
     [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
-    [stanza addChildWithName:@"subscribe" andAttributes:{@"node": _nodeName, @"jid": [_connection JID]}];
+    [stanza addChildWithName:@"subscribe" andAttributes:{@"node": _nodeName, @"jid": [[_connection JID] bare]}];
 
     if (options && [options count] > 0)
     {
@@ -503,7 +504,7 @@
     [stanza setTo:_pubSubServer];
 
     [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
-    [stanza addChildWithName:@"unsubscribe" andAttributes:{"node": _nodeName, "jid": [_connection JID]}];
+    [stanza addChildWithName:@"unsubscribe" andAttributes:{"node": _nodeName, "jid": [[_connection JID] bare]}];
     if (aSubID)
         [stanza setValue:aSubID forAttribute:@"subid"];
 

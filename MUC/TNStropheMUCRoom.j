@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -21,6 +21,7 @@
 @import <Foundation/Foundation.j>
 
 @import "../TNStropheGlobals.j"
+@import "../TNStropheJID.j"
 @import "../TNStropheConnection.j"
 @import "../TNStropheStanza.j"
 @import "TNStropheMUCRoster.j"
@@ -32,16 +33,14 @@
 */
 @implementation TNStropheMUCRoom : CPObject
 {
-    CPString                _roomName           @accessors(getter=name);
-    CPString                _service            @accessors(getter=service);
-    CPString                _nick               @accessors(getter=nick);
+    TNStropheJID            _roomJID            @accessors(getter=roomJID);
+    id                      _delegate           @accessors(property=delegate);
     CPString                _subject            @accessors(getter=subject);
     CPArray                 _messages           @accessors(getter=messages);
     TNStropheMUCRoster      _roster             @accessors(getter=roster);
 
     TNStropheConnection     _connection;
     CPArray                 _handlerIDs;
-    id                      _delegate           @accessors(property=delegate);
 }
 
 #pragma mark -
@@ -72,10 +71,8 @@
     self = [super init];
     if (self)
     {
-        _roomName       = aRoom;
-        _service        = aService;
         _connection     = aConnection;
-        _nick           = aNick;
+        _roomJID        = [TNStropheJID stropheJIDWithNode:aRoom domain:aService resource:aNick];
         _handlerIDs     = [CPArray array];
         _messages       = [CPArray array];
         _roster         = [TNStropheMUCRoster rosterWithConnection:_connection forRoom:self];
@@ -87,35 +84,25 @@
 #pragma mark -
 #pragma mark Membership
 
-- (CPString)roomJID
-{
-    return _roomName + @"@" + _service;
-}
-
-// Includes own nick as resource
-- (CPString)ownRoomJID
-{
-    return [self roomJID] + @"/" + _nick;
-}
-
 - (TNStropheStanza)directedPresence
 {
-    return [TNStropheStanza presenceWithAttributes:{"to": [self ownRoomJID]}];
+    return [TNStropheStanza presenceTo:_roomJID];
 }
 
 - (void)join
 {
+    alert([_roomJID bare]);
     // Handle messages sent to room
-    var messageParams   = [CPDictionary dictionaryWithObjectsAndKeys:@"message",@"name",
-                                                                     [self roomJID],@"from",
-                                                                     @"groupchat",@"type",
+    var messageParams   = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
+                                                                     [_roomJID bare], @"from",
+                                                                     @"groupchat", @"type",
                                                                      {matchBare: true},@"options"],
         messageHandler  = [_connection registerSelector:@selector(receiveMessage:) ofObject:self withDict:messageParams];
     [_handlerIDs addObject:messageHandler];
 
     // Handle private messages from room roster
     var pmParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"message",@"name",
-                                                                 [self roomJID],@"from",
+                                                                [_roomJID bare],@"from",
                                                                  @"chat",@"type",
                                                                  {matchBare: true},@"options"],
         pmHandler   = [_connection registerSelector:@selector(receivePrivateMessage:) ofObject:self withDict:pmParams];
@@ -162,12 +149,13 @@
 
 - (void)sendStanzaToRoom:(TNStropheStanza)aStanza
 {
-    [aStanza setTo:[self roomJID]];
+    [aStanza setTo:_roomJID];
     [_connection send:aStanza];
 }
 
 - (BOOL)receiveMessage:(TNStropheStanza)aStanza
 {
+    alert("bin");
     if ([aStanza containsChildrenWithName:@"subject"])
     {
         _subject = [[aStanza firstChildWithName:@"subject"] text];

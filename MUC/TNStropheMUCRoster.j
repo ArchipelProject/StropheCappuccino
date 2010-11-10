@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -63,7 +63,7 @@
         _owners         = [TNStropheGroup stropheGroupWithName:@"Owners"];
 
         var params      = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                                     [_room roomJID], @"from",
+                                                                     [[_room roomJID] bare], @"from",
                                                                      {matchBare: true}, @"options"];
         [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:params];
     }
@@ -127,7 +127,7 @@
     @param aGroup the group of the new contact. if nil, it will be _visitors
     @return the new TNStropheContact
 */
-- (TNStropheContact)addContact:(CPString)aJID withName:(CPString)aName inGroup:(TNStropheGroup)aGroup
+- (TNStropheContact)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroup:(TNStropheGroup)aGroup
 {
     if ([self containsJID:aJID] == YES)
         return;

@@ -12,13 +12,15 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 @import <Foundation/Foundation.j>
+
+@import "TNStropheJID.j"
 @import "TNXMLNode.j"
 
 /*! @ingroup strophecappuccino
@@ -29,6 +31,15 @@
 #pragma mark -
 #pragma mark Class methods
 
+/*! instanciate a TNStropheStanza from a Pure XML Dom Element
+    @param aStanza XML Element
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)stanzaWithStanza:(id)aStanza
+{
+    return [[TNStropheStanza alloc] initWithNode:aStanza];
+}
+
 /*! instanciate a TNStropheStanza
     @param aName the root name
     @param attributes CPDictionary of attributes
@@ -38,6 +49,30 @@
 {
     return [[TNStropheStanza alloc] initWithName:aName andAttributes:attributes];
 }
+
+/*! instanciate a TNStropheStanza
+    @param aName the root name
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)stanzaWithName:(CPString)aName to:(TNStropheJID)aJID  attributes:(CPDictionary)attributes
+{
+    return [[TNStropheStanza alloc] initWithName:aName to:aJID attributes:attributes bare:NO];
+}
+
+/*! instanciate a TNStropheStanza
+    @param aName the root name
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @param sendToBareJID if YES send to bare JID
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)stanzaWithName:(CPString)aName to:(TNStropheJID)aJID  attributes:(CPDictionary)attributes bare:(BOOL)sendToBareJID
+{
+    return [[TNStropheStanza alloc] initWithName:aName to:aJID attributes:attributes bare:sendToBareJID];
+}
+
 
 /*! instanciate a TNStropheStanza with name IQ
     @param attributes CPDictionary of attributes
@@ -57,12 +92,52 @@
 }
 
 /*! instanciate a TNStropheStanza with name IQ
+    @param aJID the destination JID
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)iqTo:(TNStropheJID)aJID
+{
+    return [TNStropheStanza iqTo:aJID withAttributes:nil];
+}
+
+/*! instanciate a TNStropheStanza with name IQ
     @param aType CPString the type of the query
     @return instance of TNStropheStanza
 */
 + (TNStropheStanza)iqWithType:(CPString)aType
 {
     return [TNStropheStanza iqWithAttributes:{"type": aType}];
+}
+
+/*! instanciate a TNStropheStanza with name IQ
+    @param aJID the destination JID
+    @param aType CPString the type of the query
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)iqTo:(TNStropheJID)aJID withType:(CPString)aType
+{
+    return [TNStropheStanza iqTo:aJID withAttributes:{"type": aType}];
+}
+
+/*! instanciate a TNStropheStanza with name IQ
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)iqTo:(TNStropheJID)aJID withAttributes:(CPDictionary)attributes
+{
+    return [TNStropheStanza stanzaWithName:@"iq" to:aJID attributes:attributes bare:NO];
+}
+
+/*! instanciate a TNStropheStanza with name IQ
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @param sendToBareJID if YES send to bare JID
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)iqTo:(TNStropheJID)aJID withAttributes:(CPDictionary)attributes bare:(BOOL)sendToBareJID
+{
+    return [TNStropheStanza stanzaWithName:@"iq" to:aJID attributes:attributes bare:sendToBareJID];
 }
 
 /*! instanciate a TNStropheStanza with name presence
@@ -82,6 +157,36 @@
     return [TNStropheStanza presenceWithAttributes:nil];
 }
 
+/*! instanciate a TNStropheStanza with name presence
+    @param aJID the destination JID
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)presenceTo:(TNStropheJID)aJID
+{
+    return [TNStropheStanza presenceTo:aJID withAttributes:nil];
+}
+
+/*! instanciate a TNStropheStanza with name presence
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)presenceTo:(TNStropheJID)aJID withAttributes:(CPDictionary)attributes
+{
+    return [TNStropheStanza stanzaWithName:@"presence" to:aJID attributes:attributes bare:NO];
+}
+
+/*! instanciate a TNStropheStanza with name presence
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @param sendToBareJID if YES send to bare JID
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)presenceTo:(TNStropheJID)aJID withAttributes:(CPDictionary)attributes bare:(BOOL)sendToBareJID
+{
+    return [TNStropheStanza stanzaWithName:@"presence" to:aJID attributes:attributes bare:sendToBareJID];
+}
+
 /*! instanciate a TNStropheStanza with name message
     @param attributes CPDictionary of attributes
     @return instance of TNStropheStanza
@@ -99,14 +204,53 @@
     return [TNStropheStanza messageWithAttributes:nil];
 }
 
-/*! instanciate a TNStropheStanza from a Pure XML Dom Element
-    @param aStanza XML Element
+/*! instanciate a TNStropheStanza with name message
+    @param aJID the destination JID
     @return instance of TNStropheStanza
 */
-+ (TNStropheStanza)stanzaWithStanza:(id)aStanza
++ (TNStropheStanza)messageTo:(TNStropheJID)aJID
 {
-    return [[TNStropheStanza alloc] initWithNode:aStanza];
+    return [TNStropheStanza messageTo:aJID withAttributes:nil];
 }
+
+/*! instanciate a TNStropheStanza with name message
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)messageTo:(TNStropheJID)aJID withAttributes:(CPDictionary)attributes
+{
+    return [TNStropheStanza stanzaWithName:@"message" to:aJID attributes:attributes];
+}
+
+/*! instanciate a TNStropheStanza with name message
+    @param aJID the destination JID
+    @param attributes CPDictionary of attributes
+    @param sendToBareJID if YES send to bare JID
+    @return instance of TNStropheStanza
+*/
++ (TNStropheStanza)messageTo:(TNStropheJID)aJID withAttributes:(CPDictionary)attributes bare:(BOOL)sendToBareJID
+{
+    return [TNStropheStanza stanzaWithName:@"message" to:aJID attributes:attributes bare:sendToBareJID];
+}
+
+
+#pragma mark -
+#pragma mark Initialization
+
+- (TNStropheStanza)initWithName:(CPString)aName to:(TNStropheJID)aJID attributes:(CPDictionary)someAttributes bare:(BOOL)sendToBareJID
+{
+    if (someAttributes)
+    {
+        if (someAttributes.isa)
+            [someAttributes setValue:((sendToBareJID) ? [aJID bare] : aJID) forKey:"to"]
+        else
+            someAttributes.to = ((sendToBareJID) ? [aJID bare] : [aJID full])
+    }
+
+    return [super initWithName:aName andAttributes:someAttributes];
+}
+
 
 #pragma mark -
 #pragma mark Attributes
@@ -117,16 +261,19 @@
 - (CPString)from
 {
     while ([self up]);
-    return [self valueForAttribute:@"from"];
+    return [TNStropheJID stropheJIDWithString:[self valueForAttribute:@"from"]];
 }
 
 /*! set the from field of the stanza
     @param the new from value
 */
-- (void)setFrom:(CPString)aFrom
+- (void)setFrom:(id)aFrom
 {
+    if ([aFrom class] == CPString)
+        aFrom = [TNStropheJID stropheJIDWithString:aFrom];
+
     while ([self up]);
-    [self setValue:aFrom forAttribute:@"from"];
+    [self setValue:[aFrom full] forAttribute:@"from"];
 }
 
 /*! get the bare from JID of the stanza
@@ -134,7 +281,7 @@
 */
 - (CPString)fromBare
 {
-    return [self from].split("/")[0];
+    return [[self from] bare];
 }
 
 /*! return the the bare user name
@@ -142,7 +289,7 @@
 */
 - (CPString)fromUser
 {
-    return [self from].split("/")[0].split("@")[0];
+    return [[self from] node];
 }
 
 /*! get the domain of the form field
@@ -150,7 +297,7 @@
 */
 - (CPString)fromDomain
 {
-    return [self from].split("@")[1].split("/")[0]
+    return [[self from] domain];
 }
 
 /*! get the resource part of the from field of the stanza
@@ -158,9 +305,7 @@
 */
 - (CPString)fromResource
 {
-    if ([[[self from] componentsSeparatedByString:@"/"] count] > 1)
-        return [[[self from] componentsSeparatedByString:@"/"] objectAtIndex:1];
-    return nil;
+    return [[self from] resource];
 }
 
 /*! get the to field of the stanza
@@ -169,16 +314,19 @@
 - (CPString)to
 {
     while ([self up]);
-    return [self valueForAttribute:@"to"];
+    return [TNStropheJID stropheJIDWithString:[self valueForAttribute:@"to"]];
 }
 
 /*! set the to field of the stanza
     @param the new To value
 */
-- (void)setTo:(CPString)aTo
+- (void)setTo:(id)aTo
 {
+    if ([aTo class] == CPString)
+        aTo = [TNStropheJID stropheJIDWithString:aTo];
+
     while ([self up]);
-    [self setValue:aTo forAttribute:@"to"];
+    [self setValue:[aTo full] forAttribute:@"to"];
 }
 
 /*! get the type field of the stanza

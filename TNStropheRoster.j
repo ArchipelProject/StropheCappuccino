@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -20,6 +20,7 @@
 
 @import <Foundation/Foundation.j>
 
+@import "TNStropheJID.j"
 @import "TNStropheRosterBase.j"
 
 /*! @ingroup strophecappuccino
@@ -101,8 +102,8 @@
     for (var i = 0; i < [items count]; i++)
     {
         var item        = [items objectAtIndex:i],
-            theJID      = [item valueForAttribute:@"jid"],
-            nickname    = theJID;
+            theJID      = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
+            nickname    = [theJID node];
 
         if ([item valueForAttribute:@"name"])
             nickname = [item valueForAttribute:@"name"];
@@ -144,8 +145,8 @@
     }
     else
     {
-        if ([self containsJID:[aStanza fromBare]])
-            [[self contactWithJID:[aStanza fromBare]] _didReceiveStatus:aStanza];
+        if ([self containsJID:[aStanza from]])
+            [[self contactWithJID:[aStanza from]] _didReceiveStatus:aStanza];
         else
             [_pendingPresence addObject:aStanza];
     }
@@ -153,13 +154,13 @@
     return YES;
 }
 
-- (CPArray)pendingPresenceForJID:(CPString)aJID
+- (CPArray)pendingPresenceForJID:(TNStropheJID)aJID
 {
     var temp = [CPArray array];
     for (var i = 0; i < [_pendingPresence count]; i++)
     {
         var presence = [_pendingPresence objectAtIndex:i];
-        if ([presence fromBare] === aJID)
+        if ([[presence from] bareEquals:aJID])
             [temp addObject:presence];
     }
     return temp;
@@ -278,7 +279,7 @@
     @param aGroup the group of the new contact. if nil, it will be "General"
     @return the new TNStropheContact
 */
-- (TNStropheContact)addContact:(CPString)aJID withName:(CPString)aName inGroupWithName:(CPString)aGroupName
+- (TNStropheContact)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroupWithName:(CPString)aGroupName
 {
     if ([self containsJID:aJID] == YES)
         return;
@@ -289,7 +290,7 @@
     var addReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
 
     [addReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [addReq addChildWithName:@"item" andAttributes:{"JID": aJID, "name": aName}];
+    [addReq addChildWithName:@"item" andAttributes:{"JID": [aJID bare], "name": aName}];
     [addReq addChildWithName:@"group" andAttributes:nil];
     [addReq addTextNode:aGroupName];
 
@@ -315,15 +316,35 @@
 {
     [super removeContact:aContact];
 
-    var removeReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
+    var uid = [_connection getUniqueIdWithSuffix:@"roster"],
+        removeReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
+        params = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
     [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [removeReq addChildWithName:@"item" andAttributes:{'jid': [aContact JID], 'subscription': 'remove'}];
+    [removeReq addChildWithName:@"item" andAttributes:{'jid': [[aContact JID] bare], 'subscription': 'remove'}];
 
+    [_connection registerSelector:@selector(_didRemoveContact:userInfo:) ofObject:self withDict:params userInfo:aContact];
     [_connection send:removeReq];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedContactNotification object:aContact];
 }
+
+- (void)_didRemoveContact:(TNStropheStanza)aStanza userInfo:(TNStropheContact)theContact
+{
+    if ([aStanza type] === @"result")
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedContactNotification object:theContact];
+    else
+        CPLog.error("Cannot remove contact: " + aStanza)
+}
+
+
+/*! remove a contact from the roster according to its JID
+
+    @param aJID the JID of the contact to remove
+*/
+- (void)removeContactWithJID:(TNStropheJID)aJID
+{
+    [self removeContact:[self contactWithJID:aJID]];
+}
+
 
 
 #pragma mark -
@@ -332,12 +353,12 @@
 /*! subscribe to the given JID and add in into the roster if needed
     @param aJID the JID to subscribe
 */
-- (void)authorizeJID:(CPString)aJID
+- (void)authorizeJID:(TNStropheJID)aJID
 {
     var contact = [self contactWithJID:aJID];
 
     if (!contact)
-        contact = [self addContact:aJID withName:aJID.split('@')[0] inGroupWithName:@"General"];
+        contact = [self addContact:aJID withName:[aJID node] inGroupWithName:@"General"];
 
     [contact subscribe];
 }
@@ -345,7 +366,7 @@
 /*! unsubscribe to the given JID
     @param aJID the JID to unsubscribe
 */
-- (void)unauthorizeJID:(CPString)aJID
+- (void)unauthorizeJID:(TNStropheJID)aJID
 {
     [[self contactWithJID:aJID] unsubscribe];
 }
@@ -353,7 +374,7 @@
 /*! ask subscribtion to the given JID
     @param aJID the JID to ask subscribtion
 */
-- (void)askAuthorizationTo:(CPString)aJID
+- (void)askAuthorizationTo:(TNStropheJID)aJID
 {
     [[self contactWithJID:aJID] askSubscription];
 }

@@ -20,6 +20,7 @@
 
 @import <Foundation/Foundation.j>
 
+@import "TNStropheJID.j"
 @import "TNStropheStanza.j"
 @import "Resources/Strophe/sha1.js"
 @import "TNStropheGlobals.j"
@@ -70,13 +71,11 @@
     BOOL            _connected              @accessors(getter=isConnected);
     CPArray         _features               @accessors(readonly);
     CPString        _clientNode             @accessors(property=clientNode);
-    CPString        _fullJID                @accessors(property=fullJID);
     CPString        _identityCategory       @accessors(property=identityCategory);
     CPString        _identityName           @accessors(property=identityName);
     CPString        _identityType           @accessors(property=identityType);
-    CPString        _JID                    @accessors(property=JID);
+    TNStropheJID    _JID                    @accessors(property=JID);
     CPString        _password               @accessors(property=password);
-    CPString        _resource               @accessors(property=resource);
     id              _delegate               @accessors(property=delegate);
     int             _maxConnections         @accessors(property=maxConnections);
     int             _connectionTimeout      @accessors(property=connectionTimeout);
@@ -113,15 +112,11 @@
 
     @return a valid TNStropheConnection
 */
-+ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID password:(CPString)aPassword
++ (TNStropheConnection)connectionWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
 {
     return [[TNStropheConnection alloc] initWithService:aService JID:aJID password:aPassword];
 }
 
-+ (TNStropheConnection)connectionWithService:(CPString)aService JID:(CPString)aJID resource:(CPString)aResource password:(CPString)aPassword
-{
-    return [[TNStropheConnection alloc] initWithService:aService JID:aJID resource:aResource password:aPassword];
-}
 
 #pragma mark -
 #pragma mark Initialization
@@ -159,22 +154,12 @@
     @param aJID a JID to connect to the XMPP server
     @param aPassword the password associated to the JID
 */
-- (id)initWithService:(CPString)aService JID:(CPString)aJID password:(CPString)aPassword
+- (id)initWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
 {
     if (self = [self initWithService:aService])
     {
         _JID        = aJID;
         _password   = aPassword;
-    }
-
-    return self;
-}
-
-- (id)initWithService:(CPString)aService JID:(CPString)aJID resource:(CPString)aResource password:(CPString)aPassword
-{
-    if (self = [self initWithService:aService JID:aJID password:aPassword])
-    {
-        _resource   = aResource || [self getUniqueId];
     }
 
     return self;
@@ -188,11 +173,9 @@
 */
 - (void)connect
 {
-    _fullJID = _JID + @"/" + _resource;
-
     [self registerSelector:@selector(_didReceivePing:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"]];
 
-    _connection.connect(_fullJID, _password, function (status, errorCond)
+    _connection.connect([_JID full], _password, function (status, errorCond)
     {
         var selector,
             notificationName;
@@ -287,7 +270,7 @@
     if ([aStanza containsChildrenWithName:@"ping"] && [[aStanza firstChildWithName:@"ping"] namespace] == Strophe.NS.PING)
     {
         CPLog.debug("Ping received. Sending pong.");
-        [self send:[TNStropheStanza iqWithAttributes:{'to': [aStanza from], 'id': [aStanza ID], 'type': 'result'}]];
+        [self send:[TNStropheStanza iqWithAttributes:{'to': [[aStanza from] bare], 'id': [aStanza ID], 'type': 'result'}]];
     }
     return YES;
 }
@@ -429,7 +412,8 @@
 */
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
 {
-   var handlerId =  _connection.addHandler(function(stanza) {
+    var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
+        handlerId =  _connection.addHandler(function(stanza) {
                 var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
@@ -439,7 +423,46 @@
             [aDict valueForKey:@"name"],
             [aDict valueForKey:@"type"],
             [aDict valueForKey:@"id"],
-            [aDict valueForKey:@"from"],
+            from,
+            [aDict valueForKey:@"options"]);
+
+    return handlerId;
+}
+
+/*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
+    The dictionnary should contains zero to many of the followings :
+     - <b>namespace</b>: the namespace of the stanza or of the first child (like query)
+     - <b>name</b>: the name of the stanza (message, iq or presence)
+     - <b>type</b>: the type of the stanza
+     - <b>id</b>: the unique identifier
+     - <b>from</b>: the stanza sender
+     - <b>options</b>: an array of options. only {MatchBare: True} works.
+    if all the conditions are mets, the selector is fired and the stanza is given as parameter.
+
+    The selector should return YES to not be unregistered. If it returns NO or nothing, it will be
+    unregistered
+
+    @param aSelector the selector to be performed
+    @param anObject the receiver of the selector
+    @param aDict a dictionnary of parameters
+    @param someUserInfo user infos
+
+    @return an id of the handler registration used to remove it
+*/
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict userInfo:(id)someUserInfo
+{
+    var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
+        handlerId =  _connection.addHandler(function(stanza) {
+                var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
+                CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
+                CPLog.trace(stanzaObject);
+                return [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
+            },
+            [aDict valueForKey:@"namespace"],
+            [aDict valueForKey:@"name"],
+            [aDict valueForKey:@"type"],
+            [aDict valueForKey:@"id"],
+            from,
             [aDict valueForKey:@"options"]);
 
     return handlerId;
@@ -457,7 +480,8 @@
 */
 - (id)registerTimeoutSelector:(SEL)aTimeoutSelector ofObject:(CPObject)anObject withDict:(id)aDict forTimeout:(float)aTimeout
 {
-    var handlerId =  _connection.addTimedHandler(aTimeout, function(stanza) {
+    var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
+        handlerId =  _connection.addTimedHandler(aTimeout, function(stanza) {
                 if (!stanza)
                 {
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
@@ -469,7 +493,7 @@
             [aDict valueForKey:@"name"],
             [aDict valueForKey:@"type"],
             [aDict valueForKey:@"id"],
-            [aDict valueForKey:@"from"],
+            from,
             [aDict valueForKey:@"options"]);
 
     return handlerId;
@@ -519,7 +543,6 @@
     {
         _JID                = [aCoder decodeObjectForKey:@"_JID"];
         _password           = [aCoder decodeObjectForKey:@"_password"];
-        _resource           = [aCoder decodeObjectForKey:@"_resource"];
         _delegate           = [aCoder decodeObjectForKey:@"_delegate"];
         _boshService        = [aCoder decodeObjectForKey:@"_boshService"];
         _connection         = [aCoder decodeObjectForKey:@"_connection"];
@@ -533,7 +556,6 @@
 {
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_password forKey:@"_password"];
-    [aCoder encodeObject:_resource forKey:@"_resource"];
     [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
     [aCoder encodeObject:_registeredHandlerDict forKey:@"_registeredHandlerDict"];

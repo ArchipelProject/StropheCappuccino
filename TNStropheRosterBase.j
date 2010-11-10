@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -20,6 +20,7 @@
 
 @import <Foundation/Foundation.j>
 
+@import "TNStropheJID.j"
 @import "TNStropheConnection.j";
 @import "TNStropheStanza.j";
 @import "TNStropheGroup.j"
@@ -102,7 +103,7 @@
 
     @param aJID the JID of the contact to remove
 */
-- (void)removeContactWithJID:(CPString)aJID
+- (void)removeContactWithJID:(TNStropheJID)aJID
 {
     [self removeContact:[self contactWithJID:aJID]];
 }
@@ -111,12 +112,12 @@
     @param aJID CPString containing the JID
     @return TNStropheContact the contact with the given JID
 */
-- (TNStropheContact)contactWithJID:(CPString)aJID
+- (TNStropheContact)contactWithJID:(TNStropheJID)aJID
 {
     for (var i = 0; i < [_contacts count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
-        if ([contact JID] == aJID)
+        if ([[contact JID] bareEquals:aJID])
             return contact;
     }
 
@@ -127,12 +128,11 @@
     @param aJID the JID to search
     @return YES is JID is in roster, NO otherwise
 */
-- (BOOL)containsJID:(CPString)aJID
+- (BOOL)containsJID:(TNStropheJID)aJID
 {
-    //@each (var contact in _contacts)
     for (var i = 0; i < [_contacts count]; i++)
     {
-        if ([[[_contacts objectAtIndex:i] JID] lowercaseString] == [aJID lowercaseString])
+        if ([[[_contacts objectAtIndex:i] JID] bareEquals:aJID])
             return YES;
     }
     return NO;
@@ -151,7 +151,7 @@
     @param aName the new nickname
     @param aJID the JID of the contact to change the nickname
 */
-- (void)changeNickname:(CPString)aName ofContactWithJID:(CPString)aJID
+- (void)changeNickname:(CPString)aName ofContactWithJID:(TNStropheJID)aJID
 {
     [self changeNickname:aName ofContact:[self contactWithJID:aJID]];
 }
