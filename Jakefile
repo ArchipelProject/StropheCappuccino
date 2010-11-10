@@ -118,6 +118,14 @@ task("test", function()
         OS.exit(code);
 });
 
+task("build-strophe", function()
+{
+    var cmdString = "cd strophejs && make normal && mv strophe.js ../Resources/Strophe && cd ../";
+    var code = OS.system(cmdString);
+    if (code !== 0)
+        OS.exit(code);
+});
+
 task ("default", ["release"]);
 task ("docs", ["release", "documentation"]);
 task ("all", ["release", "debug", "documentation"]);
