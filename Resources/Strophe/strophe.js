@@ -542,7 +542,7 @@ Strophe = {
      *  The version of the Strophe library. Unreleased builds will have
      *  a version of head-HASH where HASH is a partial revision.
      */
-    VERSION: "",
+    VERSION: "7534354",
 
     /** Constants: XMPP Namespace Constants
      *  Common namespace constants from the XMPP RFCs and XEPs.
@@ -736,6 +736,19 @@ Strophe = {
         return doc;
     },
 
+    /** Function: xmlGenerator
+     *  Get the DOM document to generate elements.
+     *
+     *  Returns:
+     *    The currently used DOM document.
+     */
+    xmlGenerator: function () {
+        if (!Strophe._xmlGenerator) {
+            Strophe._xmlGenerator = Strophe._makeGenerator();
+        }
+        return Strophe._xmlGenerator;
+    },
+
     /** Function: xmlElement
      *  Create an XML DOM element.
      *
@@ -758,11 +771,7 @@ Strophe = {
     {
         if (!name) { return null; }
 
-        var node = null;
-        if (!Strophe._xmlGenerator) {
-            Strophe._xmlGenerator = Strophe._makeGenerator();
-        }
-        node = Strophe._xmlGenerator.createElement(name);
+        var node = Strophe.xmlGenerator().createElement(name);
 
         // FIXME: this should throw errors if args are the wrong type or
         // there are more than two optional args
@@ -826,10 +835,7 @@ Strophe = {
 	//ensure text is escaped
 	text = Strophe.xmlescape(text);
 
-        if (!Strophe._xmlGenerator) {
-            Strophe._xmlGenerator = Strophe._makeGenerator();
-        }
-        return Strophe._xmlGenerator.createTextNode(text);
+        return Strophe.xmlGenerator().createTextNode(text);
     },
 
     /** Function: getText
@@ -1344,7 +1350,7 @@ Strophe.Builder.prototype = {
      */
     cnode: function (elem)
     {
-        var newElem = Strophe.copyElement(elem);
+        var newElem = Strophe.xmlGenerator().importNode(elem, true);
         this.node.appendChild(newElem);
         this.node = newElem;
         return this;
