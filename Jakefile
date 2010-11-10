@@ -56,13 +56,13 @@ framework ("StropheCappuccino", function(task)
 
 task("build", ["StropheCappuccino"]);
 
-task("debug", function()
+task("debug", ["strophe-debug"], function()
 {
     ENV["CONFIG"] = "Debug"
     JAKE.subjake(["."], "build", ENV);
 });
 
-task("release", function()
+task("release", ["strophe-release"], function()
 {
     ENV["CONFIG"] = "Release"
     JAKE.subjake(["."], "build", ENV);
@@ -118,9 +118,17 @@ task("test", function()
         OS.exit(code);
 });
 
-task("build-strophe", function()
+task("strophe-debug", function()
 {
-    var cmdString = "cd strophejs && make normal && mv strophe.js ../Resources/Strophe && cd ../";
+    var cmdString = "cd strophejs && make normal && mv strophe.js ../Resources/Strophe/strophe.js && cd ../";
+    var code = OS.system(cmdString);
+    if (code !== 0)
+        OS.exit(code);
+});
+
+task("strophe-release", function()
+{
+    var cmdString = "cd strophejs && make min && mv strophe.min.js ../Resources/Strophe/strophe.js && cd ../";
     var code = OS.system(cmdString);
     if (code !== 0)
         OS.exit(code);
