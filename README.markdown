@@ -19,8 +19,7 @@ This will build Strophe from source also. You must first initialise the Strophe.
 
     # git submodule init
 
-If you wish to build the release version of StropheCappuccino, you will need to have YUI Compressor, and export
-the path to yui-compressor-xxx.jar in your shell config as YUI_COMPRESSOR.
+The release build will not minify strophe.js. To do this, you must run Resources/Strophe/strophe.js through YUI Compressor after building StropheCappuccino.
 
 
 ## Quick Start
