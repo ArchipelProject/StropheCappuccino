@@ -56,13 +56,13 @@ framework ("StropheCappuccino", function(task)
 
 task("build", ["StropheCappuccino"]);
 
-task("debug", ["build-strophe"], function()
+task("debug", ["build-strophe-debug"], function()
 {
     ENV["CONFIG"] = "Debug"
     JAKE.subjake(["."], "build", ENV);
 });
 
-task("release", ["build-strophe"], function()
+task("release", ["build-strophe-release"], function()
 {
     ENV["CONFIG"] = "Release"
     JAKE.subjake(["."], "build", ENV);
@@ -120,10 +120,25 @@ task("test", function()
 
 task("build-strophe", function()
 {
-    var cmdString = "cd strophejs && make normal && mv strophe.js ../Resources/Strophe/strophe.js && cd ../";
+    var cmdString = "cd strophejs && make normal && mv strophe.js ../ && cd ../";
     var code = OS.system(cmdString);
     if (code !== 0)
         OS.exit(code);
+});
+
+task("build-strophe-release", ["build-strophe"], function()
+{
+    var miniInput   = FILE.read(FILE.join("strophe.js"), { charset:"UTF-8" });
+    var minified    = require("minify/shrinksafe").compress(miniInput, { charset : "UTF-8", useServer : true });
+    FILE.path("Resources/Strophe").absolute().join("strophe.js").write(minified, { charset : "UTF-8" });
+});
+
+task("build-strophe-debug", ["build-strophe"], function()
+{
+    var cmdString = "mv strophe.js Resources/Strophe/strophe.js";
+    var code = OS.system(cmdString);
+    if (code !== 0)
+       OS.exit(code);
 });
 
 task ("default", ["release"]);
