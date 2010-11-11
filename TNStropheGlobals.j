@@ -370,6 +370,14 @@ TNStrophePubSubNoOldSubscriptionsLeftNotification   = @"TNStrophePubSubNoOldSubs
 */
 TNStrophePubSubBatchSubscribeComplete               = @"TNStrophePubSubBatchSubscribeComplete";
 
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that all unsubscriptions in a batch have been completed
+*/
+TNStrophePubSubBatchUnsubscribeComplete              = @"TNStrophePubSubBatchUnsubscribeComplete";
+
+
 #pragma mark -
 #pragma mark globals for TNStropheMUCRoom
 

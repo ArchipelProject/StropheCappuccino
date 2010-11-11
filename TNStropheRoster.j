@@ -132,7 +132,7 @@
 }
 
 /*! message sent when a presence information received
-    send didReceiveSubscriptionRequest: to the delegate with the stanza as parameter
+    send roster:receiveSubscriptionRequest: to the delegate with the stanza as parameter
 
     @return YES to keep the selector registred in TNStropheConnection
 */
@@ -140,8 +140,8 @@
 {
     if ([aStanza type] === @"subscribe")
     {
-        if ([_delegate respondsToSelector:@selector(didReceiveSubscriptionRequest:)])
-            [_delegate performSelector:@selector(didReceiveSubscriptionRequest:) withObject:aStanza];
+        if ([_delegate respondsToSelector:@selector(roster:receiveSubscriptionRequest:)])
+            [_delegate roster:self receiveSubscriptionRequest:aStanza];
     }
     else
     {

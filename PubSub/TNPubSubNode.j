@@ -34,7 +34,7 @@
     CPArray                 _content        @accessors(getter=content);
     id                      _delegate       @accessors(property=delegate);
     CPString                _nodeName       @accessors(getter=name);
-    CPString                _pubSubServer;
+    TNStopheJID             _pubSubServer   @accessors(getter=server);
     TNStropheConnection     _connection;
     id                      _eventSelectorID;
     CPArray                 _subscriptionIDs;
@@ -81,13 +81,13 @@
     @param aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
     @return initialized TNPubSubNode
 */
-- (TNPubSubNode)initWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer
+- (TNPubSubNode)initWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(TNStropheJID)aPubSubServer
 {
     if (self = [super init])
     {
         _nodeName           = aNodeName;
         _connection         = aConnection;
-        _pubSubServer       = aPubSubServer ? aPubSubServer : [[_connection JID] domain];
+        _pubSubServer       = aPubSubServer ? aPubSubServer : [TNStropheJID stropheJIDWithSring:@"pubsub." + [[_connection JID] domain]];
         _subscriptionIDs    = [CPArray array];
     }
 
@@ -101,7 +101,7 @@
     @param  aSubscriptionIDs array of the subsciption IDs if already subscribed
     @return initialized TNPubSubNode
 */
-+ (TNPubSubNode)pubSubNodeWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer subscriptionIDs:(CPArray)aSubscriptionIDs
++ (TNPubSubNode)pubSubNodeWithNodeName:(CPString)aNodeName connection:(TNStropheConnection)aConnection pubSubServer:(TNStropheJID)aPubSubServer subscriptionIDs:(CPArray)aSubscriptionIDs
 {
     return [[TNPubSubNode alloc] initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer subscriptionIDs:aSubscriptionIDs];
 }
@@ -158,10 +158,15 @@
     {
         _content = [aStanza childrenWithName:@"item"];
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeRetrievedNotification object:self];
-
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedItems:)])
+            [_delegate pubSubNode:self retrievedItems:YES];
     }
     else
+    {
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedItems:)])
+            [_delegate pubSubNode:self retrievedItems:NO];
         CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
+    }
 
     return NO;
 }
@@ -467,7 +472,7 @@
 {
     if ([aStanza type] == @"result")
     {
-        var subscription    = [[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscription"],
+        var subscription    = [aStanza firstChildWithName:@"subscription"],
             subID           = [subscription valueForAttribute:@"subid"],
             status          = [subscription valueForAttribute:@"subscription"];
 
@@ -475,12 +480,21 @@
             [_subscriptionIDs addObject:subID];
 
         if (status === @"subscribed")
+        {
             [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeSubscribedNotification object:self];
+            if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:subscribed:)])
+                [_delegate pubSubNode:self subscribed:YES];
+        }
+
 
         [self _setEventHandler];
     }
     else
+    {
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:subscribed:)])
+            [_delegate pubSubNode:self subscribed:NO];
         CPLog.error("Cannot subscribe the pubsub node with name: " + _nodeName);
+    }
 
     return NO;
 }
@@ -564,9 +578,17 @@
         }
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeUnsubscribedNotification object:self userInfo:params];
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:unsubscribed:)])
+            [_delegate pubSubNode:self unsubscribed:YES];
+
     }
     else
+    {
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:unsubscribed:)])
+            [_delegate pubSubNode:self unsubscribed:NO];
         CPLog.error("Cannot unsubscribe the pubsub node with name: " + _nodeName);
+    }
+
 
     return NO;
 }
@@ -614,8 +636,8 @@
     if (_nodeName != [[pubsubEvent firstChildWithName:@"items"] valueForAttribute:@"node"])
         return YES;
 
-    if (_delegate && [_delegate respondsToSelector:@selector(pubsubNode:receivedEvent:)])
-        [_delegate pubsubNode:self receivedEvent:aStanza];
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:receivedEvent:)])
+        [_delegate pubSubNode:self receivedEvent:aStanza];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeEventNotification object:self userInfo:aStanza];
 

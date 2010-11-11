@@ -91,7 +91,6 @@
 
 - (void)join
 {
-    alert([_roomJID bare]);
     // Handle messages sent to room
     var messageParams   = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
                                                                      [_roomJID bare], @"from",

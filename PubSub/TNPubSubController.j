@@ -31,9 +31,12 @@
 @implementation TNPubSubController : CPObject
 {
     CPArray         _nodes                  @accessors(getter=nodes);
+    CPArray         _servers                @accessors(property=server);
+    id              _delegate               @accessors(property=delegate);
     id              _connection;
-    CPString        _server                 @accessors(property=server);
     CPDictionary    _subscriptionBatches;
+    CPDictionary    _unsubscriptionBatches;
+    int             _numberOfPromptedServers;
 }
 
 #pragma mark -
@@ -49,6 +52,15 @@
     return [[TNPubSubController alloc] initWithConnection:aConnection pubSubServer:aPubSubServer];
 }
 
+/*! create and initialize and return a new TNPubSubController
+    @param  aConnection the TNStropheConnection to use to communicate
+    @return initialized TNPubSubController
+*/
++ (TNPubSubNode)pubSubControllerWithConnection:(TNStropheConnection)aConnection
+{
+    return [[TNPubSubController alloc] initWithConnection:aConnection pubSubServer:nil];
+}
+
 
 #pragma mark -
 #pragma mark Initialization
@@ -58,14 +70,16 @@
     @param  aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
     @return initialized TNPubSubController
 */
-- (TNPubSubNode)initWithConnection:(TNStropheConnection)aConnection pubSubServer:(CPString)aPubSubServer
+- (TNPubSubNode)initWithConnection:(TNStropheConnection)aConnection pubSubServer:(TNStropheJID)aPubSubServer
 {
     if (self = [super init])
     {
-        _connection             = aConnection;
-        _server                 = aPubSubServer;
-        _nodes                  = [CPArray array];
-        _subscriptionBatches    = [CPDictionary dictionary];
+        _connection                 = aConnection;
+        _servers                    = [CPArray arrayWithObject:(aPubSubServer || [TNStropheJID stropheJIDWithString:@"pubsub." + [[aConnection JID] domain]])];
+        _numberOfPromptedServers    = 0;
+        _nodes                      = [CPArray array];
+        _subscriptionBatches        = [CPDictionary dictionary];
+        _unsubscriptionBatches      = [CPDictionary dictionary];
     }
 
     return self;
@@ -73,63 +87,32 @@
 
 
 #pragma mark -
-#pragma mark Node Management
+#pragma mark Notification handlers
 
-- (TNPubSubNode)findOrCreateNodeWithName:(CPString)aNodeName
-{
-    var node = [self nodeWithName:aNodeName];
-    if (!node)
-    {
-        node = [TNPubSubNode pubSubNodeWithNodeName:aNodeName connection:_connection pubSubServer:_server];
-        [_nodes addObject:node];
-    }
-    return node;
-}
-
-
-- (TNPubSubNode)nodeWithName:(CPString)aNodeName
-{
-    for (var i = 0; i < [_nodes count]; i++)
-    {
-        var node = [_nodes objectAtIndex:i];
-        if ([node name] === aNodeName)
-            return node;
-    }
-}
-
-- (TNPubSubNode)subscribeToNode:(CPString)aNodeName
-{
-    var node = [self findOrCreateNodeWithName:aNodeName];
-    [node subscribe];
-    return node;
-}
-
-/*! batch subscribe to nodes
-    @param someNodes an array of node names to subscribe to
-        posts TNStrophePubSubBatchSubscribeComplete when all nodes have been subscribed
-    @return batchID an ID for this batch used to establish the relevance of completion notification
+/*! notification send when subscribed to a node
+    it will call the delegate pubSubController:subscribedToNode:
 */
-- (CPString)subscribeToNodes:(CPArray)someNodes
+- (void)_didSubscribeToNode:(CPNotification)aNotification
 {
-    var batchID = [_connection getUniqueId];
-
-    [_subscriptionBatches setValue:someNodes forKey:batchID];
-
-    for (var i = 0; i < [someNodes count]; i++)
-    {
-        var nodeName    = [someNodes objectAtIndex:i],
-            node        = [self subscribeToNode:nodeName];
-
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_monitorBatchSubscriptions:) name:TNStrophePubSubNodeSubscribedNotification object:node];
-    }
-
-    return batchID;
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubController:subscribedToNode:)])
+        [_delegate pubSubController:self subscribedToNode:[aNotification object]]
 }
 
-- (void)_monitorBatchSubscriptions:(CPNotification)aNotification
+/*! notification send when unsubscribed from a node
+    it will call the delegate pubSubController:subscribedToNode:
+*/
+- (void)_didUnsubscribeToNode:(CPNotification)aNotification
+{
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubController:unsubscribedFromNode:)])
+        [_delegate pubSubController:self unsubscribedFromNode:[aNotification object]]
+}
+
+/*! notification send when a batch subscription is done
+*/
+- (void)_didBatchSubscribe:(CPNotification)aNotification
 {
     var node    = [aNotification object],
-        batchID = [self _findBatchIdForNode:node],
+        batchID = [aNotification useInfo],
         batch   = [_subscriptionBatches valueForKey:batchID],
         params  = [CPDictionary dictionaryWithObject:batchID forKey:@"batchID"];
 
@@ -139,129 +122,279 @@
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchSubscribeComplete object:self userInfo:params];
 }
 
-- (CPString)_findBatchIdForNode:(TNPubSubNode)aNode
+/*! notification send when a batch unsubscription is done
+*/
+- (void)_didBatchUnsubscribe:(CPNotification)aNotification
 {
-    var keys = [_subscriptionBatches allKeys];
-    for (var i = 0; i < [keys count]; i++)
-    {
-        var batchID = [keys objectAtIndex:i],
-            batch   = [_subscriptionBatches valueForKey:batchID];
+    var node    = [aNotification object],
+        batchID = [aNotification useInfo],
+        batch   = [_unsubscriptionBatches valueForKey:batchID],
+        params  = [CPDictionary dictionaryWithObject:batchID forKey:@"batchID"];
 
-        if ([batch containsObject:[aNode name]])
-            return batchID;
-    }
+    [batch removeObjectIdenticalTo:[node name]];
+
+    if ([batch count] === 0)
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchUnsubscribeComplete object:self userInfo:params];
 }
 
 
 #pragma mark -
-#pragma mark Subscription Management
+#pragma mark Utilities
 
-- (void)retrieveSubscriptionsForNode:(TNPubSubNode)aNode
+/*! returns YES is server list contains a given server
+    @param aServerJID the server to search
+    @return YES if aServerJID is already in list
+*/
+- (BOOL)containsServerJID:(TNStropheJID)aServerJID
 {
-    var uid     = [_connection getUniqueId],
-        stanza  = [TNStropheStanza iqWithAttributes:{"type": "get", "to": _server, "id": uid}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid,@"id"];
-
-    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
-    [stanza addChildWithName:@"subscriptions"];
-    [stanza setValue:[aNode name] forAttribute:@"node"]
-
-    [_connection registerSelector:@selector(_didRetrieveNodeSubscriptions:userInfo:) ofObject:self withDict:params userInfo:aNode];
-
-    [_connection send:stanza];
-}
-
-- (BOOL)_didRetrieveNodeSubscriptions:(TNStropheStanza)aStanza userInfo:(TNPubSubNode)aNode
-{
-    if ([aStanza type] == @"result")
-    {
-        var subscriptions = [aStanza childrenWithName:@"subscription"];
-
-        for (var i = 0; i < [subscriptions count]; i++)
-        {
-            var subscription    = [subscriptions objectAtIndex:i],
-                subid           = [subscription valueForAttribute:@"subid"];
-
-            [aNode addSubscriptionID:subid];
-        }
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
-    }
-    else
-        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
-
+    for (var i = 0; i < [_servers count]; i++)
+        if ([[_servers objectAtIndex:i] node] == [aServerJID node])
+            return YES;
     return NO;
 }
 
-
-- (void)retrieveAllSubscriptions
+/*! returns the node with given name, or null if not it not exists
+    @param aNodeName the name of the node
+    @param aServer the server of the node if nil, will return the first matching node with name
+    @return the TNPubSubNode with given name or nil
+*/
+- (TNPubSubNode)nodeWithName:(CPString)aNodeName server:(TNStropheJID)aServer
 {
-    var uid     = [_connection getUniqueId],
-        stanza  = [TNStropheStanza iqWithAttributes:{"type": "get", "to": _server, "id": uid}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid,@"id"];
+    for (var i = 0; i < [_nodes count]; i++)
+    {
+        var node = [_nodes objectAtIndex:i];
 
-    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
-    [stanza addChildWithName:@"subscriptions"];
+        if (([node name] === aNodeName) && (!aServer || [[node server] equals:aServer]))
+            return node;
+    }
 
-    [_connection registerSelector:@selector(_didRetrieveSubscriptions:) ofObject:self withDict:params];
-
-    [_connection send:stanza];
+    return nil;
 }
 
+/*! returns the node with given name, or null if not it not exists
+    @param aNodeName the name of the node
+    @return the TNPubSubNode with given name or nil
+*/
+- (TNPubSubNode)nodeWithName:(CPString)aNodeName
+{
+    return [selr nodeWithName:aNodeName server:nil];
+}
+
+/*! returns the node with given name, or initialize a new one if not it not exists
+    @param aNodeName the name of the node
+    @param aServer the server of the node if nil, will return the first matching node with name
+    @return the TNPubSubNode with given name or new one if not found
+*/
+- (TNPubSubNode)findOrCreateNodeWithName:(CPString)aNodeName server:(TNStropheJID)aServer
+{
+    var node = [self nodeWithName:aNodeName server:aServer];
+
+    if (![self containsServerJID:aServer])
+        [_servers addObject:aServer];
+
+    if (!node)
+    {
+        node = [TNPubSubNode pubSubNodeWithNodeName:aNodeName connection:_connection pubSubServer:aServer];
+        [_nodes addObject:node];
+    }
+    return node;
+}
+
+#pragma mark -
+#pragma mark Subscription Management
+
+/*! retrieve all the subscription of the user
+    from all given servers
+*/
+- (void)retrieveSubscriptions
+{
+    _numberOfPromptedServers = 0;
+    for (var i = 0; i < [_servers count]; i++)
+    {
+        var uid     = [_connection getUniqueId],
+            stanza  = [TNStropheStanza iqWithAttributes:{"type": "get", "to": [_servers objectAtIndex:i], "id": uid}],
+            params  = [CPDictionary dictionaryWithObjectsAndKeys:uid,@"id"];
+
+        [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
+        [stanza addChildWithName:@"subscriptions"];
+
+        [_connection registerSelector:@selector(_didRetrieveSubscriptions:) ofObject:self withDict:params];
+
+        [_connection send:stanza];
+    }
+}
+
+/*! @ignore
+*/
 - (BOOL)_didRetrieveSubscriptions:(TNStropheStanza)aStanza
 {
     if ([aStanza type] == @"result")
     {
-        var subscriptions = [[[aStanza firstChildWithName:@"pubsub"] firstChildWithName:@"subscriptions"] childrenWithName:@"subscription"];
+        var subscriptions   = [aStanza childrenWithName:@"subscription"],
+            server          = [aStanza from];
 
         for (var i = 0; i < [subscriptions count]; i++)
         {
             var subscription    = [subscriptions objectAtIndex:i],
                 nodeName        = [subscription valueForAttribute:@"node"],
                 subid           = [subscription valueForAttribute:@"subid"],
-                node            = [self findOrCreateNodeWithName:nodeName];
+                node            = [self findOrCreateNodeWithName:nodeName server:server];
 
             [node addSubscriptionID:subid];
+
+            [[CPNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(_didSubscribeToNode:)
+                                                         name:TNStrophePubSubNodeSubscribedNotification
+                                                       object:node];
+
+            [[CPNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(_didUnsubscribeToNode:)
+                                                         name:TNStrophePubSubNodeUnsubscribedNotification
+                                                       object:node];
         }
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
+        _numberOfPromptedServers++;
+
+        if (_numberOfPromptedServers >= [_servers count])
+        {
+            _numberOfPromptedServers = 0;
+
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
+            if (_delegate && [_delegate respondsToSelector:@selector(pubSubController:retrievedSubscriptions:)])
+                [_delegate pubSubController:self retrievedSubscriptions:YES];
+        }
     }
     else
+    {
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubController:retrievedSubscriptions:)])
+            [_delegate pubSubController:self retrievedSubscriptions:NO];
         CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
+    }
+
 
     return NO;
 }
 
-- (void)removeAllExistingSubscriptions
+/*! subscribe to a node with given name from given server with given delegate
+    @param aNodeName the name of the node to subscribe
+    @param aServer the server where is located the node
+    @param nodeDelegate the delegate that'll be assigned to the node
+*/
+- (TNPubSubNode)subscribeToNodeWithName:(CPString)aNodeName server:(TNStropheJID)aServer nodeDelegate:(id)nodeDelegate
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(unsubscribeFromAllNodes:) name:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
-    [self retrieveAllSubscriptions];
+    var node = [self findOrCreateNodeWithName:aNodeName server:aServer];
+
+    [node setDelegate:nodeDelegate];
+    [node subscribe];
+
+    return node;
 }
 
-- (void)unsubscribeFromAllNodes:(CPNotification)aNotification
+/*! subscribe to a node with given name from given server
+    @param aNodeName the name of the node to subscribe
+    @param aServer the server where is located the node
+*/
+- (TNPubSubNode)subscribeToNodeWithName:(CPString)aNodeName server:(TNStropheJID)aServer
 {
-    [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_monitorUnsubscriptions:) name:TNStrophePubSubNodeUnsubscribedNotification object:nil];
+    return [self subscribeToNodeWithName:aNodeName server:aServer nodeDelegate:nil];
+}
 
-    if ([_nodes count] < 1)
+/*! batch subscribe to nodes
+    @param someNodes a CPDictionnary servers as key, and CPArray of node names as values
+    posts TNStrophePubSubBatchSubscribeComplete when all nodes have been subscribed
+    @return batchID an ID for this batch used to establish the relevance of completion notification
+*/
+- (CPString)subscribeToNodesWithNames:(CPDictionary)someNodes nodesDelegate:(id)aDelegate
+{
+    var batchID = [_connection getUniqueId],
+        servers = [someNodes allKeys];
+
+    [_subscriptionBatches setValue:someNodes forKey:batchID];
+
+    for (var k = 0; k < [servers count]; k++)
     {
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNoOldSubscriptionsLeftNotification object:self];
-        return;
+        var server = [servers objectAtIndex:k],
+            nodes = [servers valueForKey:server];
+
+        for (var i = 0; i < [nodes count]; i++)
+        {
+            var nodeName    = [nodes objectAtIndex:i],
+                node        = [self subscribeToNodeWithName:nodeName server:server nodeDelegate:aDelegate];
+
+            [[CPNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(_didBatchSubscribe:)
+                                                         name:TNStrophePubSubNodeSubscribedNotification
+                                                       object:node
+                                                     userInfo:batchID];
+        }
     }
 
-    for (var i = 0; i < [_nodes count]; i++)
+    return batchID;
+}
+
+/*! unsubscribe from a node with given name from given server with given delegate
+    @param aNodeName the name of the node to unsubscribe
+    @param aServer the server where is located the node
+    @param nodeDelegate the delegate that'll be assigned to the node
+*/
+- (TNPubSubNode)unsubscribeFromNodeWithName:(CPString)aNodeName server:(TNStropheJID)aServer nodeDelegate:(id)nodeDelegate
+{
+    var node = [self findOrCreateNodeWithName:aNodeName server:aServer];
+
+    [node setDelegate:nodeDelegate];
+    [node unsubscribe];
+
+    return node;
+}
+
+/*! unsubscribe from a node with given name from given server
+    @param aNodeName the name of the node to subscribe
+    @param aServer the server where is located the node
+*/
+- (TNPubSubNode)unsubscribeFromNodeWithName:(CPString)aNodeName server:(TNStropheJID)aServer
+{
+    return [self unsubscribeFromNodeWithName:aNodeName server:aServer nodeDelegate:nil];
+}
+
+/*! batch unsubscribe to nodes
+    @param someNodes a CPDictionnary servers as key, and CPArray of node names as values
+    posts TNStrophePubSubBatchSubscribeComplete when all nodes have been subscribed
+    @return batchID an ID for this batch used to establish the relevance of completion notification
+*/
+- (CPString)unsubscribeFromNodesWithNames:(CPDictionary)someNodes nodesDelegate:(id)aDelegate
+{
+    var batchID = [_connection getUniqueId],
+        servers = [someNodes allKeys];
+
+    [_unsubscriptionBatches setValue:someNodes forKey:batchID];
+
+    for (var k = 0; k < [servers count]; k++)
     {
+        var server = [servers objectAtIndex:k],
+            nodes = [servers valueForKey:server];
+
+        for (var i = 0; i < [nodes count]; i++)
+        {
+            var nodeName    = [nodes objectAtIndex:i],
+                node        = [self unsubscribeFromNodeWithName:nodeName server:server nodeDelegate:aDelegate];
+
+            [[CPNotificationCenter defaultCenter] addObserver:self
+                                                     selector:@selector(_didBatchUnsubscribe:)
+                                                         name:TNStrophePubSubNodeUnsubscribedNotification
+                                                       object:node
+                                                     userInfo:batchID];
+        }
+    }
+
+    return batchID;
+}
+
+/*! unsubscribe from all nodes
+*/
+- (void)unsubscribeFromAllNodes
+{
+    for (var i = 0; i < [_nodes count]; i++)
         [[_nodes objectAtIndex:i] unsubscribe];
-    }
-}
-
-- (void)_monitorUnsubscriptions:(CPNotification)aNotification
-{
-    var numberOfOutstandingSubscriptions = 0;
-    for (var i = 0; i < [_nodes count]; i++)
-        numberOfOutstandingSubscriptions += [[_nodes objectAtIndex:i] numberOfSubscriptions];
-
-    if (numberOfOutstandingSubscriptions === 0)
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNoOldSubscriptionsLeftNotification object:self];
 }
 
 @end
