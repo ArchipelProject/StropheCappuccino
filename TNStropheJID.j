@@ -255,8 +255,12 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
     [aCoder encodeObject:_node forKey:@"_node"];
-    [aCoder encodeObject:_domain forKey:@"_domain"];
-    [aCoder encodeObject:_resource forKey:@"_resource"];
+
+    if (_domain)
+        [aCoder encodeObject:_domain forKey:@"_domain"];
+
+    if (_resource)
+        [aCoder encodeObject:_resource forKey:@"_resource"];
 }
 
 @end
