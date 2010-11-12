@@ -21,11 +21,13 @@
 
 @import <Foundation/Foundation.j>
 
+
 /*! @ingroup strophecappuccino
     This is an implementation of a really basic XML node in Cappuccino
 */
 @implementation TNXMLNode : CPObject
 {
+    XMLDocument _xmlDocument;
     XMLElement  _xmlNode     @accessors(readonly, getter=xmlNode);
 }
 
@@ -67,20 +69,11 @@
     @param aNode a pure Javascript DOM Element
     @return an instance of TNXMLNode initialized with aNode
 */
-- (TNXMLNode)initWithNode:(id)aNode
+- (TNXMLNode)initWithNode:(TNXMLNode)aNode
 {
-    if (self = [super init])
+    if (self = [self init])
     {
-        if ((aNode.c) && (aNode.c) != undefined)
-        {
-            _xmlNode = aNode;
-        }
-        else
-        {
-            _xmlNode = new Strophe.Builder('msg');
-            _xmlNode.nodeTree = aNode;
-            _xmlNode.node = aNode;
-        }
+        _xmlNode = aNode;
     }
 
     return self;
@@ -95,7 +88,27 @@
 {
     if (self = [super init])
     {
-        _xmlNode = new Strophe.Builder(aName, attributes);
+        if (window.ActiveXObject)
+        {
+            _xmlDocument = new ActiveXObject("Microsoft.XMLDOM");
+            _xmlDocument.appendChild(doc.createElement('strophe'));
+        }
+        else
+            _xmlDocument = document.implementation.createDocument('strophe', 'jabber:client', null);
+
+        _xmlNode = _xmlDocument.createElement(aName)
+
+        if (attributes)
+        {
+            if (!attributes.isa)
+                attributes = [CPDictionary dictionaryWithJSObject:attributes];
+            for (var i = 0; i < [[attributes allKeys] count]; i++)
+            {
+                var attribute = [[attributes allKeys] objectAtIndex:i],
+                    value = [attributes valueForKey:attribute];
+                _xmlNode.setAttribute(attribute, value);
+            }
+        }
     }
 
     return self;
@@ -117,7 +130,7 @@
 */
 - (void)addNode:(TNXMLNode)aNode
 {
-    _xmlNode.cnode([aNode tree]);
+    _xmlNode.appendChild(_xmlDocument.importNode([aNode xmlNode], true));
 }
 
 /*! Add text value to the current seletected node
@@ -125,7 +138,7 @@
 */
 - (void)addTextNode:(CPString)aText
 {
-    _xmlNode = _xmlNode.t(aText);
+    _xmlNode.appendChild(_xmlDocument.createTextNode(aText));
 }
 
 /*! get the text node value
@@ -133,7 +146,7 @@
 */
 - (CPString)text
 {
-    return Strophe.getText([self tree]);
+    return _xmlNode.data;
 }
 
 /*! return a DOM Element of the TNXMLNode
@@ -141,16 +154,18 @@
 */
 - (id)tree
 {
-    return _xmlNode.tree();
+    return _xmlNode;
 }
 
 /*! Move the pointer to the parent of the current node
 */
 - (BOOL)up
 {
-    if (_xmlNode.node && _xmlNode.node.parentNode)
+    if (_xmlNode
+        && _xmlNode.parentNode
+        && _xmlNode.parentNode.nodeType == 1)
     {
-        ret = _xmlNode.up();
+        _xmlNode = _xmlNode.parentNode;
         return YES;
     }
     return NO;
@@ -161,8 +176,40 @@
 */
 - (CPString)stringValue
 {
-    //return Strophe.toString(_xmlNode);
-    return Strophe.serialize(_xmlNode);
+    if (!_xmlNode)
+        return null;
+
+    var result,
+        nodeName = _xmlNode.nodeName,
+        i,
+        child;
+
+    if (_xmlNode.getAttribute("_realname"))
+        nodeName = _xmlNode.getAttribute("_realname");
+
+    result = "<" + nodeName;
+    for (i = 0; i < _xmlNode.attributes.length; i++)
+        if(_xmlNode.attributes[i].nodeName != "_realname")
+            result += " " + _xmlNode.attributes[i].nodeName.toLowerCase() + "='" + _xmlNode.attributes[i].value + "'";
+            // result += " " + _xmlNode.attributes[i].nodeName.toLowerCase() + "='" + _xmlNode.attributes[i].value.replace(/&/g, "&amp;").replace(/\'/g, "&apos;").replace(/</g, "&lt;") + "'";
+
+    if (_xmlNode.childNodes.length > 0)
+    {
+        result += ">";
+        for (i = 0; i < _xmlNode.childNodes.length; i++)
+        {
+            child = _xmlNode.childNodes[i];
+            if (child.nodeType == Strophe.ElementType.NORMAL)
+                result += Strophe.serialize(child);
+            else if (child.nodeType == Strophe.ElementType.TEXT)
+                result += child.nodeValue;
+        }
+        result += "</" + nodeName + ">";
+    }
+    else
+        result += "/>";
+
+    return result;
 }
 
 - (CPString)description
@@ -179,7 +226,7 @@
 */
 - (CPString)valueForAttribute:(CPString)anAttribute
 {
-    return [self tree].getAttribute(anAttribute);
+    return _xmlNode.getAttribute(anAttribute);
 }
 
 /*! allow to set a value for a given attribute
@@ -188,11 +235,7 @@
 */
 - (void)setValue:(CPString)aValue forAttribute:(CPString)anAttribute
 {
-    var attr = {};
-
-    attr[anAttribute] = aValue;
-
-    _xmlNode.attrs(attr);
+    _xmlNode.setAttribute(anAttribute, aValue);
 }
 
 /*! return the name of the current node
@@ -200,7 +243,7 @@
 */
 - (CPString)name
 {
-    return [self tree].tagName;
+    return _xmlNode.tagName;
 }
 
 /*! get the xmlns field of the node
@@ -229,7 +272,23 @@
 */
 - (void)addChildWithName:(CPString)aTagName andAttributes:(CPDictionary)attributes
 {
-    _xmlNode = _xmlNode.c(aTagName, attributes);
+    var newElem = _xmlDocument.createElement(aTagName);
+
+    _xmlNode.appendChild(newElem);
+    _xmlNode = newElem;
+
+    if (attributes)
+    {
+        if (!attributes.isa)
+            attributes = [CPDictionary dictionaryWithJSObject:attributes];
+
+        for (var i = 0; i < [[attributes allKeys] count]; i++)
+        {
+            var attribute = [[attributes allKeys] objectAtIndex:i],
+                value = [attributes valueForKey:attribute];
+            _xmlNode.setAttribute(attribute, value);
+        }
+    }
 }
 
 /*! Add a child to the current seletected node
@@ -238,7 +297,7 @@
 */
 - (void)addChildWithName:(CPString)aTagName
 {
-    [self addChildWithName:aTagName andAttributes:{}];
+    [self addChildWithName:aTagName andAttributes:[CPDictionary dictionary]];
 }
 
 /*! get an CPArray of TNXMLNode with matching tag name
@@ -248,7 +307,7 @@
 - (CPArray)childrenWithName:(CPString)aName
 {
     var nodes       = [CPArray array],
-        elements    = [self tree].getElementsByTagName(aName);
+        elements    = _xmlNode.getElementsByTagName(aName);
 
     for (var i = 0; i < elements.length; i++)
         [nodes addObject:[TNXMLNode nodeWithXMLNode:elements[i]]]
@@ -263,7 +322,7 @@
 - (CPArray)ownChildrenWithName:(CPString)aName
 {
     var nodes       = [CPArray array],
-        elements    = [self tree].childNodes;
+        elements    = _xmlNode.childNodes;
 
     for (var i = 0; i < elements.length; i++)
         if ((aName === nil) || (aName && elements [i].tagName == aName))
@@ -278,7 +337,7 @@
 */
 - (TNXMLNode)firstChildWithName:(CPString)aName
 {
-    var elements = [self tree].getElementsByTagName(aName);
+    var elements = _xmlNode.getElementsByTagName(aName);
 
     if (elements && (elements.length > 0))
         return [TNXMLNode nodeWithXMLNode:elements[0]];
