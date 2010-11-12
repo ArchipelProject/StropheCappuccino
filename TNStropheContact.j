@@ -122,7 +122,7 @@
     You should never have to use this method
     @param aStanza the response TNStropheStanza
 */
-- (BOOL)_didReceiveStatus:(TNStropheStanza)aStanza
+- (BOOL)_didReceivePresence:(TNStropheStanza)aStanza
 {
     var resource = [aStanza fromResource],
         presenceStatus = [aStanza firstChildWithName:@"status"];

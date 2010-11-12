@@ -119,7 +119,7 @@
             [newGroup addContact:newContact];
 
             for (var j = 0; j < [queuedPresence count]; j++)
-                [newContact _didReceiveStatus:[queuedPresence objectAtIndex:j]];
+                [newContact _didReceivePresence:[queuedPresence objectAtIndex:j]];
 
             [newContact setNickname:nickname];
             [newContact getMessages];
@@ -146,7 +146,7 @@
     else
     {
         if ([self containsJID:[aStanza from]])
-            [[self contactWithJID:[aStanza from]] _didReceiveStatus:aStanza];
+            [[self contactWithJID:[aStanza from]] _didReceivePresence:aStanza];
         else
             [_pendingPresence addObject:aStanza];
     }
