@@ -63,7 +63,7 @@
         _owners         = [TNStropheGroup stropheGroupWithName:@"Owners"];
 
         var params      = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                                     [[_room roomJID] bare], @"from",
+                                                                     [[_room roomJID] full], @"from",
                                                                      {matchBare: true}, @"options"];
         [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:params];
     }
@@ -103,7 +103,10 @@
     if (contact)
         [contact _didReceivePresence:aStanza];
     else
-        contact = [self addContact:[aStanza from] withName:[aStanza from].split("/")[1] inGroup:group];
+    {
+        contact = [self addContact:[aStanza from] withName:[[aStanza from] resource] inGroup:group];
+    }
+
 
     if ([aStanza type] === @"unavailable")
     {

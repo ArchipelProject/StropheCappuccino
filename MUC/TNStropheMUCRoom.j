@@ -33,14 +33,14 @@
 */
 @implementation TNStropheMUCRoom : CPObject
 {
-    TNStropheJID            _roomJID            @accessors(getter=roomJID);
-    id                      _delegate           @accessors(property=delegate);
-    CPString                _subject            @accessors(getter=subject);
     CPArray                 _messages           @accessors(getter=messages);
+    CPString                _subject            @accessors(getter=subject);
+    id                      _delegate           @accessors(property=delegate);
+    TNStropheJID            _roomJID            @accessors(getter=roomJID);
     TNStropheMUCRoster      _roster             @accessors(getter=roster);
 
-    TNStropheConnection     _connection;
     CPArray                 _handlerIDs;
+    TNStropheConnection     _connection;
 }
 
 #pragma mark -
@@ -68,8 +68,7 @@
 */
 - (id)initWithRoom:(CPString)aRoom onService:(CPString)aService usingConnection:(TNStropheConnection)aConnection withNick:(CPString)aNick
 {
-    self = [super init];
-    if (self)
+    if (self = [super init])
     {
         _connection     = aConnection;
         _roomJID        = [TNStropheJID stropheJIDWithNode:aRoom domain:aService resource:aNick];
@@ -93,17 +92,17 @@
 {
     // Handle messages sent to room
     var messageParams   = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                                     [_roomJID bare], @"from",
+                                                                     [_roomJID full], @"from",
                                                                      @"groupchat", @"type",
-                                                                     {matchBare: true},@"options"],
+                                                                     {matchBare: true}, @"options"],
         messageHandler  = [_connection registerSelector:@selector(receiveMessage:) ofObject:self withDict:messageParams];
     [_handlerIDs addObject:messageHandler];
 
     // Handle private messages from room roster
-    var pmParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"message",@"name",
-                                                                [_roomJID bare],@"from",
-                                                                 @"chat",@"type",
-                                                                 {matchBare: true},@"options"],
+    var pmParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
+                                                                [_roomJID full], @"from",
+                                                                 @"chat", @"type",
+                                                                 {matchBare: true}, @"options"],
         pmHandler   = [_connection registerSelector:@selector(receivePrivateMessage:) ofObject:self withDict:pmParams];
     [_handlerIDs addObject:pmHandler];
 
@@ -148,13 +147,12 @@
 
 - (void)sendStanzaToRoom:(TNStropheStanza)aStanza
 {
-    [aStanza setTo:_roomJID];
+    [aStanza setTo:[_roomJID bare]];
     [_connection send:aStanza];
 }
 
 - (BOOL)receiveMessage:(TNStropheStanza)aStanza
 {
-    alert("bin");
     if ([aStanza containsChildrenWithName:@"subject"])
     {
         _subject = [[aStanza firstChildWithName:@"subject"] text];
