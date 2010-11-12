@@ -177,7 +177,7 @@
 */
 - (TNPubSubNode)nodeWithName:(CPString)aNodeName
 {
-    return [selr nodeWithName:aNodeName server:nil];
+    return [self nodeWithName:aNodeName server:nil];
 }
 
 /*! returns the node with given name, or initialize a new one if not it not exists
