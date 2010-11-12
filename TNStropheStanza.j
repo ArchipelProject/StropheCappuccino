@@ -240,6 +240,9 @@
 
 - (TNStropheStanza)initWithName:(CPString)aName to:(TNStropheJID)aJID attributes:(CPDictionary)someAttributes bare:(BOOL)sendToBareJID
 {
+    if (aJID && !someAttributes)
+        someAttributes = {};
+
     if (someAttributes)
     {
         if (someAttributes.isa)
