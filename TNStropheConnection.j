@@ -336,10 +336,15 @@
 */
 - (void)send:(TNStropheStanza)aStanza
 {
+    [[CPRunLoop currentRunLoop] performSelector:@selector(performSend:) target:self argument:aStanza order:0 modes:[CPDefaultRunLoopMode]];
+}
+
+- (void)performSend:(TNStropheStanza)aStanza
+{
     CPLog.trace("StropheCappuccino Stanza Send:")
     CPLog.trace(aStanza);
-
     _connection.send([aStanza tree]);
+    [self flush];
 }
 
 /*! publish a PEP payload
