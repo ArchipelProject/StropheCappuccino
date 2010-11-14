@@ -121,6 +121,13 @@
             return contact;
     }
 
+    for (var i = 0; i < [_contacts count]; i++)
+    {
+        var contact = [_contacts objectAtIndex:i];
+        if ([[contact JID] bareEquals:aJID])
+            return contact;
+    }
+
     return nil;
 }
 
@@ -128,7 +135,7 @@
     @param aJID CPString containing the JID
     @return TNStropheContact the contact with the given JID
 */
-- (TNStropheContact)fisrtContactWithBareJID:(TNStropheJID)aJID
+- (TNStropheContact)firstContactWithBareJID:(TNStropheJID)aJID
 {
     for (var i = 0; i < [_contacts count]; i++)
     {
@@ -149,6 +156,12 @@
     for (var i = 0; i < [_contacts count]; i++)
     {
         if ([[[_contacts objectAtIndex:i] JID] equals:aJID])
+            return YES;
+    }
+
+    for (var i = 0; i < [_contacts count]; i++)
+    {
+        if ([[[_contacts objectAtIndex:i] JID] bareEquals:aJID])
             return YES;
     }
     return NO;

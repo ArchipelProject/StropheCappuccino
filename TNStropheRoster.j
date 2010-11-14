@@ -81,7 +81,7 @@
                                                                  @"result", @"type",
                                                                  uid, @"id"],
         presenceParams  = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name",
-                                                                     [_connection JID],@"to"];
+                                                                     [[_connection JID] bare], @"to"];
 
     [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
 
@@ -290,7 +290,7 @@
     var addReq = [TNStropheStanza iqWithAttributes:{"type": "set", "id": [_connection getUniqueId]}];
 
     [addReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [addReq addChildWithName:@"item" andAttributes:{"JID": [aJID bare], "name": aName}];
+    [addReq addChildWithName:@"item" andAttributes:{"JID": [aJID full], "name": aName}];
     [addReq addChildWithName:@"group" andAttributes:nil];
     [addReq addTextNode:aGroupName];
 
@@ -396,7 +396,8 @@
         [self unauthorizeJID:requester];
 
     if (![self containsJID:requester])
-        [self addContact:requester withName:requester inGroupWithName:nil];
+        [self addContact:requester withName:[requester node] inGroupWithName:nil];
+
 }
 
 @end

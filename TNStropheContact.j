@@ -169,7 +169,7 @@
         default:
             _XMPPShow       = TNStropheContactStatusOnline;
             _statusReminder = _imageOnline;
-            if (_numberOfEvents === 0)
+            if (_numberOfEvents == 0)
                 _statusIcon = _imageOnline;
 
             if ([aStanza firstChildWithName:@"show"])
