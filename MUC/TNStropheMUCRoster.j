@@ -80,7 +80,7 @@
 */
 - (BOOL)_didReceivePresence:(id)aStanza
 {
-    var contact = [self contactWithJID:[aStanza from]],
+    var contact = [self contactWithFullJID:[aStanza from]],
         data    = [aStanza firstChildWithName:@"x"],
         group;
 
@@ -132,7 +132,7 @@
 */
 - (TNStropheContact)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroup:(TNStropheGroup)aGroup
 {
-    if ([self containsJID:aJID] == YES)
+    if ([self containsFullJID:aJID])
         return;
 
     if (!aGroup)
