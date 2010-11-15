@@ -106,7 +106,6 @@
         _resources          = [CPArray array];
 
         _JID                = aJID;
-        _nickname           = [_JID node];
         _groupName          = aGroupName;
     }
 
@@ -169,8 +168,7 @@
         default:
             _XMPPShow       = TNStropheContactStatusOnline;
             _statusReminder = _imageOnline;
-            if (_numberOfEvents == 0)
-                _statusIcon = _imageOnline;
+            _statusIcon     = _imageOnline;
 
             if ([aStanza firstChildWithName:@"show"])
             {
@@ -191,6 +189,9 @@
                         break;
                 }
             }
+
+            if (_numberOfEvents > 0)
+                _statusIcon = _imageNewMessage
 
             if (presenceStatus)
                 _XMPPStatus = [presenceStatus text];
@@ -306,10 +307,13 @@
     {
         _vCard = aVCard;
 
-        if ([aVCard firstChildWithName:@"NAME"])
-            _nickname = [[aVCard firstChildWithName:@"NAME"] text];
-        else
-            _nickname = [_JID node]
+        if (!_nickname || (_nickname == [_JID node]))
+        {
+            if ([aVCard firstChildWithName:@"NAME"])
+                _nickname = [[aVCard firstChildWithName:@"NAME"] text];
+            else
+                _nickname = [_JID node]
+        }
 
         var photoNode;
         if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
