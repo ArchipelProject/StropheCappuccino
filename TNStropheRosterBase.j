@@ -108,11 +108,20 @@
     [self removeContact:[self contactWithJID:aJID]];
 }
 
-/*! return a TNStropheContact object according to the given JID
+/*! performs contactWithFullJID and contactWithBareJID
     @param aJID CPString containing the JID
     @return TNStropheContact the contact with the given JID
 */
 - (TNStropheContact)contactWithJID:(TNStropheJID)aJID
+{
+    return [self contactWithFullJID:aJID] || [self contactWithBareJID:aJID];
+}
+
+/*! return a TNStropheContact object according to the given full JID
+    @param aJID CPString containing the JID
+    @return TNStropheContact the contact with the given JID
+*/
+- (TNStropheContact)contactWithFullJID:(TNStropheJID)aJID
 {
     for (var i = 0; i < [_contacts count]; i++)
     {
@@ -120,7 +129,14 @@
         if ([[contact JID] equals:aJID])
             return contact;
     }
+}
 
+/*! return a TNStropheContact object according to the given bare JID
+    @param aJID CPString containing the JID
+    @return TNStropheContact the contact with the given JID
+*/
+- (TNStropheContact)contactWithBareJID:(TNStropheJID)aJID
+{
     for (var i = 0; i < [_contacts count]; i++)
     {
         var contact = [_contacts objectAtIndex:i];
@@ -147,11 +163,20 @@
     return nil;
 }
 
-/*! check if roster contains a contact with a given JID
+
+/*! perform containsFullJID and containsBareJID
+    @param aJID the JID to search
+*/
+- (BOOL)containsJID:(TNStropheJID)aJID
+{
+    return [self containsBareJID:aJID] || [self containsFullJID:aJID];
+}
+
+/*! check if roster contains a contact with a given full JID
     @param aJID the JID to search
     @return YES is JID is in roster, NO otherwise
 */
-- (BOOL)containsJID:(TNStropheJID)aJID
+- (BOOL)containsFullJID:(TNStropheJID)aJID
 {
     for (var i = 0; i < [_contacts count]; i++)
     {
@@ -159,11 +184,21 @@
             return YES;
     }
 
+    return NO;
+}
+
+/*! check if roster contains a contact with a given bare JID
+    @param aJID the JID to search
+    @return YES is JID is in roster, NO otherwise
+*/
+- (BOOL)containsBareJID:(TNStropheJID)aJID
+{
     for (var i = 0; i < [_contacts count]; i++)
     {
         if ([[[_contacts objectAtIndex:i] JID] bareEquals:aJID])
             return YES;
     }
+
     return NO;
 }
 
