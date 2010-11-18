@@ -89,6 +89,8 @@
         _connection         = aConnection;
         _pubSubServer       = aPubSubServer ? aPubSubServer : [TNStropheJID stropheJIDWithSring:@"pubsub." + [[_connection JID] domain]];
         _subscriptionIDs    = [CPArray array];
+
+        [self _setEventHandler];
     }
 
     return self;
@@ -118,7 +120,6 @@
     if (self = [self initWithNodeName:aNodeName connection:aConnection pubSubServer:aPubSubServer])
     {
         _subscriptionIDs = aSubscriptionIDs;
-        [self _setEventHandler];
     }
 
     return self;
@@ -605,7 +606,7 @@
 - (void)_setEventHandler
 {
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
-                                                            _pubSubServer, @"from"];
+                                                            [_pubSubServer node], @"from"];
     _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
 }
 
