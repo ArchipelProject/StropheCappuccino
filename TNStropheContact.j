@@ -412,10 +412,11 @@
     @param aSelector the selector to perform on response
     @param anObject the object receiving the selector
     @param anId the specific stanza ID to use
+    @param someUserInfo random information to give to the selector
 
     @return the associated registration id for the selector
 */
-- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId userInfo:(id)someUserInfo
 {
     var params      = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
         userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", anId, @"id"],
@@ -423,13 +424,16 @@
 
     [aStanza setID:anId];
 
-    if (aSelector)
+    if (aSelector && !someUserInfo)
         ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params];
+    else if (aSelector && someUserInfo)
+        ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo];
 
     [self sendStanza:aStanza withUserInfo:userInfo];
 
     return ret;
 }
+
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
 
@@ -441,8 +445,37 @@
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId]];
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:nil];
 }
+
+/*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
+
+    @param aStanza the TNStropheStanza to send to the contact
+    @param aSelector the selector to perform on response
+    @param anObject the object receiving the selector
+    @param anId the specific stanza ID to use
+
+    @return the associated registration id for the selector
+*/
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(int)anId
+{
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:anId userInfo:nil];
+}
+
+/*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
+
+    @param aStanza the TNStropheStanza to send to the contact
+    @param aSelector the selector to perform on response
+    @param anObject the object receiving the selector
+    @param someUserInfo random information to give to the selector
+
+    @return the associated registration id for the selector
+*/
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
+{
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:someUserInfo];
+}
+
 
 /*! register the contact to listen incoming messages
     you should never have to use this message if you use TNStropheRoster
