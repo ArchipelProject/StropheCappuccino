@@ -166,7 +166,8 @@
     {
         if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedItems:)])
             [_delegate pubSubNode:self retrievedItems:NO];
-        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
+        CPLog.error("Cannot retrieve the contents of pubsub node");
+        CPLog.error(aStanza);
     }
 
     return NO;
@@ -200,7 +201,11 @@
     if ([aStanza type] == @"result")
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeCreatedNotification object:self];
     else
-        CPLog.error("Cannot create the pubsub node with name: " + _nodeName);
+    {
+        CPLog.error("Cannot create the pubsub node");
+        CPLog.error(aStanza);
+    }
+
 
     return NO;
 }
@@ -233,7 +238,11 @@
     if ([aStanza type] == @"result")
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeDeletedNotification object:self];
     else
-        CPLog.error("Cannot delete the pubsub node with name: " + _nodeName);
+    {
+        CPLog.error("Cannot delete the pubsub node");
+        CPLog.error(aStanza);
+    }
+
 
     return NO;
 }
@@ -304,7 +313,10 @@
     if ([aStanza type] == @"result")
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeConfiguredNotification object:self];
     else
-        CPLog.error("Cannot configure the pubsub node with name: " + _nodeName);
+    {
+        CPLog.error("Cannot configure the pubsub node");
+        CPLog.error(aStanza);
+    }
 
     return NO;
 }
@@ -347,7 +359,11 @@
         [self retrieveItems];
     }
     else
-        CPLog.error("Cannot publish the pubsub item in node with name: " + _nodeName);
+    {
+        CPLog.error("Cannot publish the pubsub item in node");
+        CPLog.error(aStanza);
+    }
+
 
     return NO;
 }
@@ -395,7 +411,10 @@
         [self retrieveItems];
     }
     else
-        CPLog.error("Cannot remove the pubsub item in node with name: " + _nodeName);
+    {
+        CPLog.error("Cannot remove the pubsub item in node");
+        CPLog.error(aStanza);
+    }
 
     return NO;
 }
@@ -494,7 +513,9 @@
     {
         if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:subscribed:)])
             [_delegate pubSubNode:self subscribed:NO];
-        CPLog.error("Cannot subscribe the pubsub node with name: " + _nodeName);
+        CPLog.error("Cannot subscribe the pubsub node");
+        CPLog.error(aStanza);
+
     }
 
     return NO;
@@ -587,7 +608,8 @@
     {
         if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:unsubscribed:)])
             [_delegate pubSubNode:self unsubscribed:NO];
-        CPLog.error("Cannot unsubscribe the pubsub node with name: " + _nodeName);
+        CPLog.error("Cannot unsubscribe the pubsub node");
+        CPLog.error(aStanza);
     }
 
 
@@ -643,6 +665,12 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubNodeEventNotification object:self userInfo:aStanza];
 
     return YES;
+}
+
+
+- (CPString)description
+{
+    return _nodeName;
 }
 
 @end

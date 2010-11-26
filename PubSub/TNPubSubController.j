@@ -31,7 +31,7 @@
 @implementation TNPubSubController : CPObject
 {
     CPArray         _nodes                  @accessors(getter=nodes);
-    CPArray         _servers                @accessors(property=server);
+    CPArray         _servers                @accessors(property=servers);
     id              _delegate               @accessors(property=delegate);
     id              _connection;
     CPDictionary    _subscriptionBatches;
@@ -209,6 +209,7 @@
 - (void)retrieveSubscriptions
 {
     _numberOfPromptedServers = 0;
+
     for (var i = 0; i < [_servers count]; i++)
     {
         var uid     = [_connection getUniqueId],
@@ -268,7 +269,8 @@
     {
         if (_delegate && [_delegate respondsToSelector:@selector(pubSubController:retrievedSubscriptions:)])
             [_delegate pubSubController:self retrievedSubscriptions:NO];
-        CPLog.error("Cannot retrieve the contents of pubsub node with name: " + _nodeName);
+        CPLog.error("Cannot retrieve the contents of pubsub node");
+        CPLog.error(aStanza);
     }
 
 
