@@ -189,6 +189,8 @@
 
         if (errorCond)
         {
+            _currentStatus = Strophe.Status.DISCONNECTED;
+
             if ([_delegate respondsToSelector:@selector(connection:errorCondition:)])
                 [_delegate connection:self errorCondition:errorCond];
         }
