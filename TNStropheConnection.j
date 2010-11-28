@@ -75,6 +75,7 @@
     CPString        _identityName           @accessors(property=identityName);
     CPString        _identityType           @accessors(property=identityType);
     CPString        _password               @accessors(property=password);
+    float           _giveupTimeout          @accessors(property=giveupTimeout);
     id              _currentStatus          @accessors(getter=currentStatus);
     id              _delegate               @accessors(property=delegate);
     int             _connectionTimeout      @accessors(property=connectionTimeout);
@@ -135,6 +136,7 @@
         _connected              = NO;
         _maxConnections         = 10;
         _connectionTimeout      = 3600;
+        _giveupTimeout          = 8.0;
         _currentStatus          = Strophe.Status.DISCONNECTED;
         _connection             = new Strophe.Connection(_boshService);
 
@@ -205,7 +207,7 @@
                 case Strophe.Status.CONNECTING:
                     selector            = @selector(onStropheConnecting:);
                     notificationName    = TNStropheConnectionStatusConnecting;
-                    var timer = [CPTimer scheduledTimerWithTimeInterval:5.0 callback:function(aTimer) {
+                    var timer = [CPTimer scheduledTimerWithTimeInterval:_giveupTimeout callback:function(aTimer) {
                             if ((_currentStatus === Strophe.Status.CONNECTING)
                                 && ([_delegate respondsToSelector:@selector(connection:errorCondition:)]))
                                 [_delegate connection:self errorCondition:@"Cannot connect"];
