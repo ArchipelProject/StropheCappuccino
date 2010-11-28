@@ -175,7 +175,7 @@
 */
 - (void)connect
 {
-    if (_connected)
+    if (_currentStatus !== Strophe.Status.DISCONNECTED)
         return;
 
     [self registerSelector:@selector(_didReceivePing:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"]];
@@ -245,6 +245,9 @@
 */
 - (void)disconnect
 {
+    if (_currentStatus !== Strophe.Status.CONNECTED)
+        return;
+
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusWillDisconnect object:self];
     _connection.disconnect();
 }
