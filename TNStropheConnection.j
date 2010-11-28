@@ -211,6 +211,8 @@
                             if ((_currentStatus === Strophe.Status.CONNECTING)
                                 && ([_delegate respondsToSelector:@selector(connection:errorCondition:)]))
                                 [_delegate connection:self errorCondition:@"Cannot connect"];
+                            _connection = nil // free;
+                            _connection = new Strophe.Connection(_boshService);
                         } repeats:NO];
                     break;
                 case Strophe.Status.CONNFAIL:
