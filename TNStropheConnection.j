@@ -173,6 +173,9 @@
 */
 - (void)connect
 {
+    if (_connected)
+        return;
+
     [self registerSelector:@selector(_didReceivePing:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"]];
 
     _connection.connect([_JID full], _password, function (status, errorCond)
@@ -180,44 +183,52 @@
         var selector,
             notificationName;
 
-        switch (status)
+        if (errorCond)
         {
-            case Strophe.Status.ERROR:
-                selector            = @selector(onStropheError:);
-                notificationName    = TNStropheConnectionStatusError;
-                break;
-            case Strophe.Status.CONNECTING:
-                selector            = @selector(onStropheConnecting:);
-                notificationName    = TNStropheConnectionStatusConnecting;
-                break;
-            case Strophe.Status.CONNFAIL:
-                selector            = @selector(onStropheConnectFail:);
-                notificationName    = TNStropheConnectionStatusConnectionFailure;
-                break;
-            case Strophe.Status.AUTHENTICATING:
-                selector            = @selector(onStropheAuthenticating:);
-                notificationName    = TNStropheConnectionStatusAuthenticating;
-                break;
-            case Strophe.Status.AUTHFAIL:
-                selector            = @selector(onStropheAuthFail:);
-                notificationName    = TNStropheConnectionStatusAuthFailure;
-                break;
-            case Strophe.Status.DISCONNECTING:
-                selector            = @selector(onStropheDisconnecting:);
-                notificationName    = TNStropheConnectionStatusDisconnecting;
-                break;
-            case Strophe.Status.DISCONNECTED:
-                selector            = @selector(onStropheDisconnected:);
-                notificationName    = TNStropheConnectionStatusDisconnected;
-                _connected          = NO;
-                break;
-            case Strophe.Status.CONNECTED:
-                _connection.send($pres().tree());
-                [self sendCAPS];
-                selector            = @selector(onStropheConnected:);
-                notificationName    = TNStropheConnectionStatusConnected;
-                _connected          = YES;
-                break;
+            if ([_delegate respondsToSelector:@selector(connection:errorCondition:)])
+                [_delegate connection:self errorCondition:errorCond];
+        }
+        else
+        {
+            switch (status)
+            {
+                case Strophe.Status.ERROR:
+                    selector            = @selector(onStropheError:);
+                    notificationName    = TNStropheConnectionStatusError;
+                    break;
+                case Strophe.Status.CONNECTING:
+                    selector            = @selector(onStropheConnecting:);
+                    notificationName    = TNStropheConnectionStatusConnecting;
+                    break;
+                case Strophe.Status.CONNFAIL:
+                    selector            = @selector(onStropheConnectFail:);
+                    notificationName    = TNStropheConnectionStatusConnectionFailure;
+                    break;
+                case Strophe.Status.AUTHENTICATING:
+                    selector            = @selector(onStropheAuthenticating:);
+                    notificationName    = TNStropheConnectionStatusAuthenticating;
+                    break;
+                case Strophe.Status.AUTHFAIL:
+                    selector            = @selector(onStropheAuthFail:);
+                    notificationName    = TNStropheConnectionStatusAuthFailure;
+                    break;
+                case Strophe.Status.DISCONNECTING:
+                    selector            = @selector(onStropheDisconnecting:);
+                    notificationName    = TNStropheConnectionStatusDisconnecting;
+                    break;
+                case Strophe.Status.DISCONNECTED:
+                    selector            = @selector(onStropheDisconnected:);
+                    notificationName    = TNStropheConnectionStatusDisconnected;
+                    _connected          = NO;
+                    break;
+                case Strophe.Status.CONNECTED:
+                    _connection.send($pres().tree());
+                    [self sendCAPS];
+                    selector            = @selector(onStropheConnected:);
+                    notificationName    = TNStropheConnectionStatusConnected;
+                    _connected          = YES;
+                    break;
+            }
         }
         if ([_delegate respondsToSelector:selector])
             [_delegate performSelector:selector withObject:self];
@@ -336,10 +347,15 @@
 */
 - (void)send:(TNStropheStanza)aStanza
 {
+    [[CPRunLoop currentRunLoop] performSelector:@selector(_performSend:) target:self argument:aStanza order:0 modes:[CPDefaultRunLoopMode]];
+}
+
+- (void)_performSend:(TNStropheStanza)aStanza
+{
     CPLog.trace("StropheCappuccino Stanza Send:")
     CPLog.trace(aStanza);
-
     _connection.send([aStanza tree]);
+    [self flush];
 }
 
 /*! publish a PEP payload
