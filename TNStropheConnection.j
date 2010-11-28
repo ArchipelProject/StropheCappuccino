@@ -85,6 +85,7 @@
     CPDictionary    _registeredHandlerDict;
     CPString        _boshService;
     id              _connection;
+    CPTimer         _giveUpTimer;
 }
 
 #pragma mark -
@@ -207,13 +208,16 @@
                 case Strophe.Status.CONNECTING:
                     selector            = @selector(onStropheConnecting:);
                     notificationName    = TNStropheConnectionStatusConnecting;
-                    var timer = [CPTimer scheduledTimerWithTimeInterval:_giveupTimeout callback:function(aTimer) {
-                            if ((_currentStatus === Strophe.Status.CONNECTING)
-                                && ([_delegate respondsToSelector:@selector(connection:errorCondition:)]))
+
+                    _giveUpTimer = [CPTimer scheduledTimerWithTimeInterval:_giveupTimeout callback:function(aTimer) {
+                            _currentStatus  = Strophe.Status.DISCONNECTED;
+                            _giveUpTimer    = nil;
+                            _connection     = nil; // free
+                            _connection     = new Strophe.Connection(_boshService);
+                            if ((_currentStatus === Strophe.Status.CONNECTING) && ([_delegate respondsToSelector:@selector(connection:errorCondition:)]))
                                 [_delegate connection:self errorCondition:@"Cannot connect"];
-                            _connection = nil // free;
-                            _connection = new Strophe.Connection(_boshService);
                         } repeats:NO];
+
                     break;
                 case Strophe.Status.CONNFAIL:
                     selector            = @selector(onStropheConnectFail:);
@@ -242,8 +246,8 @@
                     selector            = @selector(onStropheConnected:);
                     notificationName    = TNStropheConnectionStatusConnected;
                     _connected          = YES;
-                    if (timer)
-                        [timer invalidate];
+                    if (_giveUpTimer)
+                        [_giveUpTimer invalidate];
                     break;
             }
         }
