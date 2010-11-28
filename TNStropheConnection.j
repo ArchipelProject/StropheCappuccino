@@ -74,11 +74,12 @@
     CPString        _identityCategory       @accessors(property=identityCategory);
     CPString        _identityName           @accessors(property=identityName);
     CPString        _identityType           @accessors(property=identityType);
-    TNStropheJID    _JID                    @accessors(property=JID);
     CPString        _password               @accessors(property=password);
+    id              _currentStatus          @accessors(getter=currentStatus);
     id              _delegate               @accessors(property=delegate);
-    int             _maxConnections         @accessors(property=maxConnections);
     int             _connectionTimeout      @accessors(property=connectionTimeout);
+    int             _maxConnections         @accessors(property=maxConnections);
+    TNStropheJID    _JID                    @accessors(property=JID);
 
     CPDictionary    _registeredHandlerDict;
     CPString        _boshService;
@@ -134,6 +135,7 @@
         _connected              = NO;
         _maxConnections         = 10;
         _connectionTimeout      = 3600;
+        _currentStatus          = Strophe.Status.DISCONNECTED;
         _connection             = new Strophe.Connection(_boshService);
 
         _clientNode             = @"http://cappuccino.org";
@@ -182,6 +184,8 @@
     {
         var selector,
             notificationName;
+
+        _currentStatus = status;
 
         if (errorCond)
         {
@@ -347,15 +351,19 @@
 */
 - (void)send:(TNStropheStanza)aStanza
 {
-    [[CPRunLoop currentRunLoop] performSelector:@selector(_performSend:) target:self argument:aStanza order:0 modes:[CPDefaultRunLoopMode]];
+    if (_currentStatus == Strophe.Status.CONNECTED)
+        [[CPRunLoop currentRunLoop] performSelector:@selector(_performSend:) target:self argument:aStanza order:0 modes:[CPDefaultRunLoopMode]];
 }
 
 - (void)_performSend:(TNStropheStanza)aStanza
 {
-    CPLog.trace("StropheCappuccino Stanza Send:")
-    CPLog.trace(aStanza);
-    _connection.send([aStanza tree]);
-    [self flush];
+    if (_currentStatus == Strophe.Status.CONNECTED)
+    {
+        CPLog.trace("StropheCappuccino Stanza Send:")
+        CPLog.trace(aStanza);
+        _connection.send([aStanza tree]);
+        [self flush];
+    }
 }
 
 /*! publish a PEP payload
