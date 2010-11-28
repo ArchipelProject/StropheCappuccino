@@ -205,6 +205,11 @@
                 case Strophe.Status.CONNECTING:
                     selector            = @selector(onStropheConnecting:);
                     notificationName    = TNStropheConnectionStatusConnecting;
+                    var timer = [CPTimer scheduledTimerWithTimeInterval:5.0 callback:function(aTimer) {
+                            if ((_currentStatus === Strophe.Status.CONNECTING)
+                                && ([_delegate respondsToSelector:@selector(connection:errorCondition:)]))
+                                [_delegate connection:self errorCondition:@"Cannot connect"];
+                        } repeats:NO];
                     break;
                 case Strophe.Status.CONNFAIL:
                     selector            = @selector(onStropheConnectFail:);
@@ -233,6 +238,8 @@
                     selector            = @selector(onStropheConnected:);
                     notificationName    = TNStropheConnectionStatusConnected;
                     _connected          = YES;
+                    if (timer)
+                        [timer invalidate];
                     break;
             }
         }
