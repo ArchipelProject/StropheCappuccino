@@ -87,7 +87,7 @@
     {
         _nodeName           = aNodeName;
         _connection         = aConnection;
-        _pubSubServer       = aPubSubServer ? aPubSubServer : [TNStropheJID stropheJIDWithSring:@"pubsub." + [[_connection JID] domain]];
+        _pubSubServer       = aPubSubServer ? aPubSubServer : [TNStropheJID stropheJIDWithString:@"pubsub." + [[_connection JID] domain]];
         _subscriptionIDs    = [CPArray array];
 
         [self _setEventHandler];
@@ -377,6 +377,14 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubItemPublishedNotification object:self];
 }
 
+
+/*! Ask the server to retract (remove) a node
+    @params aNode the node to remove
+*/
+- (void)retractItem:(TNXMLNode)aNode
+{
+    [self retractItemWithID:[aNode valueForAttribute:@"id"]];
+}
 
 /*! Ask the server to retract (remove) a new item according to the given ID
     @params anID CPString containing the ID of the item to retract
