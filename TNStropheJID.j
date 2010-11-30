@@ -235,6 +235,17 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
     return (([[anotherJID node] uppercaseString] === [[self node] uppercaseString]) && ([[anotherJID domain] uppercaseString] === [[self domain] uppercaseString]));
 }
 
+/*! compare rthe JID with another (using the full JID)
+    @param another the JID to compare with
+*/
+- (CPComparisonResult)compare:(TNStropheJID)anotherJID
+{
+    var stringRepA = [self stringValue],
+        stringRepB = [anotherJID stringValue];
+
+    return [stringRepA compare:stringRepB];
+}
+
 @end
 
 
