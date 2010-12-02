@@ -204,7 +204,29 @@ TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
     @group TNStropheRoster
     notification indicates that TNStropheRoster has received the data from the XMPP server
 */
-TNStropheRosterRetrievedNotification        = @"TNStropheRosterRetrievedNotification";
+TNStropheRosterRetrievedNotification            = @"TNStropheRosterRetrievedNotification";
+
+/*!
+    @global
+    @group TNStropheRoster
+    notification indicates that TNStropheRoster has recieved a push (update of content)
+*/
+TNStropheRosterPushNotification                 = @"TNStropheRosterPushNotification";
+
+/*!
+    @global
+    @group TNStropheRoster
+    notification indicates that TNStropheRoster has recieved a add push
+*/
+TNStropheRosterPushAddedContactNotification     = @"TNStropheRosterPushAddedContactNotification";
+
+/*!
+    @global
+    @group TNStropheRoster
+    notification indicates that TNStropheRoster has recieved a remove push
+*/
+TNStropheRosterPushRemovedContactNotification   = @"TNStropheRosterPushRemovedContactNotification";
+
 /*!
     @global
     @group TNStropheRoster

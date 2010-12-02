@@ -161,21 +161,34 @@
     {
         for (var i = 0; i < [items count]; i++)
             [self _addContactFromRosterItem:[items objectAtIndex:i]];
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
     }
     else if ([aStanza type] === @"set")
     {
         for (var i = 0; i < [items count]; i++)
         {
-            var item = [items objectAtIndex:i];
+            var item    = [items objectAtIndex:i],
+                theJID  = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]];
 
             if ([item valueForAttribute:@"subscription"] === @"remove")
+            {
+                var contact = [self contactWithJID:theJID];
+                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
                 [self _removeContactFromRosterItem:item];
-            else if ([item valueForAttribute:@"subscription"] === @"both")
-                [self _addContactFromRosterItem:item];
-        }
-    }
+            }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
+            else if ([item valueForAttribute:@"subscription"] === @"both")
+            {
+                [self _addContactFromRosterItem:item];
+
+                var contact = [self contactWithJID:theJID];
+
+                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushAddedContactNotification object:self userInfo:contact];
+            }
+        }
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushNotification object:self];
+    }
 
     return YES;
 }
