@@ -431,6 +431,24 @@
     return _connection.getUniqueId(suffix);
 }
 
+#pragma mark -
+#pragma mark vCard
+- (void)getVCard
+{
+    var uid         = [self getUniqueId],
+        vcardStanza = [TNStropheStanza iqWithAttributes:{@"type": @"get", @"id": uid}],
+        params      = [CPDictionary dictionaryWithObjectsAndKeys: uid, @"id"];
+
+    [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
+
+    [self registerSelector:@selector(_didReceiveCurrentUserVCard:) ofObject:self withDict:params];
+    [self send:vcardStanza];
+}
+
+- (void)_didReceiveCurrentUserVCard:(TNStropheStanza)aStanza
+{
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionVCardReceived object:self userInfo:aStanza];
+}
 
 #pragma mark -
 #pragma mark Handlers

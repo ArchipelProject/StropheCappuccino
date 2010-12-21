@@ -80,6 +80,12 @@ TNStropheConnectionStatusDisconnected       = @"TNStropheConnectionStatusDisconn
 */
 TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
+/*!
+    @global
+    @group TNStropheConnectionVCard
+    Notification sent on connecting
+*/
+TNStropheConnectionVCardReceived            = @"TNStropheConnectionVCardReceived";
 
 #pragma mark -
 #pragma mark globals of TNStropheContact
