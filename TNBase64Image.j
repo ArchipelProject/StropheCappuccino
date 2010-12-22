@@ -65,18 +65,39 @@
 */
 - (void)load
 {
-    if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)
-        return;
+    if (_base64EncodedData)
+    {
+        if (_loadStatus == CPImageLoadStatusLoading || _loadStatus == CPImageLoadStatusCompleted)
+            return;
 
-    var data    = @"data:" + _contentType + @";base64," + _base64EncodedData;
+        var data    = @"data:" + _contentType + @";base64," + _base64EncodedData;
 
-    _loadStatus = CPImageLoadStatusLoading;
-    _image      = new Image();
-    _image.addEventListener('load', function(){
-        [self _imageDidLoad];
-    });
-    _filename   = data;
-    _image.src  = data;
+        _loadStatus = CPImageLoadStatusLoading;
+        _image      = new Image();
+        _image.addEventListener('load', function(){
+            [self _imageDidLoad];
+        });
+        _filename   = data;
+        _image.src  = data;
+    }
+    else
+        [super load];
+}
+
+
+- (CPString)base64EncodedData
+{
+    var canvas = document.createElement("canvas"),
+        ctx = canvas.getContext("2d");
+
+    canvas.width = _image.width,
+    canvas.height = _image.height;
+
+    ctx.drawImage(_image, 0, 0);
+
+    var dataURL = canvas.toDataURL("image/png");
+
+    return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
 }
 
 @end
