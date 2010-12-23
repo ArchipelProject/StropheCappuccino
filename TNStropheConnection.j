@@ -433,6 +433,9 @@
 
 #pragma mark -
 #pragma mark vCard
+
+/*! get the vCard of the connection JID
+*/
 - (void)getVCard
 {
     var uid         = [self getUniqueId],
@@ -445,10 +448,32 @@
     [self send:vcardStanza];
 }
 
+/*! compute the answer of the vCard stanza
+    @param aStanza the stanza containing the vCard
+*/
 - (void)_didReceiveCurrentUserVCard:(TNStropheStanza)aStanza
 {
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionVCardReceived object:self userInfo:aStanza];
 }
+
+/*! set the vCard of the connection JID and send the given message of of the given object with the given user info
+    @param aVCard TNXMLNode containing the vCard
+    @param anObject the target object
+    @param aSelector the selector to send to the target object
+    @param someUserInfo random informations
+*/
+- (void)setVCard:(TNXMLNode)aVCard object:(CPObject)anObject selector:(SEL)aSelector userInfo:(id)someUserInfo
+{
+    var uid     = [self getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"set"}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza addNode:aVCard];
+
+    [self registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo];
+    [self send:stanza];
+}
+
 
 #pragma mark -
 #pragma mark Handlers
