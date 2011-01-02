@@ -341,9 +341,8 @@
     @param aJID the JID of the new contact
     @param aName the nickname of the new contact. If nil, it will be the JID
     @param aGroup the group of the new contact. if nil, it will be "General"
-    @return the new TNStropheContact
 */
-- (TNStropheContact)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroupWithName:(CPString)aGroupName
+- (void)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroupWithName:(CPString)aGroupName
 {
     if ([self containsJID:aJID] == YES)
         return;
@@ -363,17 +362,6 @@
     [_connection registerSelector:@selector(_didAddContact:userInfo:) ofObject:self withDict:params userInfo:aJID];
 
     [_connection send:addReq];
-
-    var contact = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
-    [contact setNickname:aName];
-    [contact getMessages];
-
-    [[self groupWithName:aGroupName orCreate:YES] addContact:contact];
-    [_contacts addObject:contact];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedContactNotification object:contact];
-
-    return contact;
 }
 
 - (BOOL)_didAddContact:(TNStropheStanza)aStanza userInfo:(TNStropheJID)theJID
