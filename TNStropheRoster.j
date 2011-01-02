@@ -347,6 +347,9 @@
     if ([self containsJID:aJID] == YES)
         return;
 
+    if (!aName)
+      aName = [aJID node];
+
     if (!aGroupName)
         aGroupName = @"General";
 
