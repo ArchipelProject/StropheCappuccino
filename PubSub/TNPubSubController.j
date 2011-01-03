@@ -343,6 +343,7 @@
 {
     var node = [self findOrCreateNodeWithName:aNodeName server:aServer];
 
+    [_nodes removeObject:node];
     [node setDelegate:nodeDelegate];
     [node unsubscribe];
 
