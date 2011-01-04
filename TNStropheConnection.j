@@ -501,10 +501,18 @@
 {
     var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza) {
-                var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
+                var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
+                    ret             = [anObject performSelector:aSelector withObject:stanzaObject];
+
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
-                return [anObject performSelector:aSelector withObject:stanzaObject];
+
+                aDict           = null;
+                from            = null;
+                stanzaObject    = null;
+                stanza          = null;
+
+                return ret;
             },
             [aDict valueForKey:@"namespace"],
             [aDict valueForKey:@"name"],
@@ -540,10 +548,19 @@
 {
     var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza) {
-                var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza];
+                var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
+                    ret             = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
+
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
-                return [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
+
+                someUserInfo    = null;
+                aDict           = null;
+                from            = null;
+                stanzaObject    = null;
+                stanza          = null;
+
+                return ret;
             },
             [aDict valueForKey:@"namespace"],
             [aDict valueForKey:@"name"],
@@ -571,8 +588,15 @@
         handlerId =  _connection.addTimedHandler(aTimeout, function(stanza) {
                 if (!stanza)
                 {
+                    var ret = [anObject performSelector:aTimeoutSelector];
+
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
-                    return [anObject performSelector:aTimeoutSelector];
+
+                    aDict   = null;
+                    from    = null;
+                    stanza  = null;
+
+                    return ret;
                 }
                 return NO;
             },
@@ -606,16 +630,18 @@
 
 - (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    _connection.xmlInput = function(elem){
-        [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
-    }
+    // _connection.xmlInput = function(elem){
+    //     [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
+    //     elem = null;
+    // }
 }
 
 - (void)rawOutputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    _connection.xmlOutput = function(elem){
-        [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
-    }
+    // _connection.xmlOutput = function(elem){
+    //     [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
+    //     elem = null;
+    // }
 }
 
 @end
