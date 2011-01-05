@@ -107,6 +107,9 @@
 
         _JID                = aJID;
         _groupName          = aGroupName;
+
+        if (!_vCard && !_askingVCard)
+            [self getVCard];
     }
 
     return self;
@@ -197,9 +200,6 @@
                 _XMPPStatus = [presenceStatus text];
 
             if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
-                [self getVCard];
-
-            if (!_vCard && !_askingVCard)
                 [self getVCard];
 
             break;
