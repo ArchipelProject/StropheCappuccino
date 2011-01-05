@@ -82,10 +82,13 @@
     int             _maxConnections         @accessors(property=maxConnections);
     TNStropheJID    _JID                    @accessors(property=JID);
 
-    CPDictionary    _registeredHandlerDict;
+    CPArray         _registeredHandlers;
+    CPArray         _registeredTimedHandlers;
     CPString        _boshService;
     id              _connection;
     CPTimer         _giveUpTimer;
+    CPString        _userPresenceShow;
+    CPString        _userPresenceStatus;
 }
 
 #pragma mark -
@@ -132,22 +135,22 @@
 {
     if (self = [super init])
     {
-        _boshService            = aService;
-        _registeredHandlerDict  = [CPDictionary dictionary];
-        _connected              = NO;
-        _maxConnections         = 10;
-        _connectionTimeout      = 3600;
-        _giveupTimeout          = 8.0;
-        _currentStatus          = Strophe.Status.DISCONNECTED;
-        _connection             = new Strophe.Connection(_boshService);
-
-        _clientNode             = @"http://cappuccino.org";
-        _identityCategory       = @"client";
-        _identityName           = @"StropheCappuccino";
-        _identityType           = @"web";
-        _features               = [ Strophe.NS.CAPS,
-                                    Strophe.NS.DISCO_INFO,
-                                    Strophe.NS.DISCO_ITEMS];
+        _boshService                = aService;
+        _registeredHandlers         = [CPArray array];
+        _registeredTimedHandlers    = [CPArray array];;
+        _connected                  = NO;
+        _maxConnections             = 10;
+        _connectionTimeout          = 3600;
+        _giveupTimeout              = 8.0;
+        _currentStatus              = Strophe.Status.DISCONNECTED;
+        _connection                 = new Strophe.Connection(_boshService);
+        _userPresenceShow           = TNStropheContactStatusOffline;
+        _userPresenceStatus         = @"";
+        _clientNode                 = @"http://cappuccino.org";
+        _identityCategory           = @"client";
+        _identityName               = @"StropheCappuccino";
+        _identityType               = @"web";
+        _features                   = [Strophe.NS.CAPS, Strophe.NS.DISCO_INFO, Strophe.NS.DISCO_ITEMS];
     }
 
     return self;
@@ -236,12 +239,17 @@
                     notificationName    = TNStropheConnectionStatusDisconnecting;
                     break;
                 case Strophe.Status.DISCONNECTED:
+                    [self deleteAllRegisteredSelectors];
+                    _userPresenceShow   = TNStropheContactStatusOffline;
+                    _userPresenceStatus = @"";
                     selector            = @selector(onStropheDisconnected:);
                     notificationName    = TNStropheConnectionStatusDisconnected;
                     _connected          = NO;
                     break;
                 case Strophe.Status.CONNECTED:
-                    _connection.send($pres().tree());
+                    var presenceHandleParams = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [_JID bare], @"from", {@"matchBare": true}, @"options"];
+                    [self registerSelector:@selector(_didPresenceUpdate:) ofObject:self withDict:presenceHandleParams];
+                    [self setPresenceShow:TNStropheContactStatusOnline status:@""];
                     [self sendCAPS];
                     selector            = @selector(onStropheConnected:);
                     notificationName    = TNStropheConnectionStatusConnected;
@@ -432,6 +440,54 @@
 }
 
 #pragma mark -
+#pragma mark Presence
+
+- (void)setPresenceShow:(CPString)aPresenceShow status:(CPString)aStatus
+{
+    if (aPresenceShow === _userPresenceShow && aStatus === _userPresenceStatus)
+        return;
+
+    var presence = [TNStropheStanza presence];
+
+    _userPresenceShow   = aPresenceShow || _userPresenceShow;
+    _userPresenceStatus = aStatus || _userPresenceStatus;
+
+    [presence addChildWithName:@"status"];
+    [presence addTextNode:_userPresenceStatus];
+    [presence up]
+    [presence addChildWithName:@"show"];
+    [presence addTextNode:_userPresenceShow];
+
+    [self send:presence];
+}
+
+- (BOOL)_didPresenceUpdate:(TNStropheStanza)aStanza
+{
+    var shouldNotify = NO;
+
+    if ([aStanza firstChildWithName:@"show"])
+    {
+        _userPresenceShow = [[aStanza firstChildWithName:@"show"] text];
+        shouldNotify = YES;
+    }
+
+    if ([aStanza firstChildWithName:@"status"])
+    {
+        _userPresenceStatus = [[aStanza firstChildWithName:@"status"] text];
+        shouldNotify = YES;
+    }
+
+    if (shouldNotify)
+    {
+        var presenceInformation = [CPDictionary dictionaryWithObjectsAndKeys:_userPresenceShow, @"show", _userPresenceStatus, @"status"];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionPresenceUpdatedNotification object:self userInfo:presenceInformation];
+    }
+
+    return YES;
+}
+
+
+#pragma mark -
 #pragma mark vCard
 
 /*! get the vCard of the connection JID
@@ -470,8 +526,38 @@
 
     [stanza addNode:aVCard];
 
+    [self registerSelector:@selector(notifyVCardUpdate:) ofObject:self withDict:params];
     [self registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo];
     [self send:stanza];
+}
+
+/*! notify XMPP user for changes in vCard
+*/
+- (void)notifyVCardUpdate:(TNStropheStanza)aStanza
+{
+    var uid     = [self getUniqueId],
+        stanza  = [TNStropheStanza presenceWithAttributes:{@"id": uid}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza addChildWithName:@"status"];
+    [stanza addTextNode:_userPresenceStatus];
+    [stanza up]
+    [stanza addChildWithName:@"show"];
+    [stanza addTextNode:_userPresenceShow];
+    [stanza up]
+    [stanza addChildWithName:@"x" andAttributes:{"xmlns": "vcard-temp:x:update"}];
+
+    // debug
+    //[self registerSelector:@selector(_didNotifyVCardUpdate:) ofObject:self withDict:params];
+
+    [self send:stanza];
+}
+
+/*! called when notification of vCard changes have been sent
+*/
+- (void)_didNotifyVCardUpdate:(TNStropheStanza)aStanza
+{
+    CPLog.trace([aStanza stringValue]);
 }
 
 
@@ -520,6 +606,8 @@
             [aDict valueForKey:@"id"],
             from,
             [aDict valueForKey:@"options"]);
+
+    [_registeredHandlers addObject:handlerId];
 
     return handlerId;
 }
@@ -570,6 +658,8 @@
             from,
             [aDict valueForKey:@"options"]);
 
+    [_registeredHandlers addObject:handlerId];
+
     return handlerId;
 }
 
@@ -609,11 +699,12 @@
             from,
             [aDict valueForKey:@"options"]);
 
+    [_registeredTimedHandlers addObject:handlerId];
+
     return handlerId;
 }
 
 /*! delete a registered selector
-
     @param aHandlerId the handler id to remove
 */
 - (void)deleteRegisteredSelector:(id)aHandlerId
@@ -622,13 +713,23 @@
 }
 
 /*! delete a registered timed selector
-
     @param aHandlerId the handler id to remove
 */
 - (void)deleteRegisteredTimedSelector:(id)aTimedHandlerId
 {
     _connection.deleteTimedHandler(aTimedHandlerId)
 }
+
+/*! unrgister all registered selectors (including timeouted ones)
+*/
+- (void)deleteAllRegisteredSelectors
+{
+    for (var i = 0; i < [_registeredHandlers count]; i++)
+        [self deleteRegisteredSelector:[_registeredHandlers objectAtIndex:i]]
+    for (var i = 0; i < [_registeredTimedHandlers count]; i++)
+        [self deleteRegisteredTimedSelector:[_registeredTimedHandlers objectAtIndex:i]]
+}
+
 
 - (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
@@ -654,12 +755,13 @@
 
     if (self)
     {
-        _JID                = [aCoder decodeObjectForKey:@"_JID"];
-        _password           = [aCoder decodeObjectForKey:@"_password"];
-        _delegate           = [aCoder decodeObjectForKey:@"_delegate"];
-        _boshService        = [aCoder decodeObjectForKey:@"_boshService"];
-        _connection         = [aCoder decodeObjectForKey:@"_connection"];
-        _audioTagReceive    = [aCoder decodeObjectForKey:@"_audioTagReceive"];
+        _JID                        = [aCoder decodeObjectForKey:@"_JID"];
+        _password                   = [aCoder decodeObjectForKey:@"_password"];
+        _delegate                   = [aCoder decodeObjectForKey:@"_delegate"];
+        _boshService                = [aCoder decodeObjectForKey:@"_boshService"];
+        _connection                 = [aCoder decodeObjectForKey:@"_connection"];
+        _registeredHandlers         = [aCoder decodeObjectForKey:@"_registeredHandlers"];
+        _registeredTimedHandlers    = [aCoder decodeObjectForKey:@"_registeredTimedHandlers"];
     }
 
     return self;
@@ -671,8 +773,8 @@
     [aCoder encodeObject:_password forKey:@"_password"];
     [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
-    [aCoder encodeObject:_registeredHandlerDict forKey:@"_registeredHandlerDict"];
-    [aCoder encodeObject:_audioTagReceive forKey:@"_audioTagReceive"];
+    [aCoder encodeObject:_registeredHandlers forKey:@"_registeredHandlers"];
+    [aCoder encodeObject:_registeredTimedHandlers forKey:@"_registeredTimedHandlers"];
 }
 
 @end
