@@ -554,6 +554,7 @@
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
+                // be sure to let the garbage collector all this stuff
                 someUserInfo    = null;
                 aDict           = null;
                 from            = null;
@@ -592,6 +593,7 @@
 
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
 
+                    // be sure to let the garbage collector all this stuff
                     aDict   = null;
                     from    = null;
                     stanza  = null;
@@ -630,18 +632,16 @@
 
 - (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    // _connection.xmlInput = function(elem){
-    //     [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
-    //     elem = null;
-    // }
+    _connection.xmlInput = function(elem){
+        [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
+    }
 }
 
 - (void)rawOutputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    // _connection.xmlOutput = function(elem){
-    //     [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
-    //     elem = null;
-    // }
+    _connection.xmlOutput = function(elem){
+        [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
+    }
 }
 
 @end
