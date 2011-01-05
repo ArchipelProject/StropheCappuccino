@@ -728,6 +728,9 @@
         [self deleteRegisteredSelector:[_registeredHandlers objectAtIndex:i]]
     for (var i = 0; i < [_registeredTimedHandlers count]; i++)
         [self deleteRegisteredTimedSelector:[_registeredTimedHandlers objectAtIndex:i]]
+
+    [_registeredHandlers removeAllObjects];
+    [_registeredTimedHandlers removeAllObjects];
 }
 
 
