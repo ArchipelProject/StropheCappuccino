@@ -97,6 +97,7 @@
         _type               = @"contact";
         _statusIcon         = _imageOffline;
         _XMPPShow           = TNStropheContactStatusOffline;
+        _XMPPStatus         = @"Offline";
         _connection         = aConnection;
         _messagesQueue      = [CPArray array];
         _numberOfEvents     = 0;
