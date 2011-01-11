@@ -157,6 +157,8 @@
 
                 if (presenceStatus)
                     _XMPPStatus = [presenceStatus text];
+                else
+                    _XMPPStatus = "Online";
             }
             break;
         case @"subscribe":
@@ -199,6 +201,8 @@
 
             if (presenceStatus)
                 _XMPPStatus = [presenceStatus text];
+            else
+                _XMPPStatus = "Online";
 
             if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
                 [self getVCard];
