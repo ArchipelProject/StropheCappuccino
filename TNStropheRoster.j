@@ -378,8 +378,6 @@
 */
 - (void)removeContact:(TNStropheContact)aContact
 {
-    [super removeContact:aContact];
-
     var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
         removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
         params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
