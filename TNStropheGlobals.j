@@ -249,6 +249,13 @@ TNStropheRosterPushAddedContactNotification     = @"TNStropheRosterPushAddedCont
 /*!
     @global
     @group TNStropheRoster
+    notification indicates that TNStropheRoster has recieved an update push
+*/
+TNStropheRosterPushUpdatedContactNotification   = @"TNStropheRosterPushUpdatedContactNotification";
+
+/*!
+    @global
+    @group TNStropheRoster
     notification indicates that TNStropheRoster has recieved a remove push
 */
 TNStropheRosterPushRemovedContactNotification   = @"TNStropheRosterPushRemovedContactNotification";
