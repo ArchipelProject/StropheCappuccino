@@ -231,11 +231,11 @@
 */
 - (void)sendComposing
 {
-    if (!_isComposing)
-    {
-        [self sendStatus:@"composing"];
-        _isComposing = YES;
-    }
+    if (_isComposing)
+        return;
+
+    [self sendStatus:@"composing"];
+    _isComposing = YES;
 }
 
 /*! this allows to send "paused" information to a user.

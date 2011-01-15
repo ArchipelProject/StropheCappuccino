@@ -28,8 +28,8 @@
 */
 @implementation TNStropheRoster : TNStropheRosterBase
 {
-    CPArray _groups             @accessors(getter=groups);
-    CPArray _pendingPresence    @accessors(getter=pendingPresence);
+    CPArray         _groups             @accessors(getter=groups);
+    CPDictionary    _pendingPresence    @accessors(getter=pendingPresence);
 }
 
 
@@ -54,7 +54,7 @@
     if (self = [super initWithConnection:aConnection])
     {
         _groups                 = [CPArray array];
-        _pendingPresence        = [CPArray array];
+        _pendingPresence        = [CPDictionary dictionary];
         var rosterPushParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace", @"type", @"set"],
             presenceParams      = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [[_connection JID] bare], @"to"];
         [_connection registerSelector:@selector(_didReceiveRosterPush:) ofObject:self withDict:rosterPushParams];
@@ -166,24 +166,20 @@
         if ([self containsJID:[aStanza from]])
             [[self contactWithJID:[aStanza from]] _didReceivePresence:aStanza];
         else
-            [_pendingPresence addObject:aStanza];
+        {
+            var from = [aStanza fromBare];
+            if (![_pendingPresence containsKey:from])
+                [_pendingPresence setValue:[CPArray array] forKey:from];
+            [[_pendingPresence valueForKey:from] addObject:aStanza];
+        }
     }
 
     return YES;
 }
 
-/*! TODO: use a dictionnary for pending presence
-*/
 - (CPArray)pendingPresenceForJID:(TNStropheJID)aJID
 {
-    var temp = [CPArray array];
-    for (var i = 0; i < [_pendingPresence count]; i++)
-    {
-        var presence = [_pendingPresence objectAtIndex:i];
-        if ([[presence from] bareEquals:aJID])
-            [temp addObject:presence];
-    }
-    return temp;
+    return [_pendingPresence valueForKey:[aJID bare]];
 }
 
 
