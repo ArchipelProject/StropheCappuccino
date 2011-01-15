@@ -285,7 +285,7 @@
     @param aContact the contact
     @return CPArray of TNStropheGroups of the the contact
 */
-- (TNStropheGroup)groupsOfContact:(TNStropheContact)aContact
+- (CPArray)groupsOfContact:(TNStropheContact)aContact
 {
     var tempArray = [CPArray array];
     for (var i = 0; i < [_groups count]; i++)
@@ -353,21 +353,32 @@
 
     var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
         nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-        groupName       = ([aRosterItem firstChildWithName:@"group"] != null) ? [[aRosterItem firstChildWithName:@"group"] text] : "General", // TODO: Handle multiple groups
-        newGroup        = [self groupWithName:groupName orCreate:YES],
+        groupNames      = [aRosterItem childrenWithName:@"group"] || [CPArray array],
         queuedPresence  = [self pendingPresenceForJID:theJID];
 
-    [_contacts addObject:newContact];
-    [newGroup addContact:newContact];
+    [_contacts addObject:contact];
+
+    [groupNames addObject:[_defaultGroup name]];
+
+    for (var i = 0; i < [groupNames count]; i++)
+    {
+        var groupName   = [groupNames objectAtIndex:i],
+            group       = [self groupWithName:groupName orCreate:YES];
+
+        // Fix group names on contact
+        [[contact groupNames] addObject:groupName];
+        // Add contact to all new groups
+        [group addContact:contact];
+    }
 
     for (var j = 0; j < [queuedPresence count]; j++)
         [newContact _didReceivePresence:[queuedPresence objectAtIndex:j]];
 
-    [newContact setNickname:nickname];
-    [newContact getMessages];
-    [newContact setSubscription:subscription];
+    [contact setNickname:nickname];
+    [contact getMessages];
+    [contact setSubscription:subscription];
 
-    return newContact;
+    return contact;
 }
 
 /*! update a contact from a item XML node from roster iq
@@ -385,9 +396,6 @@
     }
 
     var contact         = [self contactWithJID:theJID],
-        nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-        groupName       = ([aRosterItem firstChildWithName:@"group"] != null) ? [[aRosterItem firstChildWithName:@"group"] text] : "General", // TODO: Handle multiple groups
-        newGroup        = [self groupWithName:groupName orCreate:YES],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
     if (subscription === @"remove")
@@ -408,6 +416,11 @@
     }
     else
     {
+        var nickname    = [aRosterItem valueForAttribute:@"name"] || [theJID node],
+            groupNames  = [aRosterItem childrenWithName:@"group"] || [CPArray array];
+
+        [groupNames addObject:[_defaultGroup name]];
+
         [contact setNickname:nickname];
 
         // Remove contact from all groups
@@ -415,13 +428,16 @@
         for (var i = 0; i < [oldGroups count]; i++)
             [[oldGroup objectAtIndex:i] removeContact:contact];
 
-        // Fix group names on contact
-        [[contact groupNames] removeAllObjects];
-        [[contact groupNames] addObject:groupName];
+        for (var i = 0; i < [groupNames count]; i++)
+        {
+            var groupName   = [groupNames objectAtIndex:i],
+                group       = [self groupWithName:groupName orCreate:YES];
 
-        // Add contact to all new groups
-        for (var i = 0; i < [[contact groupNames] count]; i++)
-            [self groupWithName:[[contact groupNames] objectAtIndex:i] addContact:contact];
+            // Fix group names on contact
+            [[contact groupNames] addObject:groupName];
+            // Add contact to all new groups
+            [group addContact:contact];
+        }
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushUpdatedContactNotification object:self userInfo:contact];
     }

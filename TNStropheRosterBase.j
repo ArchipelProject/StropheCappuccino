@@ -83,9 +83,9 @@
 #pragma mark -
 #pragma mark Contacts
 
-- (TNStropheGroup)groupOfContact:(TNStropheContact)aContact
+- (CPArray)groupsOfContact:(TNStropheContact)aContact
 {
-    CPLog.error('TNStropheRosterBase groupOfContact must be implemented in sub-classes.');
+    CPLog.error('TNStropheRosterBase groupsOfContact must be implemented in sub-classes.');
     return;
 }
 
