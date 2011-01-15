@@ -125,7 +125,7 @@
         theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
         subscription    = [item valueForAttribute:@"subscription"],
         allowedSubs     = [CPArray arrayWithObjects:@"none", @"to", @"from", @"both", @"remove"],
-        response        = [TNStropheStanza iqTo:[aStanza from] withAttributes:{@"id": [aStanza id], @"type": @"result"}],
+        response        = [TNStropheStanza iqTo:[aStanza from] withAttributes:{@"id": [aStanza ID], @"type": @"result"}],
         contact;
 
     /*! A receiving client MUST ignore the stanza unless it has no 'from' attribute (i.e., implicitly from the
