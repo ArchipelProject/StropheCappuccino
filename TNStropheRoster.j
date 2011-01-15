@@ -260,6 +260,8 @@
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
+    for (var i = 0; i < [aGroup count]; i++)
+        [self changeGroup:_defaultGroup ofContact:[[aGroup contacts] objectAtIndex:i]];
     [_groups removeObject:aGroup];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
 }
