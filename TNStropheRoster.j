@@ -354,7 +354,8 @@
     var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
         nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
         groupNames      = [aRosterItem childrenWithName:@"group"] || [CPArray array],
-        queuedPresence  = [self pendingPresenceForJID:theJID];
+        queuedPresence  = [self pendingPresenceForJID:theJID],
+        subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
     [_contacts addObject:contact];
 
@@ -375,8 +376,9 @@
         [newContact _didReceivePresence:[queuedPresence objectAtIndex:j]];
 
     [contact setNickname:nickname];
-    [contact getMessages];
     [contact setSubscription:subscription];
+
+    [contact getMessages];
 
     return contact;
 }
