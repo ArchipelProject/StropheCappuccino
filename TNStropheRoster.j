@@ -125,14 +125,14 @@
         theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
         subscription    = [item valueForAttribute:@"subscription"],
         allowedSubs     = [CPArray arrayWithObjects:@"none", @"to", @"from", @"both", @"remove"],
-        response        = [TNStropheStanza iqTo:[item from] withAttributes:{@"id": [item id], @"type": @"result"}],
+        response        = [TNStropheStanza iqTo:[aStanza from] withAttributes:{@"id": [aStanza id], @"type": @"result"}],
         contact;
 
     /*! A receiving client MUST ignore the stanza unless it has no 'from' attribute (i.e., implicitly from the
         bare JID of the user's account) or it has a 'from' attribute whose value matches the user's bare
         JID <user@domainpart>.
     */
-    if ([item from] && [item from] != [[_connection JID] bare])
+    if ([aStanza from] && [aStanza from] != [[_connection JID] bare])
         return;
 
     /*! TODO: Should only send this if the stuff below has actually been successful
