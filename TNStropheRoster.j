@@ -71,69 +71,6 @@
 #pragma mark -
 #pragma mark Fetch
 
-/*! add a contact into the roster from a item XML node from roster iq
-    @param aRosterItem TNXMLNode representing the roster item
-    @param return a new TNStropheContact
-*/
-- (void)_addContactFromRosterItem:(TNXMLNode)aRosterItem
-{
-    var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
-
-    if ([self containsJID:theJID])
-    {
-        CPLog.warn("Cannot add: roster already contains " + theJID)
-        return;
-    }
-
-    if ([theJID bareEquals:[_connection JID]])
-    {
-        CPLog.warn("Cannot add: jid is the current account JID " + theJID)
-        return;
-    }
-
-    var nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-        groupName       = ([aRosterItem firstChildWithName:@"group"] != null) ? [[aRosterItem firstChildWithName:@"group"] text] : "General",
-        newGroup        = [self groupWithName:groupName orCreate:YES],
-        newContact      = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
-        queuedPresence  = [self pendingPresenceForJID:theJID];
-
-    [_contacts addObject:newContact];
-    [newGroup addContact:newContact];
-
-    for (var j = 0; j < [queuedPresence count]; j++)
-        [newContact _didReceivePresence:[queuedPresence objectAtIndex:j]];
-
-    [newContact setNickname:nickname];
-    [newContact getMessages];
-    [newContact setSubscription:[aRosterItem valueForAttribute:@"subscription"]];
-
-    return newContact;
-}
-
-/*! remove a contact from the roster from a item XML node from roster iq
-    @param aRosterItem TNXMLNode representing the roster item
-*/
-- (void)_removeContactFromRosterItem:(TNXMLNode)aRosterItem
-{
-    var theJID  = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
-
-    if (![self containsJID:theJID])
-    {
-        CPLog.warn("Cannot remove: roster do not contains " + theJID)
-        return;
-    }
-
-    var contact = [self contactWithJID:theJID],
-        group   = [self groupOfContact:contact];
-
-    [group removeContact:contact];
-    [_contacts removeObject:contact];
-
-    if ([[group contacts] count] === 0)
-        [self removeGroup:group];
-}
-
-
 /*! ask the server to get the roster of the TNStropheConnection user
 */
 - (void)getRoster
@@ -378,6 +315,45 @@
     return NO;
 }
 
+/*! add a contact into the roster from a item XML node from roster iq
+    @param aRosterItem TNXMLNode representing the roster item
+    @param return a new TNStropheContact
+*/
+- (void)_addContactFromRosterItem:(TNXMLNode)aRosterItem
+{
+    var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
+
+    if ([self containsJID:theJID])
+    {
+        CPLog.warn("Cannot add: roster already contains " + theJID)
+        return;
+    }
+
+    if ([theJID bareEquals:[_connection JID]])
+    {
+        CPLog.warn("Cannot add: jid is the current account JID " + theJID)
+        return;
+    }
+
+    var nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
+        groupName       = ([aRosterItem firstChildWithName:@"group"] != null) ? [[aRosterItem firstChildWithName:@"group"] text] : "General",
+        newGroup        = [self groupWithName:groupName orCreate:YES],
+        newContact      = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
+        queuedPresence  = [self pendingPresenceForJID:theJID];
+
+    [_contacts addObject:newContact];
+    [newGroup addContact:newContact];
+
+    for (var j = 0; j < [queuedPresence count]; j++)
+        [newContact _didReceivePresence:[queuedPresence objectAtIndex:j]];
+
+    [newContact setNickname:nickname];
+    [newContact getMessages];
+    [newContact setSubscription:[aRosterItem valueForAttribute:@"subscription"]];
+
+    return newContact;
+}
+
 /*! remove a TNStropheContact from the roster
 
     @param aContact the contact to remove
@@ -398,6 +374,15 @@
     [_connection send:removeReq];
 }
 
+/*! remove a contact from the roster according to its JID
+
+    @param aJID the JID of the contact to remove
+*/
+- (void)removeContactWithJID:(TNStropheJID)aJID
+{
+    [self removeContact:[self contactWithJID:aJID]];
+}
+
 - (BOOL)_didRemoveContact:(TNStropheStanza)aStanza userInfo:(TNStropheContact)theContact
 {
     if ([aStanza type] === @"result")
@@ -411,16 +396,28 @@
     return NO;
 }
 
-
-/*! remove a contact from the roster according to its JID
-
-    @param aJID the JID of the contact to remove
+/*! remove a contact from the roster from a item XML node from roster iq
+    @param aRosterItem TNXMLNode representing the roster item
 */
-- (void)removeContactWithJID:(TNStropheJID)aJID
+- (void)_removeContactFromRosterItem:(TNXMLNode)aRosterItem
 {
-    [self removeContact:[self contactWithJID:aJID]];
-}
+    var theJID  = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
 
+    if (![self containsJID:theJID])
+    {
+        CPLog.warn("Cannot remove: roster do not contains " + theJID)
+        return;
+    }
+
+    var contact = [self contactWithJID:theJID],
+        group   = [self groupOfContact:contact];
+
+    [group removeContact:contact];
+    [_contacts removeObject:contact];
+
+    if ([[group contacts] count] === 0)
+        [self removeGroup:group];
+}
 
 
 #pragma mark -
