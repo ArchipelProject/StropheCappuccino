@@ -179,7 +179,7 @@
             return group;
     }
 
-    return nil;
+    return;
 }
 
 @end

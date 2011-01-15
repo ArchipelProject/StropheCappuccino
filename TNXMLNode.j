@@ -283,7 +283,7 @@
     if (elements && (elements.length > 0))
         return [TNXMLNode nodeWithXMLNode:elements[0]];
     else
-        return nil;
+        return;
 }
 
 /*! get all the children of the current element

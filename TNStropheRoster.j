@@ -249,7 +249,7 @@
 - (TNStropheGroup)addGroupWithName:(CPString)aGroupName
 {
     if ([self containsGroupWithName:aGroupName])
-        return nil;
+        return;
 
     return [self addGroup:[TNStropheGroup stropheGroupWithName:aGroupName]];
 }
@@ -302,7 +302,7 @@
         if ([group name] == aGroupName)
             return group;
     }
-    return nil;
+    return;
 }
 
 /*! return or create and return a TNStropheGroup with aGroupName
@@ -332,7 +332,7 @@
             return group;
     }
 
-    return nil;
+    return;
 }
 
 #pragma mark -

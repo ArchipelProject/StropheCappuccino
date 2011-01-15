@@ -168,7 +168,7 @@
             return node;
     }
 
-    return nil;
+    return;
 }
 
 /*! returns the node with given name, or null if not it not exists

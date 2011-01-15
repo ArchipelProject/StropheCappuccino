@@ -144,7 +144,7 @@
             return contact;
     }
 
-    return nil;
+    return;
 }
 
 /*! return the first TNStropheContact matching to the given bare JID
@@ -160,7 +160,7 @@
             return contact;
     }
 
-    return nil;
+    return;
 }
 
 

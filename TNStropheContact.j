@@ -571,7 +571,7 @@
 - (TNStropheStanza)popMessagesQueue
 {
     if ([_messagesQueue count] == 0)
-        return Nil;
+        return;
 
     var message = [_messagesQueue objectAtIndex:0];
 
