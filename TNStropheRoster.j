@@ -114,7 +114,10 @@
         theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
         subscription    = [item valueForAttribute:@"subscription"],
         allowedSubs     = [CPArray arrayWithObjects:@"none", @"to", @"from", @"both", @"remove"],
+        response        = [TNStropheStanza iqTo:[item from] withAttributes:{@"id": [item id], @"type": @"result"}],
         contact;
+
+    [_connection send:response];
 
     if (!subscription || ![allowedSubs containsObject:subscription])
         subscription = @"none";
