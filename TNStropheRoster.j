@@ -113,7 +113,11 @@
     var item            = [aStanza firstChildWithName:@"item"],
         theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
         subscription    = [item valueForAttribute:@"subscription"],
+        allowedSubs     = [CPArray arrayWithObjects:@"none", @"to", @"from", @"both", @"remove"],
         contact;
+
+    if (!subscription || ![allowedSubs containsObject:subscription])
+        subscription = @"none";
 
     switch (subscription)
     {
@@ -343,7 +347,12 @@
         groupName       = ([aRosterItem firstChildWithName:@"group"] != null) ? [[aRosterItem firstChildWithName:@"group"] text] : "General",
         newGroup        = [self groupWithName:groupName orCreate:YES],
         newContact      = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
-        queuedPresence  = [self pendingPresenceForJID:theJID];
+        queuedPresence  = [self pendingPresenceForJID:theJID],
+        subscription    = [aRosterItem valueForAttribute:@"subscription"],
+        allowedSubs     = [CPArray arrayWithObjects:@"none", @"to", @"from", @"both"];
+
+    if (!subscription || ![allowedSubs containsObject:subscription])
+        subscription = @"none";
 
     [_contacts addObject:newContact];
     [newGroup addContact:newContact];
@@ -353,7 +362,7 @@
 
     [newContact setNickname:nickname];
     [newContact getMessages];
-    [newContact setSubscription:[aRosterItem valueForAttribute:@"subscription"]];
+    [newContact setSubscription:subscription];
 
     return newContact;
 }
