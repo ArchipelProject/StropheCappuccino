@@ -44,6 +44,7 @@
     CPString            _vCard          @accessors(property=vCard);
     CPString            _XMPPShow       @accessors(property=XMPPShow);
     CPString            _XMPPStatus     @accessors(property=XMPPStatus);
+    CPString            _subscription   @accessors(property=subscription);
     TNBase64Image       _avatar         @accessors(property=avatar);
     TNStropheConnection _connection     @accessors(property=connection);
 
@@ -269,6 +270,12 @@
 - (void)askSubscription
 {
     [_connection send:[TNStropheStanza presenceTo:_JID withAttributes:{@"type": @"subscribe"} bare:YES]];
+}
+
+- (CPString)setSubscription:(CPString)aSubscription
+{
+    _subcription = aSubscription;
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactSubscriptionUpdatedNotification object:self];
 }
 
 

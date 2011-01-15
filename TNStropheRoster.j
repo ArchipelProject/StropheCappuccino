@@ -105,6 +105,7 @@
 
     [newContact setNickname:nickname];
     [newContact getMessages];
+    [newContact setSubscription:[aRosterItem valueForAttribute:@"subscription"]];
 
     return newContact;
 }
@@ -168,22 +169,20 @@
     {
         for (var i = 0; i < [items count]; i++)
         {
-            var item    = [items objectAtIndex:i],
-                theJID  = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]];
+            var item            = [items objectAtIndex:i],
+                theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
+                subscription    = [item valueForAttribute:@"subscription"],
+                contact;
 
-            if ([item valueForAttribute:@"subscription"] === @"remove")
+            if (subscription === @"remove")
             {
-                var contact = [self contactWithJID:theJID];
-                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
+                contact = [self contactWithJID:theJID];
                 [self _removeContactFromRosterItem:item];
+                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
             }
-
-            else if ([item valueForAttribute:@"subscription"] === @"both")
+            else if (subscription === @"both")
             {
-                [self _addContactFromRosterItem:item];
-
-                var contact = [self contactWithJID:theJID];
-
+                contact = [self _addContactFromRosterItem:item];
                 [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushAddedContactNotification object:self userInfo:contact];
             }
         }

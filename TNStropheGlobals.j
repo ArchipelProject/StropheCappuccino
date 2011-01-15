@@ -133,80 +133,86 @@ TNStropheContactStatusOnline     = @"online";
     @group TNStropheContact
     notification sent when nickname of contact has been updated
 */
-TNStropheContactNicknameUpdatedNotification = @"TNStropheContactNicknameUpdatedNotification";
+TNStropheContactNicknameUpdatedNotification     = @"TNStropheContactNicknameUpdatedNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when group of contact have been updated
 */
-TNStropheContactGroupUpdatedNotification    = @"TNStropheContactGroupUpdatedNotification";
+TNStropheContactGroupUpdatedNotification        = @"TNStropheContactGroupUpdatedNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when presence status of contact has been updated
 */
-TNStropheContactPresenceUpdatedNotification = @"TNStropheContactPresenceUpdatedNotification";
+TNStropheContactPresenceUpdatedNotification     = @"TNStropheContactPresenceUpdatedNotification";
+/*!
+    @global
+    @group TNStropheContact
+    notification sent when subscription status of contact has been updated
+*/
+TNStropheContactSubscriptionUpdatedNotification = @"TNStropheContactSubscriptionUpdatedNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when contact receive its vCard
 */
-TNStropheContactVCardReceivedNotification = @"TNStropheContactVCardReceivedNotification";
+TNStropheContactVCardReceivedNotification       = @"TNStropheContactVCardReceivedNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when contact receive a message
 */
-TNStropheContactMessageReceivedNotification = @"TNStropheContactMessageReceivedNotification";
+TNStropheContactMessageReceivedNotification     = @"TNStropheContactMessageReceivedNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when all messages in messages queue have been treated
 */
-TNStropheContactMessageTreatedNotification  = @"TNStropheContactMessageTreatedNotification";
+TNStropheContactMessageTreatedNotification      = @"TNStropheContactMessageTreatedNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when message have been sent to the contact
 */
-TNStropheContactMessageSentNotification     = @"TNStropheContactMessageSentNotification";
+TNStropheContactMessageSentNotification         = @"TNStropheContactMessageSentNotification";
 /*!
     @global
     @group TNStropheContact
     notification sent when stanza have been sent to the contact
 */
-TNStropheContactStanzaSentNotification      = @"TNStropheContactStanzaSentNotification"
+TNStropheContactStanzaSentNotification          = @"TNStropheContactStanzaSentNotification"
 
 /*!
     @global
     @group TNStropheContactMessage
     notification sent when contact is composing a message
 */
-TNStropheContactMessageComposing            = @"TNStropheContactMessageComposing";
+TNStropheContactMessageComposing                = @"TNStropheContactMessageComposing";
 /*!
     @global
     @group TNStropheContactMessage
     notification sent when contact stops composing a message
 */
-TNStropheContactMessagePaused               = @"TNStropheContactMessagePaused";
+TNStropheContactMessagePaused                   = @"TNStropheContactMessagePaused";
 /*!
     @global
     @group TNStropheContactMessage
     notification sent when chat with contact is active
 */
-TNStropheContactMessageActive               = @"TNStropheContactMessageActive";
+TNStropheContactMessageActive                   = @"TNStropheContactMessageActive";
 /*!
     @global
     @group TNStropheContactMessage
     notification sent when chat with contact is unactive
 */
-TNStropheContactMessageInactive             = @"TNStropheContactMessageInactive";
+TNStropheContactMessageInactive                 = @"TNStropheContactMessageInactive";
 /*!
     @global
     @group TNStropheContactMessage
     notification sent when contact leave chat (close window most of the time)
 */
-TNStropheContactMessageGone                 = @"TNStropheContactMessageGone";
+TNStropheContactMessageGone                     = @"TNStropheContactMessageGone";
 
 
 #pragma mark -
