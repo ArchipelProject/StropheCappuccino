@@ -353,50 +353,38 @@
 */
 - (void)changeNickname:(CPString)newNickname
 {
+    var oldNickname = _nickname;
     _nickname = newNickname;
-
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
-    [stanza addChildWithName:@"group" andAttributes:nil];
-    [stanza addTextNode:_groupName];
-
-    [_connection send:stanza];
-
+    [self sendRosterSet];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
+    _nickname = oldNickname;
 }
 
 /*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
 */
 - (void)changeGroup:(TNStropheGroup)newGroup
 {
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
-    [stanza addChildWithName:@"group" andAttributes:nil];
-    [stanza addTextNode:[newGroup name]];
-
-    [_connection send:stanza];
-
-    _groupName = [newGroup name];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+    [self changeGroupName:[newGroup name]];
 }
 
 - (void)changeGroupName:(CPString)aNewName
 {
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    var oldGroupName = _groupName;
+    _groupName = aNewName;
+    [self sendRosterSet];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
+    _groupName = oldGroupName;
+}
 
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+- (void)sendRosterSet
+{
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+    [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
     [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
-    [stanza addChildWithName:@"group" andAttributes:nil];
+    [stanza addChildWithName:@"group"];
     [stanza addTextNode:aNewName];
 
     [_connection send:stanza];
-
-    _groupName = aNewName;
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
 

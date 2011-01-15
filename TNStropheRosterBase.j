@@ -226,9 +226,6 @@
 */
 - (void)changeGroup:(TNStropheGroup)newGroup ofContact:(TNStropheContact)aContact
 {
-    [[self groupOfContact:aContact] removeContact:aContact];
-
-    [newGroup addContact:aContact];
     [aContact changeGroup:newGroup];
 }
 

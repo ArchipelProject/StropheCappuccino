@@ -313,16 +313,12 @@
 
     var uid         = [_connection getUniqueId],
         addReq      = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
-        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
-
-    [addReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [addReq addChildWithName:@"item" andAttributes:{"JID": [aJID full], "name": aName}];
-    [addReq addChildWithName:@"group" andAttributes:nil];
-    [addReq addTextNode:aGroupName];
+        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
+        contact     = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
 
     [_connection registerSelector:@selector(_didAddContact:userInfo:) ofObject:self withDict:params userInfo:aJID];
 
-    [_connection send:addReq];
+    [contact sendRosterSet];
 }
 
 - (BOOL)_didAddContact:(TNStropheStanza)aStanza userInfo:(TNStropheJID)theJID
