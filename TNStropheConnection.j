@@ -247,10 +247,7 @@
                     _connected          = NO;
                     break;
                 case Strophe.Status.CONNECTED:
-                    var presenceHandleParams = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [_JID bare], @"from", {@"matchBare": true}, @"options"];
-                    [self registerSelector:@selector(_didPresenceUpdate:) ofObject:self withDict:presenceHandleParams];
-                    [self setPresenceShow:TNStropheContactStatusOnline status:@""];
-                    [self sendCAPS];
+                    [self _sendInitialPresence];
                     selector            = @selector(onStropheConnected:);
                     notificationName    = TNStropheConnectionStatusConnected;
                     _connected          = YES;
@@ -264,6 +261,19 @@
 
         [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
     }, /* wait */ _connectionTimeout, /* hold */ _maxConnections);
+}
+
+- (void)_sendInitialPresence
+{
+    /*! Upon authenticating with a server and binding a resource (thus becoming a connected resource as
+        defined in [XMPP‑CORE]), a client SHOULD request the roster before sending initial presence
+    */
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionWillSendInitialPresenceNotification object:self];
+
+    var presenceHandleParams = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [_JID bare], @"from", {@"matchBare": true}, @"options"];
+    [self registerSelector:@selector(_didPresenceUpdate:) ofObject:self withDict:presenceHandleParams];
+    [self setPresenceShow:TNStropheContactStatusOnline status:@""];
+    [self sendCAPS];
 }
 
 /*! this disconnect the XMPP connection

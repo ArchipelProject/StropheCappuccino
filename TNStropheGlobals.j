@@ -83,6 +83,13 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 /*!
     @global
     @group TNStropheConnectionPresence
+    Notification sent before sending initial presence
+*/
+TNStropheConnectionWillSendInitialPresenceNotification = @"TNStropheConnectionWillSendInitialPresenceNotification";
+
+/*!
+    @global
+    @group TNStropheConnectionPresence
     Notification sent when other connection update presence
 */
 TNStropheConnectionPresenceUpdatedNotification = @"TNStropheConnectionPresenceUpdatedNotification";
