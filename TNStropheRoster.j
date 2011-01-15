@@ -117,6 +117,13 @@
         response        = [TNStropheStanza iqTo:[item from] withAttributes:{@"id": [item id], @"type": @"result"}],
         contact;
 
+    /*! A receiving client MUST ignore the stanza unless it has no 'from' attribute (i.e., implicitly from the
+        bare JID of the user's account) or it has a 'from' attribute whose value matches the user's bare
+        JID <user@domainpart>.
+    */
+    if ([item from] && [item from] != [[_connection JID] bare])
+        return;
+
     [_connection send:response];
 
     if (!subscription || ![allowedSubs containsObject:subscription])
