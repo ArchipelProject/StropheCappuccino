@@ -353,13 +353,17 @@
 
     var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
         nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-        groupNames      = [aRosterItem childrenWithName:@"group"] || [CPArray array],
+        groupNodes      = [aRosterItem childrenWithName:@"group"],
+        groupNames      = [CPArray array],
         queuedPresence  = [self pendingPresenceForJID:theJID],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
     [_contacts addObject:contact];
 
     [groupNames addObject:[_defaultGroup name]];
+
+    for (var i = 0; i < [groupNodes count]; i++)
+        [groupNames addObject:[[groupNodes objectAtIndex:i] text]];
 
     for (var i = 0; i < [groupNames count]; i++)
     {
@@ -419,9 +423,13 @@
     else
     {
         var nickname    = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-            groupNames  = [aRosterItem childrenWithName:@"group"] || [CPArray array];
+            groupNodes  = [aRosterItem childrenWithName:@"group"],
+            groupNames  = [CPArray array];
 
         [groupNames addObject:[_defaultGroup name]];
+
+        for (var i = 0; i < [groupNodes count]; i++)
+            [groupNames addObject:[[groupNodes objectAtIndex:i] text]];
 
         [contact setNickname:nickname];
 
