@@ -53,8 +53,12 @@
 {
     if (self = [super initWithConnection:aConnection])
     {
-        _groups             = [CPArray array];
-        _pendingPresence    = [CPArray array];
+        _groups                 = [CPArray array];
+        _pendingPresence        = [CPArray array];
+        var rosterPushParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace", @"type", @"set"],
+            presenceParams      = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [[_connection JID] bare], @"to"];
+        [_connection registerSelector:@selector(_didReceiveRosterPush:) ofObject:self withDict:rosterPushParams];
+        [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:presenceParams];
     }
 
     return self;
@@ -75,56 +79,56 @@
 */
 - (void)getRoster
 {
-    var uid             = [_connection getUniqueIdWithSuffix:@"roster"],
-        rosteriq        = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"get"}],
-        rosterParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace"],
-        presenceParams  = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [[_connection JID] bare], @"to"];
+    var uid                 = [_connection getUniqueIdWithSuffix:@"roster"],
+        rosteriq            = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"get"}],
+        rosterResultParams  = [CPDictionary dictionaryWithObjectsAndKeys:@"id", uid];
 
     [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
 
-    [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:presenceParams];
-    [_connection registerSelector:@selector(_didReceiveRoster:) ofObject:self withDict:rosterParams];
+    [_connection registerSelector:@selector(_didReceiveRosterResult:) ofObject:self withDict:rosterResultParams];
 
     [_connection send:rosteriq];
 }
 
 /*! this called when the roster is recieved. Will post TNStropheRosterRetrievedNotification
-    @return NO to remove the selector registred from TNStropheConnection
+    @return NO to remove the selector registered from TNStropheConnection
 */
-- (BOOL)_didReceiveRoster:(id)aStanza
+- (BOOL)_didReceiveRosterResult:(id)aStanza
 {
     var items = [aStanza childrenWithName:@"item"];
 
-    if ([aStanza type] === @"result")
-    {
-        for (var i = 0; i < [items count]; i++)
-            [self _addContactFromRosterItem:[items objectAtIndex:i]];
+    for (var i = 0; i < [items count]; i++)
+        [self _addContactFromRosterItem:[items objectAtIndex:i]];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
-    }
-    else if ([aStanza type] === @"set")
-    {
-        for (var i = 0; i < [items count]; i++)
-        {
-            var item            = [items objectAtIndex:i],
-                theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
-                subscription    = [item valueForAttribute:@"subscription"],
-                contact;
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
 
-            if (subscription === @"remove")
-            {
-                contact = [self contactWithJID:theJID];
-                [self _removeContactFromRosterItem:item];
-                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
-            }
-            else if (subscription === @"both")
-            {
-                contact = [self _addContactFromRosterItem:item];
-                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushAddedContactNotification object:self userInfo:contact];
-            }
-        }
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushNotification object:self];
+    return NO;
+}
+
+/*! this called when a roster push is recieved. Will post TNStropheRosterPushNotification
+    @return YES to keep the selector registered with TNStropheConnection
+*/
+- (BOOL)_didReceiveRosterPush:(id)aStanza
+{
+    var item            = [aStanza firstChildWithName:@"item"],
+        theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
+        subscription    = [item valueForAttribute:@"subscription"],
+        contact;
+
+    switch (subscription)
+    {
+        case @"remove":
+            contact = [self contactWithJID:theJID];
+            [self _removeContactFromRosterItem:item];
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
+        break;
+        case @"both":
+            contact = [self _addContactFromRosterItem:item];
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushAddedContactNotification object:self userInfo:contact];
+        break;
     }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushNotification object:self];
 
     return YES;
 }
