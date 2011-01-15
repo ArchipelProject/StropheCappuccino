@@ -274,18 +274,19 @@
 
 /*! return the group of given contact
     @param aContact the contact
-    @return TNStropheGroup of the the contact
+    @return CPArray of TNStropheGroups of the the contact
 */
-- (TNStropheGroup)groupOfContact:(TNStropheContact)aContact
+- (TNStropheGroup)groupsOfContact:(TNStropheContact)aContact
 {
+    var tempArray = [CPArray array];
     for (var i = 0; i < [_groups count]; i++)
     {
         var group = [_groups objectAtIndex:i];
         if ([[group contacts] containsObject:aContact])
-            return group;
+            [tempArray addObject:group];
     }
 
-    return;
+    return tempArray;
 }
 
 #pragma mark -

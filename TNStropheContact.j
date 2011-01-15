@@ -37,7 +37,7 @@
     CPImage             _statusIcon     @accessors(property=statusIcon);
     CPNumber            _numberOfEvents @accessors(property=numberOfEvents);
     TNStropheJID        _JID            @accessors(property=JID);
-    CPString            _groupName      @accessors(property=groupName);
+    CPArray             _groupNames     @accessors(property=groupNames);
     CPString            _nickname       @accessors(property=nickname);
     CPString            _nodeName       @accessors(property=nodeName);
     CPString            _type           @accessors(property=type);
@@ -108,7 +108,7 @@
         _resources          = [CPArray array];
 
         _JID                = aJID;
-        _groupName          = aGroupName;
+        _groupNames         = [CPArray arrayWithObject:aGroupName];
 
         if (!_vCard && !_askingVCard)
             [self getVCard];
@@ -128,8 +128,8 @@
 */
 - (BOOL)_didReceivePresence:(TNStropheStanza)aStanza
 {
-    var resource = [aStanza fromResource],
-        presenceStatus = [aStanza firstChildWithName:@"status"];
+    var resource        = [aStanza fromResource],
+        presenceStatus  = [aStanza firstChildWithName:@"status"];
 
     [_JID setResource:[[aStanza from] resource]]
 
@@ -362,18 +362,38 @@
 
 /*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
 */
-- (void)changeGroup:(TNStropheGroup)newGroup
+- (void)addGroup:(TNStropheGroup)newGroup
 {
     [self changeGroupName:[newGroup name]];
 }
 
-- (void)changeGroupName:(CPString)aNewName
+- (void)addGroupName:(CPString)aNewName
 {
-    var oldGroupName = _groupName;
-    _groupName = aNewName;
+    if ([_groupNames containsObject:aNewName])
+        return;
+
+    [_groupNames addObject:aNewName];
     [self sendRosterSet];
+    [_groupNames removeObject:aNewName];
+
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
-    _groupName = oldGroupName;
+}
+
+- (void)removeGroup:(TNStropheGroup)newGroup
+{
+    [self changeGroupName:[newGroup name]];
+}
+
+- (void)removeGroupName:(CPString)aNewName
+{
+    if (![_groupNames containsObject:aNewName])
+        return;
+
+    [_groupNames removeObject:aNewName];
+    [self sendRosterSet];
+    [_groupNames addObject:aNewName];
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
 - (void)sendRosterSet
@@ -381,8 +401,12 @@
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
     [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
     [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
-    [stanza addChildWithName:@"group"];
-    [stanza addTextNode:aNewName];
+
+    for (var i = 0; i < [_groupNames count]; i++)
+    {
+        [stanza addChildWithName:@"group"];
+        [stanza addTextNode:[_groupNames objectAtIndex:i]];
+    }
 
     [_connection send:stanza];
 }
@@ -611,7 +635,7 @@
     {
         _JID            = [aCoder decodeObjectForKey:@"_JID"];
         _nodeName       = [aCoder decodeObjectForKey:@"_nodeName"];
-        _groupName      = [aCoder decodeObjectForKey:@"_groupName"];
+        _groupNames     = [aCoder decodeObjectForKey:@"_groupNames"];
         _nickname       = [aCoder decodeObjectForKey:@"_nickname"];
         _XMPPStatus     = [aCoder decodeObjectForKey:@"_XMPPStatus"];
         _resources      = [aCoder decodeObjectForKey:@"_resources"];
@@ -630,7 +654,7 @@
 {
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_nodeName forKey:@"_nodeName"];
-    [aCoder encodeObject:_groupName forKey:@"_groupName"];
+    [aCoder encodeObject:_groupNames forKey:@"_groupNames"];
     [aCoder encodeObject:_nickname forKey:@"_nickname"];
     [aCoder encodeObject:_XMPPStatus forKey:@"_XMPPStatus"];
     [aCoder encodeObject:_XMPPShow forKey:@"_XMPPShow"];

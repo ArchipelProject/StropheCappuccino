@@ -54,10 +54,16 @@
 
 - (void)changeName:(CPString)aName
 {
+    var oldName = _name;
+
     _name = aName;
 
     for (var i = 0; i < [self count]; i++)
-        [[_contacts objectAtIndex:i] changeGroupName:aName];
+    {
+        var contact = [_contacts objectAtIndex:i];
+        [contact removeGroupName:oldName];
+        [contact addGroupName:_name];
+    }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
 }
