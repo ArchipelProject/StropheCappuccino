@@ -148,7 +148,7 @@
             return NO;
         case @"unavailable":
             [_resources removeObject:resource];
-            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources )
+            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources);
 
             if ([_resources count] == 0)
             {
