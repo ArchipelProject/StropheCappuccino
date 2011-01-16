@@ -27,6 +27,8 @@
     this is an implementation of a basic XMPP Stanza
 */
 @implementation TNStropheStanza: TNXMLNode
+{
+}
 
 #pragma mark -
 #pragma mark Class methods

@@ -32,21 +32,21 @@
 */
 @implementation TNStropheContact: CPObject
 {
+    CPArray             _groupNames     @accessors(property=groupNames);
     CPArray             _messagesQueue  @accessors(property=messagesQueue);
     CPArray             _resources      @accessors(property=resources);
     CPImage             _statusIcon     @accessors(property=statusIcon);
     CPNumber            _numberOfEvents @accessors(property=numberOfEvents);
-    TNStropheJID        _JID            @accessors(property=JID);
-    CPArray             _groupNames     @accessors(property=groupNames);
     CPString            _nickname       @accessors(property=nickname);
     CPString            _nodeName       @accessors(property=nodeName);
+    CPString            _subscription   @accessors(property=subscription);
     CPString            _type           @accessors(property=type);
     CPString            _vCard          @accessors(property=vCard);
     CPString            _XMPPShow       @accessors(property=XMPPShow);
     CPString            _XMPPStatus     @accessors(property=XMPPStatus);
-    CPString            _subscription   @accessors(property=subscription);
     TNBase64Image       _avatar         @accessors(property=avatar);
     TNStropheConnection _connection     @accessors(property=connection);
+    TNStropheJID        _JID            @accessors(property=JID);
 
     BOOL                _isComposing;
     BOOL                _askingVCard;

@@ -80,10 +80,10 @@
     CPArray         _registeredHandlers;
     CPArray         _registeredTimedHandlers;
     CPString        _boshService;
-    id              _connection;
-    CPTimer         _giveUpTimer;
     CPString        _userPresenceShow;
     CPString        _userPresenceStatus;
+    CPTimer         _giveUpTimer;
+    id              _connection;
 }
 
 #pragma mark -

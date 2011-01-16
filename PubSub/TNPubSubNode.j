@@ -32,12 +32,13 @@
 @implementation TNPubSubNode : CPObject
 {
     CPArray                 _content        @accessors(getter=content);
-    id                      _delegate       @accessors(property=delegate);
     CPString                _nodeName       @accessors(getter=name);
+    id                      _delegate       @accessors(property=delegate);
     TNStopheJID             _pubSubServer   @accessors(getter=server);
-    TNStropheConnection     _connection;
-    id                      _eventSelectorID;
+
     CPArray                 _subscriptionIDs;
+    id                      _eventSelectorID;
+    TNStropheConnection     _connection;
 }
 
 

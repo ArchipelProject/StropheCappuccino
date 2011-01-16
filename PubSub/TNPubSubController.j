@@ -33,9 +33,10 @@
     CPArray         _nodes                  @accessors(getter=nodes);
     CPArray         _servers                @accessors(property=servers);
     id              _delegate               @accessors(property=delegate);
-    id              _connection;
+
     CPDictionary    _subscriptionBatches;
     CPDictionary    _unsubscriptionBatches;
+    id              _connection;
     int             _numberOfPromptedServers;
 }
 

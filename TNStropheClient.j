@@ -30,19 +30,16 @@
 
 @implementation TNStropheClient : CPObject
 {
-    id                  _delegate               @accessors(property=delegate);
-    TNStropheConnection _connection             @accessors(property=connection);
-
-    TNStropheJID        _JID                    @accessors(property=JID);
-    CPString            _password               @accessors(property=password);
-
-    TNStropheRoster     _roster                 @accessors(getter=roster);
-
     CPArray             _features               @accessors(readonly);
     CPString            _clientNode             @accessors(property=clientNode);
     CPString            _identityCategory       @accessors(property=identityCategory);
     CPString            _identityName           @accessors(property=identityName);
     CPString            _identityType           @accessors(property=identityType);
+    CPString            _password               @accessors(property=password);
+    id                  _delegate               @accessors(property=delegate);
+    TNStropheConnection _connection             @accessors(property=connection);
+    TNStropheJID        _JID                    @accessors(property=JID);
+    TNStropheRoster     _roster                 @accessors(getter=roster);
 
     CPString            _userPresenceShow;
     CPString            _userPresenceStatus;

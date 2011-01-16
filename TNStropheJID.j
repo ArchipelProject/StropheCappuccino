@@ -28,10 +28,10 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
 */
 @implementation TNStropheJID : CPObject
 {
-    CPString    _node       @accessors(property=node);
-    CPString    _domain     @accessors(property=domain);
-    CPString    _resource   @accessors(property=resource);
     BOOL        _isServer   @accessors(getter=isServer);
+    CPString    _domain     @accessors(property=domain);
+    CPString    _node       @accessors(property=node);
+    CPString    _resource   @accessors(property=resource);
 }
 
 #pragma mark -
