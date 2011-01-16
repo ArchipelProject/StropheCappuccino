@@ -246,9 +246,9 @@
     if (someAttributes)
     {
         if (someAttributes.isa)
-            [someAttributes setValue:((sendToBareJID) ? [aJID bare] : aJID) forKey:"to"]
+            [someAttributes setValue:((sendToBareJID) ? [aJID bare] : aJID) forKey:"to"];
         else
-            someAttributes.to = ((sendToBareJID) ? [aJID bare] : [aJID full])
+            someAttributes.to = ((sendToBareJID) ? [aJID bare] : [aJID full]);
     }
 
     return [super initWithName:aName andAttributes:someAttributes];
