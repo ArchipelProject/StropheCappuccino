@@ -265,7 +265,7 @@
 */
 - (void)unsubscribe
 {
-    [_connection send:[TNStropheStanza presenceTo:_JID WwthAttributes:{@"type": @"unsubscribed"} bare:YES]];
+    [_connection send:[TNStropheStanza presenceTo:_JID withAttributes:{@"type": @"unsubscribed"} bare:YES]];
 }
 
 /*! ask subscribtion to the contact
@@ -275,7 +275,7 @@
     [_connection send:[TNStropheStanza presenceTo:_JID withAttributes:{@"type": @"subscribe"} bare:YES]];
 }
 
-- (CPString)setSubscription:(CPString)aSubscription
+- (void)setSubscription:(CPString)aSubscription
 {
     _subcription = aSubscription;
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactSubscriptionUpdatedNotification object:self];

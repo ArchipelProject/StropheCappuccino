@@ -523,7 +523,7 @@
 #pragma mark -
 #pragma mark Subscriptions
 
-/*! subscribe to the given JID and add in into the roster if needed
+/*! subscribe to the given JID
     @param aJID the JID to subscribe
 */
 - (void)authorizeJID:(TNStropheJID)aJID
@@ -531,7 +531,7 @@
     var contact = [self contactWithJID:aJID];
 
     if (!contact)
-        contact = [self addContact:aJID withName:[aJID node] inGroupWithName:@"General"];
+        return;
 
     [contact subscribe];
 }
@@ -541,6 +541,11 @@
 */
 - (void)unauthorizeJID:(TNStropheJID)aJID
 {
+    var contact = [self contactWithJID:aJID];
+
+    if (!contact)
+        return;
+
     [[self contactWithJID:aJID] unsubscribe];
 }
 
@@ -549,6 +554,11 @@
 */
 - (void)askAuthorizationTo:(TNStropheJID)aJID
 {
+    var contact = [self contactWithJID:aJID];
+
+    if (!contact)
+        return;
+
     [[self contactWithJID:aJID] askSubscription];
 }
 
