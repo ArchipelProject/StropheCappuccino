@@ -89,6 +89,11 @@
 #pragma mark -
 #pragma mark Class methods
 
++ (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
+{
+    Strophe.addNamespace(aName, aValue);
+}
+
 /*! instanciate a TNStropheConnection object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
@@ -113,7 +118,7 @@
     if (self = [super init])
     {
         _registeredHandlers         = [CPArray array];
-        _registeredTimedHandlers    = [CPArray array];;
+        _registeredTimedHandlers    = [CPArray array];
         _connected                  = NO;
         _maxConnections             = 10;
         _connectionTimeout          = 3600;
