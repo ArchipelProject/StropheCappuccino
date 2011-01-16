@@ -380,10 +380,11 @@
 
     [_contacts addObject:contact];
 
-    [groupNames addObject:[_defaultGroup name]];
-
     for (var i = 0; i < [groupNodes count]; i++)
         [groupNames addObject:[[groupNodes objectAtIndex:i] text]];
+
+    if ([groupNames count] === 0)
+        [groupNames addObject:[_defaultGroup name]];
 
     for (var i = 0; i < [groupNames count]; i++)
     {
@@ -446,10 +447,11 @@
             groupNodes  = [aRosterItem childrenWithName:@"group"],
             groupNames  = [CPArray array];
 
-        [groupNames addObject:[_defaultGroup name]];
-
         for (var i = 0; i < [groupNodes count]; i++)
             [groupNames addObject:[[groupNodes objectAtIndex:i] text]];
+
+        if ([groupNames count] === 0)
+            [groupNames addObject:[_defaultGroup name]];
 
         [contact setNickname:nickname];
 
