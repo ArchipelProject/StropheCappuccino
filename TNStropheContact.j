@@ -108,7 +108,10 @@
         _resources          = [CPArray array];
 
         _JID                = aJID;
-        _groupNames         = [CPArray arrayWithObject:aGroupName];
+        _groupNames         = [CPArray array];
+
+        if (aGroupName)
+            [_groupNames addObject:aGroupName];
 
         if (!_vCard && !_askingVCard)
             [self getVCard];

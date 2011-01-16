@@ -371,7 +371,7 @@
         return;
     }
 
-    var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:groupName],
+    var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:nil],
         nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
         groupNodes      = [aRosterItem childrenWithName:@"group"],
         groupNames      = [CPArray array],
