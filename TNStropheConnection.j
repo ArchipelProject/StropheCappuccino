@@ -204,10 +204,12 @@
                     break;
             }
         }
+
         if ([_delegate respondsToSelector:selector])
             [_delegate performSelector:selector withObject:self];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusDidChangeNotification object:self];
     }, /* wait */ _connectionTimeout, /* hold */ _maxConnections);
 }
 

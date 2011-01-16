@@ -80,6 +80,13 @@ TNStropheConnectionStatusDisconnected       = @"TNStropheConnectionStatusDisconn
 */
 TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
+/*!
+    @global
+    @group TNStropheConnectionStatus
+    Notification sent when the connection status changes
+*/
+TNStropheConnectionStatusDidChangeNotification  = @"TNStropheConnectionStatusDidChangeNotification";
+
 #pragma mark -
 #pragma mark globals of TNStropheClient
 
