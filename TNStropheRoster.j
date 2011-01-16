@@ -55,7 +55,7 @@
     {
         _groups                 = [CPArray array];
         _pendingPresence        = [CPDictionary dictionary];
-        var rosterPushParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace", @"type", @"set"],
+        var rosterPushParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace", @"set", @"type"],
             presenceParams      = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [[_connection JID] bare], @"to"];
         [_connection registerSelector:@selector(_didReceiveRosterPush:) ofObject:self withDict:rosterPushParams];
         [_connection registerSelector:@selector(_didReceivePresence:) ofObject:self withDict:presenceParams];
