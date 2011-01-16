@@ -129,7 +129,8 @@
 
 - (void)connect
 {
-    [_connection registerSelector:@selector(_didReceivePing:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"]];
+    var pingDict = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"];
+    [_connection registerSelector:@selector(_didReceivePing:) ofObject:self withDict:pingDict];
     [_connection connectWithJID:_JID andPassword:_password];
 }
 
@@ -149,17 +150,17 @@
 {
     _userPresenceShow   = TNStropheContactStatusOffline;
     _userPresenceStatus = @"";
-    [roster clear];
+    [_roster clear];
 }
 
 - (void)onStropheConnectFail:(id)aConnection
 {
-    [roster clear];
+    [_roster clear];
 }
 
 - (void)onStropheError:(id)aConnection
 {
-    [roster clear];
+    [_roster clear];
 }
 
 
