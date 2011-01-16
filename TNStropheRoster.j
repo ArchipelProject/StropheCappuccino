@@ -83,7 +83,7 @@
 {
     var uid                 = [_connection getUniqueIdWithSuffix:@"roster"],
         rosteriq            = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"get"}],
-        rosterResultParams  = [CPDictionary dictionaryWithObjectsAndKeys:@"id", uid];
+        rosterResultParams  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
     [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
 
