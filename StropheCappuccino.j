@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -23,6 +23,7 @@
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
 @import "TNStropheGroup.j"
+@import "TNStropheClient.j"
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
@@ -30,10 +31,10 @@
 @import "TNPubSub.j"
 @import "MUC/TNStropheMUCRoom.j"
 
-[TNStropheConnection addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
-[TNStropheConnection addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
-[TNStropheConnection addNamespaceWithName:@"X_DATA" value:@"jabber:x:data"];
-[TNStropheConnection addNamespaceWithName:@"PING" value:@"urn:xmpp:ping"];
+[TNStropheClient addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];
+[TNStropheClient addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
+[TNStropheClient addNamespaceWithName:@"X_DATA" value:@"jabber:x:data"];
+[TNStropheClient addNamespaceWithName:@"PING" value:@"urn:xmpp:ping"];
 
 /*! @mainpage
     StropheCappuccino is distributed under the @ref license "AGPL".
