@@ -456,7 +456,7 @@
         // Remove contact from all groups
         var oldGroups = [self groupsOfContact:contact];
         for (var i = 0; i < [oldGroups count]; i++)
-            [[oldGroup objectAtIndex:i] removeContact:contact];
+            [[oldGroups objectAtIndex:i] removeContact:contact];
 
         for (var i = 0; i < [groupNames count]; i++)
         {
@@ -472,7 +472,7 @@
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushUpdatedContactNotification object:self userInfo:contact];
     }
 
-    return newContact;
+    return contact;
 }
 
 /*! remove a TNStropheContact from the roster
