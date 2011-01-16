@@ -328,11 +328,11 @@
 */
 - (void)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroupWithName:(CPString)aGroupName
 {
-    if ([self containsJID:aJID] == YES)
+    if ([self containsJID:aJID])
         return;
 
     if (!aName)
-      aName = [aJID node];
+        aName = [aJID node];
 
     if (!aGroupName)
         aGroupName = @"General";
@@ -341,6 +341,8 @@
         addReq      = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
         params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
         contact     = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
+
+    [contact setNickname:aName];
 
     [_connection registerSelector:@selector(_didAddContact:userInfo:) ofObject:self withDict:params userInfo:aJID];
 
