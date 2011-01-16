@@ -149,6 +149,17 @@
 {
     _userPresenceShow   = TNStropheContactStatusOffline;
     _userPresenceStatus = @"";
+    [roster clear];
+}
+
+- (void)onStropheConnectFail:(id)aConnection
+{
+    [roster clear];
+}
+
+- (void)onStropheError:(id)aConnection
+{
+    [roster clear];
 }
 
 
