@@ -124,6 +124,7 @@
         _connectionTimeout          = 3600;
         _giveupTimeout              = 8.0;
         _currentStatus              = Strophe.Status.DISCONNECTED;
+        _boshService                = aService;
         _connection                 = new Strophe.Connection(_boshService);
         _delegate                   = aDelegate;
     }
@@ -503,6 +504,7 @@
     if (self)
     {
         _delegate                   = [aCoder decodeObjectForKey:@"_delegate"];
+        _boshService                = [aCoder decodeObjectForKey:@"_boshService"];
         _connection                 = [aCoder decodeObjectForKey:@"_connection"];
         _registeredHandlers         = [aCoder decodeObjectForKey:@"_registeredHandlers"];
         _registeredTimedHandlers    = [aCoder decodeObjectForKey:@"_registeredTimedHandlers"];
@@ -513,6 +515,7 @@
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
     [aCoder encodeObject:_registeredHandlers forKey:@"_registeredHandlers"];
     [aCoder encodeObject:_registeredTimedHandlers forKey:@"_registeredTimedHandlers"];
