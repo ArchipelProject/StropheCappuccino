@@ -388,16 +388,6 @@
     CPLog.trace([aStanza stringValue]);
 }
 
-- (id)forwardingTargetForSelector:(SEL)aSelector
-{
-    return _connection;
-}
-
-- (BOOL)respondsToSelector:(SEL)aSelector
-{
-    return [super respondsToSelector:aSelector] || [_connection respondsToSelector:aSelector];
-}
-
 @end
 
 @implementation TNStropheClient (CPCoding)
