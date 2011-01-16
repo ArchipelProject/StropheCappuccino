@@ -75,7 +75,6 @@
     id              _delegate               @accessors(getter=delegate);
     int             _connectionTimeout      @accessors(property=connectionTimeout);
     int             _maxConnections         @accessors(property=maxConnections);
-    TNStropheJID    _JID                    @accessors(property=JID);
 
     CPArray         _registeredHandlers;
     CPArray         _registeredTimedHandlers;
@@ -84,6 +83,7 @@
     CPString        _userPresenceStatus;
     CPTimer         _giveUpTimer;
     id              _connection;
+    TNStropheJID    _JID;
 }
 
 #pragma mark -
@@ -136,12 +136,22 @@
 #pragma mark -
 #pragma mark Connection
 
+- (TNStropheJID)JID
+{
+    if ([_delegate respondsToSelector:@selector(JID)])
+        return [_delegate JID];
+    else
+        return _JID;
+}
+
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 */
 - (void)connectWithJID:(TNStropheJID)aJID andPassword:(CPString)aPassword
 {
     if (_currentStatus !== Strophe.Status.DISCONNECTED)
         return;
+
+    _JID = aJID;
 
     _connection.connect([aJID full], aPassword, function (status, errorCond)
     {
