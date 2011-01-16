@@ -136,6 +136,12 @@
     [_connection disconnect];
 }
 
+- (void)onStropheConnecting:(id)aConnection
+{
+    if ([_delegate respondsToSelector:@selector(onStropheConnecting:)])
+        [_delegate onStropheConnecting:self];
+}
+
 - (void)onStropheConnected:(TNStropheConnection)aConnection
 {
     /*! Upon authenticating with a server and binding a resource (thus becoming a connected resource as
@@ -146,6 +152,22 @@
     [self _sendInitialPresence];
 
     [self _sendCAPS];
+
+    if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
+        [_delegate onStropheConnected:self];
+}
+
+- (void)onStropheConnectFail:(id)aConnection
+{
+    [_roster clear];
+    if ([_delegate respondsToSelector:@selector(onStropheConnectFail:)])
+        [_delegate onStropheConnectFail:self];
+}
+
+- (void)onStropheDisconnecting:(id)aConnection
+{
+    if ([_delegate respondsToSelector:@selector(onStropheDisconnecting:)])
+        [_delegate onStropheDisconnecting:self];
 }
 
 - (void)onStropheDisconnected:(TNStropheConnection)aConnection
@@ -153,16 +175,33 @@
     _userPresenceShow   = TNStropheContactStatusOffline;
     _userPresenceStatus = @"";
     [_roster clear];
+    if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
+        [_delegate onStropheDisconnected:self];
 }
 
-- (void)onStropheConnectFail:(id)aConnection
+- (void)onStropheAuthenticating:(id)aConnection
 {
-    [_roster clear];
+    if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
+        [_delegate onStropheAuthenticating:self];
+}
+
+- (void)onStropheAuthFail:(id)aConnection
+{
+    if ([_delegate respondsToSelector:@selector(onStropheAuthFail:)])
+        [_delegate onStropheAuthFail:self];
 }
 
 - (void)onStropheError:(id)aConnection
 {
     [_roster clear];
+    if ([_delegate respondsToSelector:@selector(onStropheError:)])
+        [_delegate onStropheError:self];
+}
+
+- (void)connection:(id)aConnection errorCondition:(CPString)anErrorCondition
+{
+    if ([_delegate respondsToSelector:@selector(client:errorCondition:)])
+        [_delegate client:self errorCondition:anErrorCondition];
 }
 
 
