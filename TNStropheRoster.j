@@ -400,7 +400,7 @@
     }
 
     for (var j = 0; j < [queuedPresence count]; j++)
-        [newContact _didReceivePresence:[queuedPresence objectAtIndex:j]];
+        [contact _didReceivePresence:[queuedPresence objectAtIndex:j]];
 
     [contact setNickname:nickname];
     [contact setSubscription:subscription];
