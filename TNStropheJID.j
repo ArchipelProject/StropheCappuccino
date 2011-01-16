@@ -105,6 +105,9 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
 */
 - (TNStropheJID)initWithString:(CPString)aStringJID
 {
+    if (!aStringJID)
+        return;
+
     var node = aStringJID.split("@")[0],
         domain,
         resource;
