@@ -67,6 +67,18 @@
 /*! instantiate a TNStropheClient object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
+    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
+
+    @return a valid TNStropheClient
+*/
++ (TNStropheClient)clientWithService:(CPString)aService rosterClass:(id)aRosterClass
+{
+    return [[TNStropheClient alloc] initWithService:aService rosterClass:aRosterClass];
+}
+
+/*! instantiate a TNStropheClient object
+
+    @param aService a url of a bosh service (MUST be complete url with http://)
     @param aJID a JID to connect to the XMPP server
     @param aPassword the password associated to the JID
 
@@ -75,6 +87,20 @@
 + (TNStropheClient)clientWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
 {
     return [[TNStropheClient alloc] initWithService:aService JID:aJID password:aPassword];
+}
+
+/*! instantiate a TNStropheClient object
+
+    @param aService a url of a bosh service (MUST be complete url with http://)
+    @param aJID a JID to connect to the XMPP server
+    @param aPassword the password associated to the JID
+    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
+
+    @return a valid TNStropheClient
+*/
++ (TNStropheClient)clientWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword rosterClass:(id)aRosterClass
+{
+    return [[TNStropheClient alloc] initWithService:aService JID:aJID password:aPassword rosterClass:aRosterClass];
 }
 
 
@@ -87,10 +113,22 @@
 */
 - (id)initWithService:(CPString)aService
 {
+    return [self initWithService:aService rosterClass:nil];
+}
+
+/*! initialize the TNStropheClient
+
+    @param aService a url of a bosh service (MUST be complete url with http://)
+    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
+*/
+- (id)initWithService:(CPString)aService rosterClass:(id)aRosterClass
+{
     if (self = [super init])
     {
         _connection                 = [TNStropheConnection connectionWithService:aService andDelegate:self];
-        _roster                     = [TNStropheRoster rosterWithConnection:_connection];
+        if (!aRosterClass)
+            aRosterClass = TNStropheRoster;
+        _roster                     = [aRosterClass rosterWithConnection:_connection];
         _userPresenceShow           = TNStropheContactStatusOffline;
         _userPresenceStatus         = @"";
         _clientNode                 = @"http://cappuccino.org";
@@ -111,7 +149,19 @@
 */
 - (id)initWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
 {
-    if (self = [self initWithService:aService])
+    return [self initWithService:aService JID:aJID password:aPassword rosterClass:nil];
+}
+
+/*! initialize the TNStropheClient
+
+    @param aService a url of a bosh service (MUST be complete url with http://)
+    @param aJID a JID to connect to the XMPP server
+    @param aPassword the password associated to the JID
+    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
+*/
+- (id)initWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword rosterClass:(id)aRosterClass
+{
+    if (self = [self initWithService:aService rosterClass:aRosterClass])
     {
         _JID        = aJID;
         _password   = aPassword;
