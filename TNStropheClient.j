@@ -134,6 +134,11 @@
     [_connection connectWithJID:_JID andPassword:_password];
 }
 
+- (void)disconnect
+{
+    [_connection disconnect];
+}
+
 - (void)onStropheConnected:(TNStropheConnection)aConnection
 {
     /*! Upon authenticating with a server and binding a resource (thus becoming a connected resource as
