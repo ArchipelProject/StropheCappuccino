@@ -69,15 +69,10 @@
 @implementation TNStropheConnection : CPObject
 {
     BOOL            _connected              @accessors(getter=isConnected);
-    CPArray         _features               @accessors(readonly);
-    CPString        _clientNode             @accessors(property=clientNode);
-    CPString        _identityCategory       @accessors(property=identityCategory);
-    CPString        _identityName           @accessors(property=identityName);
-    CPString        _identityType           @accessors(property=identityType);
     CPString        _password               @accessors(property=password);
     float           _giveupTimeout          @accessors(property=giveupTimeout);
     id              _currentStatus          @accessors(getter=currentStatus);
-    id              _delegate               @accessors(property=delegate);
+    id              _delegate               @accessors(getter=delegate);
     int             _connectionTimeout      @accessors(property=connectionTimeout);
     int             _maxConnections         @accessors(property=maxConnections);
     TNStropheJID    _JID                    @accessors(property=JID);
@@ -94,33 +89,15 @@
 #pragma mark -
 #pragma mark Class methods
 
-+ (void)addNamespaceWithName:(CPString)aName value:(CPString)aValue
-{
-    Strophe.addNamespace(aName, aValue);
-}
-
 /*! instanciate a TNStropheConnection object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
 
     @return a valid TNStropheConnection
 */
-+ (TNStropheConnection)connectionWithService:(CPString)aService
++ (TNStropheConnection)connectionWithService:(CPString)aService andDelegate:(id)aDelegate
 {
-    return [[TNStropheConnection alloc] initWithService:aService];
-}
-
-/*! instanciate a TNStropheConnection object
-
-    @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aJID a JID to connect to the XMPP server
-    @param aPassword the password associated to the JID
-
-    @return a valid TNStropheConnection
-*/
-+ (TNStropheConnection)connectionWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
-{
-    return [[TNStropheConnection alloc] initWithService:aService JID:aJID password:aPassword];
+    return [[TNStropheConnection alloc] initWithService:aService andDelegate:aDelegate];
 }
 
 
@@ -131,11 +108,10 @@
 
     @param aService a url of a bosh service (MUST be complete url with http://)
 */
-- (id)initWithService:(CPString)aService
+- (id)initWithService:(CPString)aService andDelegate:(id)aDelegate
 {
     if (self = [super init])
     {
-        _boshService                = aService;
         _registeredHandlers         = [CPArray array];
         _registeredTimedHandlers    = [CPArray array];;
         _connected                  = NO;
@@ -144,30 +120,7 @@
         _giveupTimeout              = 8.0;
         _currentStatus              = Strophe.Status.DISCONNECTED;
         _connection                 = new Strophe.Connection(_boshService);
-        _userPresenceShow           = TNStropheContactStatusOffline;
-        _userPresenceStatus         = @"";
-        _clientNode                 = @"http://cappuccino.org";
-        _identityCategory           = @"client";
-        _identityName               = @"StropheCappuccino";
-        _identityType               = @"web";
-        _features                   = [Strophe.NS.CAPS, Strophe.NS.DISCO_INFO, Strophe.NS.DISCO_ITEMS];
-    }
-
-    return self;
-}
-
-/*! initialize the TNStropheConnection
-
-    @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aJID a JID to connect to the XMPP server
-    @param aPassword the password associated to the JID
-*/
-- (id)initWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
-{
-    if (self = [self initWithService:aService])
-    {
-        _JID        = aJID;
-        _password   = aPassword;
+        _delegate                   = aDelegate;
     }
 
     return self;
@@ -179,14 +132,12 @@
 
 /*! connect to the XMPP Bosh Service. on different events, messages are sent to delegate and notification are sent
 */
-- (void)connect
+- (void)connectWithJID:(TNStropheJID)aJID andPassword:(CPString)aPassword
 {
     if (_currentStatus !== Strophe.Status.DISCONNECTED)
         return;
 
-    [self registerSelector:@selector(_didReceivePing:) ofObject:self withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type"]];
-
-    _connection.connect([_JID full], _password, function (status, errorCond)
+    _connection.connect([aJID full], aPassword, function (status, errorCond)
     {
         var selector,
             notificationName;
@@ -240,14 +191,11 @@
                     break;
                 case Strophe.Status.DISCONNECTED:
                     [self deleteAllRegisteredSelectors];
-                    _userPresenceShow   = TNStropheContactStatusOffline;
-                    _userPresenceStatus = @"";
                     selector            = @selector(onStropheDisconnected:);
                     notificationName    = TNStropheConnectionStatusDisconnected;
                     _connected          = NO;
                     break;
                 case Strophe.Status.CONNECTED:
-                    [self _sendInitialPresence];
                     selector            = @selector(onStropheConnected:);
                     notificationName    = TNStropheConnectionStatusConnected;
                     _connected          = YES;
@@ -261,19 +209,6 @@
 
         [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
     }, /* wait */ _connectionTimeout, /* hold */ _maxConnections);
-}
-
-- (void)_sendInitialPresence
-{
-    /*! Upon authenticating with a server and binding a resource (thus becoming a connected resource as
-        defined in [XMPP‑CORE]), a client SHOULD request the roster before sending initial presence
-    */
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionWillSendInitialPresenceNotification object:self];
-
-    var presenceHandleParams = [CPDictionary dictionaryWithObjectsAndKeys:@"presence", @"name", [_JID bare], @"from", {@"matchBare": true}, @"options"];
-    [self registerSelector:@selector(_didPresenceUpdate:) ofObject:self withDict:presenceHandleParams];
-    [self setPresenceShow:TNStropheContactStatusOnline status:@""];
-    [self sendCAPS];
 }
 
 /*! this disconnect the XMPP connection
@@ -318,66 +253,9 @@
     _connection.flush();
 }
 
-- (BOOL)_didReceivePing:(TNStropheStanza)aStanza
+- (TNStropheJID)JID
 {
-    if ([aStanza containsChildrenWithName:@"ping"] && [[aStanza firstChildWithName:@"ping"] namespace] == Strophe.NS.PING)
-    {
-        CPLog.debug("Ping received. Sending pong.");
-        [self send:[TNStropheStanza iqWithAttributes:{'to': [[aStanza from] bare], 'id': [aStanza ID], 'type': 'result'}]];
-    }
-    return YES;
-}
-
-
-#pragma mark -
-#pragma mark Features
-
-- (void)addFeature:(CPString)aFeatureNamespace
-{
-    [_features addObject:aFeatureNamespace];
-}
-
-- (void)removeFeature:(CPString)aFeatureNamespace
-{
-    [_features removeObjectIdenticalTo:aFeatureNamespace];
-}
-
-- (CPString)_clientVer
-{
-    return SHA1.b64_sha1(_features.join());
-}
-
-- (void)sendCAPS
-{
-    var caps = [TNStropheStanza presence];
-    [caps addChildWithName:@"c" andAttributes:{ "xmlns":Strophe.NS.CAPS, "node":_clientNode, "hash":"sha-1", "ver":[self _clientVer] }];
-
-    [self registerSelector:@selector(handleFeaturesDisco:)
-                  ofObject:self
-                  withDict:[CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", @"get", @"type", Strophe.NS.DISCO_INFO, "namespace"]];
-
-    [self send:caps];
-}
-
-- (BOOL)handleFeaturesDisco:(TNStropheStanza)aStanza
-{
-    var resp = [TNStropheStanza iqWithAttributes:{"id":[self getUniqueId], "type":"result"}];
-
-    [resp setTo:[aStanza from]];
-
-    [resp addChildWithName:@"query" andAttributes:{"xmlns":Strophe.NS.DISCO_INFO, "node":(_clientNode + '#' + [self _clientVer])}];
-    [resp addChildWithName:@"identity" andAttributes:{"category":_identityCategory, "name":_identityName, "type":_identityType}];
-    [resp up];
-
-    for (var i = 0; i < [_features count]; i++)
-    {
-        [resp addChildWithName:@"feature" andAttributes:{"var":[_features objectAtIndex:i]}];
-        [resp up];
-    }
-
-    [self send:resp];
-
-    return YES;
+    return [_delegate JID];
 }
 
 
@@ -404,35 +282,6 @@
     }
 }
 
-/*! publish a PEP payload
-    @param aPayload: the payload to send
-    @param aNode: the node to publish to
-*/
-- (void)publishPEPPayload:(TNXMLNode)aPayload toNode:(CPString)aNode
-{
-    var uid     = [self getUniqueId],
-        stanza  = [TNStropheStanza iqWithAttributes:{"type":"set", "id":uid}],
-        params  = [CPDictionary dictionaryWithObject:uid forKey:@"id"];
-
-    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns":Strophe.NS.PUBSUB}]
-    [stanza addChildWithName:@"publish" andAttributes:{"node":aNode}];
-    [stanza addChildWithName:@"item"];
-    [stanza addNode:aPayload];
-
-    [self registerSelector:@selector(_didPublishPEP:) ofObject:self withDict:params]
-    [self send:stanza];
-}
-
-- (void)_didPublishPEP:(TNStropheStanza)aStanza
-{
-    if ([aStanza type] == @"result")
-        CPLog.debug("Publish succeeded!");
-    else
-        CPLog.error("Cannot publish the pubsub item in node with name: " + _nodeName);
-
-    return NO;
-}
-
 /*! generates an unique identifier
 */
 - (CPString)getUniqueId
@@ -447,127 +296,6 @@
 - (CPString)getUniqueIdWithSuffix:(CPString)suffix
 {
     return _connection.getUniqueId(suffix);
-}
-
-#pragma mark -
-#pragma mark Presence
-
-- (void)setPresenceShow:(CPString)aPresenceShow status:(CPString)aStatus
-{
-    if (aPresenceShow === _userPresenceShow && aStatus === _userPresenceStatus)
-        return;
-
-    var presence = [TNStropheStanza presence];
-
-    _userPresenceShow   = aPresenceShow || _userPresenceShow;
-    _userPresenceStatus = aStatus || _userPresenceStatus;
-
-    [presence addChildWithName:@"status"];
-    [presence addTextNode:_userPresenceStatus];
-    [presence up]
-    [presence addChildWithName:@"show"];
-    [presence addTextNode:_userPresenceShow];
-
-    [self send:presence];
-}
-
-- (BOOL)_didPresenceUpdate:(TNStropheStanza)aStanza
-{
-    var shouldNotify = NO;
-
-    if ([aStanza firstChildWithName:@"show"])
-    {
-        _userPresenceShow = [[aStanza firstChildWithName:@"show"] text];
-        shouldNotify = YES;
-    }
-
-    if ([aStanza firstChildWithName:@"status"])
-    {
-        _userPresenceStatus = [[aStanza firstChildWithName:@"status"] text];
-        shouldNotify = YES;
-    }
-
-    if (shouldNotify)
-    {
-        var presenceInformation = [CPDictionary dictionaryWithObjectsAndKeys:_userPresenceShow, @"show", _userPresenceStatus, @"status"];
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionPresenceUpdatedNotification object:self userInfo:presenceInformation];
-    }
-
-    return YES;
-}
-
-
-#pragma mark -
-#pragma mark vCard
-
-/*! get the vCard of the connection JID
-*/
-- (void)getVCard
-{
-    var uid         = [self getUniqueId],
-        vcardStanza = [TNStropheStanza iqWithAttributes:{@"type": @"get", @"id": uid}],
-        params      = [CPDictionary dictionaryWithObjectsAndKeys: uid, @"id"];
-
-    [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
-
-    [self registerSelector:@selector(_didReceiveCurrentUserVCard:) ofObject:self withDict:params];
-    [self send:vcardStanza];
-}
-
-/*! compute the answer of the vCard stanza
-    @param aStanza the stanza containing the vCard
-*/
-- (void)_didReceiveCurrentUserVCard:(TNStropheStanza)aStanza
-{
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionVCardReceived object:self userInfo:aStanza];
-}
-
-/*! set the vCard of the connection JID and send the given message of of the given object with the given user info
-    @param aVCard TNXMLNode containing the vCard
-    @param anObject the target object
-    @param aSelector the selector to send to the target object
-    @param someUserInfo random informations
-*/
-- (void)setVCard:(TNXMLNode)aVCard object:(CPObject)anObject selector:(SEL)aSelector userInfo:(id)someUserInfo
-{
-    var uid     = [self getUniqueId],
-        stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"set"}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
-
-    [stanza addNode:aVCard];
-
-    [self registerSelector:@selector(notifyVCardUpdate:) ofObject:self withDict:params];
-    [self registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo];
-    [self send:stanza];
-}
-
-/*! notify XMPP user for changes in vCard
-*/
-- (void)notifyVCardUpdate:(TNStropheStanza)aStanza
-{
-    var uid     = [self getUniqueId],
-        stanza  = [TNStropheStanza presenceWithAttributes:{@"id": uid}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
-
-    [stanza addChildWithName:@"status"];
-    [stanza addTextNode:_userPresenceStatus];
-    [stanza up]
-    [stanza addChildWithName:@"show"];
-    [stanza addTextNode:_userPresenceShow];
-    [stanza up]
-    [stanza addChildWithName:@"x" andAttributes:{"xmlns": "vcard-temp:x:update"}];
-
-    // debug
-    //[self registerSelector:@selector(_didNotifyVCardUpdate:) ofObject:self withDict:params];
-
-    [self send:stanza];
-}
-
-/*! called when notification of vCard changes have been sent
-*/
-- (void)_didNotifyVCardUpdate:(TNStropheStanza)aStanza
-{
-    CPLog.trace([aStanza stringValue]);
 }
 
 
@@ -735,25 +463,24 @@
 - (void)deleteAllRegisteredSelectors
 {
     for (var i = 0; i < [_registeredHandlers count]; i++)
-        [self deleteRegisteredSelector:[_registeredHandlers objectAtIndex:i]]
+        [self deleteRegisteredSelector:[_registeredHandlers objectAtIndex:i]];
     for (var i = 0; i < [_registeredTimedHandlers count]; i++)
-        [self deleteRegisteredTimedSelector:[_registeredTimedHandlers objectAtIndex:i]]
+        [self deleteRegisteredTimedSelector:[_registeredTimedHandlers objectAtIndex:i]];
 
     [_registeredHandlers removeAllObjects];
     [_registeredTimedHandlers removeAllObjects];
 }
 
-
 - (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    _connection.xmlInput = function(elem){
+    _connection.xmlInput = function(elem) {
         [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
     }
 }
 
 - (void)rawOutputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    _connection.xmlOutput = function(elem){
+    _connection.xmlOutput = function(elem) {
         [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
     }
 }
@@ -768,10 +495,7 @@
 
     if (self)
     {
-        _JID                        = [aCoder decodeObjectForKey:@"_JID"];
-        _password                   = [aCoder decodeObjectForKey:@"_password"];
         _delegate                   = [aCoder decodeObjectForKey:@"_delegate"];
-        _boshService                = [aCoder decodeObjectForKey:@"_boshService"];
         _connection                 = [aCoder decodeObjectForKey:@"_connection"];
         _registeredHandlers         = [aCoder decodeObjectForKey:@"_registeredHandlers"];
         _registeredTimedHandlers    = [aCoder decodeObjectForKey:@"_registeredTimedHandlers"];
@@ -782,9 +506,6 @@
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
-    [aCoder encodeObject:_JID forKey:@"_JID"];
-    [aCoder encodeObject:_password forKey:@"_password"];
-    [aCoder encodeObject:_boshService forKey:@"_boshService"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
     [aCoder encodeObject:_registeredHandlers forKey:@"_registeredHandlers"];
     [aCoder encodeObject:_registeredTimedHandlers forKey:@"_registeredTimedHandlers"];

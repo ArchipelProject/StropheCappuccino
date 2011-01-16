@@ -80,26 +80,22 @@ TNStropheConnectionStatusDisconnected       = @"TNStropheConnectionStatusDisconn
 */
 TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
-/*!
-    @global
-    @group TNStropheConnectionPresence
-    Notification sent before sending initial presence
-*/
-TNStropheConnectionWillSendInitialPresenceNotification = @"TNStropheConnectionWillSendInitialPresenceNotification";
+#pragma mark -
+#pragma mark globals of TNStropheClient
 
 /*!
     @global
-    @group TNStropheConnectionPresence
+    @group TNStropheClientPresence
     Notification sent when other connection update presence
 */
-TNStropheConnectionPresenceUpdatedNotification = @"TNStropheConnectionPresenceUpdatedNotification";
+TNStropheClientPresenceUpdatedNotification  = @"TNStropheClientPresenceUpdatedNotification";
 
 /*!
     @global
-    @group TNStropheConnectionVCard
+    @group TNStropheClientVCard
     Notification sent on connecting
 */
-TNStropheConnectionVCardReceived            = @"TNStropheConnectionVCardReceived";
+TNStropheClientVCardReceived                = @"TNStropheClientVCardReceived";
 
 #pragma mark -
 #pragma mark globals of TNStropheContact
