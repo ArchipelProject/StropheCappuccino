@@ -32,7 +32,7 @@
 */
 @implementation TNStropheContact: CPObject
 {
-    CPArray             _groupNames     @accessors(property=groupNames);
+    CPArray             _groups         @accessors(getter=groups);
     CPArray             _messagesQueue  @accessors(property=messagesQueue);
     CPArray             _resources      @accessors(property=resources);
     CPImage             _statusIcon     @accessors(property=statusIcon);
@@ -68,9 +68,9 @@
 
     @return an allocated and initialized TNStropheContact
 */
-+ (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID groupName:(CPString)aGroupName
++ (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID group:(CPString)aGroup
 {
-    return [[TNStropheContact alloc] initWithConnection:aConnection JID:aJID groupName:aGroupName];
+    return [[TNStropheContact alloc] initWithConnection:aConnection JID:aJID group:aGroup];
 }
 
 #pragma mark -
@@ -81,7 +81,7 @@
 
     @return an initialized TNStropheContact
 */
-- (id)initWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID groupName:(CPString)aGroupName
+- (id)initWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID group:(CPString)aGroup
 {
     if (self = [super init])
     {
@@ -108,10 +108,10 @@
         _resources          = [CPArray array];
 
         _JID                = aJID;
-        _groupNames         = [CPArray array];
+        _groups             = [CPArray array];
 
-        if (aGroupName)
-            [_groupNames addObject:aGroupName];
+        if (aGroup)
+            [_groups addObject:aGroup];
 
         if (!_vCard && !_askingVCard)
             [self getVCard];
@@ -368,20 +368,12 @@
 */
 - (void)addGroup:(TNStropheGroup)aGroup
 {
-    [self addGroupName:[aGroup name]];
-}
-
-/*! add contact to the given group identified by name
-    @param aGroupName the group name to add the contact in
-*/
-- (void)addGroupName:(CPString)aGroupName
-{
-    if ([_groupNames containsObject:aGroupName])
+    if ([_groups containsObject:aGroup])
         return;
 
-    [_groupNames addObject:aGroupName];
+    [_groups addObject:aGroup];
     [self sendRosterSet];
-    [_groupNames removeObject:aGroupName];
+    [_groups removeObject:aGroup];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
@@ -391,20 +383,12 @@
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
-    [self removeGroupName:[aGroup name]];
-}
-
-/*! remove contact from the given group identified by name
-    @param aGroupName the group name to remove the contact from
-*/
-- (void)removeGroupName:(CPString)aGroupName
-{
-    if (![_groupNames containsObject:aGroupName])
+    if (![_groups containsObject:aGroup])
         return;
 
-    [_groupNames removeObject:aGroupName];
+    [_groups removeObject:aGroup];
     [self sendRosterSet];
-    [_groupNames addObject:aGroupName];
+    [_groups addObject:aGroup];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
@@ -414,25 +398,13 @@
 */
 - (void)setGroups:(CPArray)someGroups
 {
-    var groupNames = [CPArray array];
-    for (var i = 0; i < [someGroups count]; i++)
-        [groupNames addObject:[[someGroups objectAtIndex:i] name]];
-
-    [self setGroupNames:groupNames];
-}
-
-/*! set the groups names of the contact
-    @param someGroupNames array of group names
-*/
-- (void)setGroupNames:(CPArray)someGroupNames
-{
-    var oldGroupNames = [someGroupNames copy];
-    _groupNames = someGroupNames;
+    var oldGroups = [_groups copy];
+    _groups = someGroups;
     [self sendRosterSet];
-    _groupNames = oldGroupNames;
+    _groups = oldGroups;
 }
 
-/*! send a roster SET to the XMPP server according to the content of _groupNames
+/*! send a roster SET to the XMPP server according to the content of _groups and _nickname
 */
 - (void)sendRosterSet
 {
@@ -440,10 +412,10 @@
     [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
     [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
 
-    for (var i = 0; i < [_groupNames count]; i++)
+    for (var i = 0; i < [_groups count]; i++)
     {
         [stanza addChildWithName:@"group"];
-        [stanza addTextNode:[_groupNames objectAtIndex:i]];
+        [stanza addTextNode:[[_groups objectAtIndex:i] name]];
         [stanza up];
     }
 
@@ -674,7 +646,7 @@
     {
         _JID            = [aCoder decodeObjectForKey:@"_JID"];
         _nodeName       = [aCoder decodeObjectForKey:@"_nodeName"];
-        _groupNames     = [aCoder decodeObjectForKey:@"_groupNames"];
+        _groups         = [aCoder decodeObjectForKey:@"_groups"];
         _nickname       = [aCoder decodeObjectForKey:@"_nickname"];
         _XMPPStatus     = [aCoder decodeObjectForKey:@"_XMPPStatus"];
         _resources      = [aCoder decodeObjectForKey:@"_resources"];
@@ -693,7 +665,7 @@
 {
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_nodeName forKey:@"_nodeName"];
-    [aCoder encodeObject:_groupNames forKey:@"_groupNames"];
+    [aCoder encodeObject:_groups forKey:@"_groups"];
     [aCoder encodeObject:_nickname forKey:@"_nickname"];
     [aCoder encodeObject:_XMPPStatus forKey:@"_XMPPStatus"];
     [aCoder encodeObject:_XMPPShow forKey:@"_XMPPShow"];

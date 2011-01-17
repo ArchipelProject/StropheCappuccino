@@ -223,10 +223,7 @@
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
     for (var i = 0; i < [_contacts count]; i++)
-    {
-        var contact = [_contacts objectAtIndex:i];
-        [contact removeGroup:aGroup];
-    }
+        [[_contacts objectAtIndex:i] removeGroup:aGroup];
 
     [_groups removeObject:aGroup];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
@@ -291,15 +288,7 @@
 */
 - (CPArray)groupsOfContact:(TNStropheContact)aContact
 {
-    var tempArray = [CPArray array];
-    for (var i = 0; i < [_groups count]; i++)
-    {
-        var group = [_groups objectAtIndex:i];
-        if ([[group contacts] containsObject:aContact])
-            [tempArray addObject:group];
-    }
-
-    return tempArray;
+    return [contact groups];
 }
 
 - (int)populatedGroupsCount
@@ -344,7 +333,8 @@
     var uid         = [_connection getUniqueId],
         addReq      = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
         params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
-        contact     = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:aGroupName];
+        group       = [self groupWithName:aGroupName orCreate:YES],
+        contact     = [TNStropheContact contactWithConnection:_connection JID:aJID group:group];
 
     [contact setNickname:aName];
 
@@ -377,31 +367,24 @@
         return;
     }
 
-    var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID groupName:nil],
+    var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID group:nil],
         nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
         groupNodes      = [aRosterItem childrenWithName:@"group"],
-        groupNames      = [CPArray array],
+        groups          = [CPArray array],
         queuedPresence  = [self pendingPresenceForJID:theJID],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
     [_contacts addObject:contact];
 
     for (var i = 0; i < [groupNodes count]; i++)
-        [groupNames addObject:[[groupNodes objectAtIndex:i] text]];
+        [groups addObject:[self groupWithName:[groupNodes objectAtIndex:i] orCreate:YES]];
 
-    if ([groupNames count] === 0)
-        [groupNames addObject:[_defaultGroup name]];
+    if ([groups count] === 0)
+        [groups addObject:_defaultGroup];
 
-    for (var i = 0; i < [groupNames count]; i++)
-    {
-        var groupName   = [groupNames objectAtIndex:i],
-            group       = [self groupWithName:groupName orCreate:YES];
-
-        // Fix group names on contact
-        [[contact groupNames] addObject:groupName];
-        // Add contact to all new groups
-        [group addContact:contact];
-    }
+    // Add contact to all new groups
+    for (var i = 0; i < [groups count]; i++)
+        [[groups objectAtIndex:i] addContact:contact];
 
     for (var j = 0; j < [queuedPresence count]; j++)
         [contact _didReceivePresence:[queuedPresence objectAtIndex:j]];
@@ -433,7 +416,7 @@
 
     if (subscription === @"remove")
     {
-        var groups = [self groupsOfContact:contact];
+        var groups = [contact groups];
 
         for (var i = 0; i < [groups count]; i++)
         {
@@ -451,31 +434,24 @@
     {
         var nickname    = [aRosterItem valueForAttribute:@"name"] || [theJID node],
             groupNodes  = [aRosterItem childrenWithName:@"group"],
-            groupNames  = [CPArray array];
+            groups      = [CPArray array];
 
         for (var i = 0; i < [groupNodes count]; i++)
-            [groupNames addObject:[[groupNodes objectAtIndex:i] text]];
+            [groups addObject:[self groupWithName:[groupNodes objectAtIndex:i] orCreate:YES]];
 
-        if ([groupNames count] === 0)
-            [groupNames addObject:[_defaultGroup name]];
+        if ([groups count] === 0)
+            [groups addObject:_defaultGroup];
 
         [contact setNickname:nickname];
 
         // Remove contact from all groups
-        var oldGroups = [self groupsOfContact:contact];
+        var oldGroups = [contact groups];
         for (var i = 0; i < [oldGroups count]; i++)
             [[oldGroups objectAtIndex:i] removeContact:contact];
 
-        for (var i = 0; i < [groupNames count]; i++)
-        {
-            var groupName   = [groupNames objectAtIndex:i],
-                group       = [self groupWithName:groupName orCreate:YES];
-
-            // Fix group names on contact
-            [[contact groupNames] addObject:groupName];
-            // Add contact to all new groups
-            [group addContact:contact];
-        }
+        // Add contact to all new groups
+        for (var i = 0; i < [groups count]; i++)
+            [[groups objectAtIndex:i] addContact:contact];
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushUpdatedContactNotification object:self userInfo:contact];
     }

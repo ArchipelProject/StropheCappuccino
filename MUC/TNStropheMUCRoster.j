@@ -138,7 +138,7 @@
     if (!aGroup)
         aGroup = _visitors;
 
-    var contact = [TNStropheContact contactWithConnection:_connection JID:aJID groupName:[aGroup name]];
+    var contact = [TNStropheContact contactWithConnection:_connection JID:aJID group:aGroup];
     [contact setNickname:aName];
 
     [aGroup addContact:contact];

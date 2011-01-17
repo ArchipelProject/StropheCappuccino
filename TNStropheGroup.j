@@ -28,7 +28,7 @@
 @implementation TNStropheGroup : CPObject
 {
     CPArray     _contacts   @accessors(getter=contacts);
-    CPString    _name       @accessors(property=name);
+    CPString    _name       @accessors(getter=name);
 }
 
 + (TNStropheGroup)stropheGroupWithName:(CPString)aName
@@ -54,15 +54,13 @@
 
 - (void)changeName:(CPString)aName
 {
-    var oldName = _name;
-
-    _name = aName;
-
     for (var i = 0; i < [self count]; i++)
     {
-        var contact = [_contacts objectAtIndex:i];
-        [contact removeGroupName:oldName];
-        [contact addGroupName:_name];
+        var contact = [_contacts objectAtIndex:i],
+            groups  = [[contact groups] copy];
+        [groups removeObject:self];
+        [groups addObject:[TNStropheGroup stropheGroupWithName:aName]];
+        [contact setGroups:groups];
     }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
@@ -73,11 +71,13 @@
     if ([aContact class] != TNStropheContact)
         [CPException raise:"Invalid Object" reason:"You can only add TNStropheContacts"];
 
+    [[aContact groups] addObject:self];
     [_contacts addObject:aContact];
 }
 
 - (void)removeContact:(TNStropheContact)aContact
 {
+    [[aContact groups] removeObject:self];
     [_contacts removeObject:aContact];
 }
 
