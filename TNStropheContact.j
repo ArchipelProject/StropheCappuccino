@@ -363,42 +363,77 @@
     _nickname = oldNickname;
 }
 
-/*! this allows to change the group of the contact. Will post TNStropheContactGroupUpdatedNotification
+/*! add contact to the given group
+    @param aGroup the group to add the contact in
 */
-- (void)addGroup:(TNStropheGroup)newGroup
+- (void)addGroup:(TNStropheGroup)aGroup
 {
-    [self changeGroupName:[newGroup name]];
+    [self addGroupName:[aGroup name]];
 }
 
-- (void)addGroupName:(CPString)aNewName
+/*! add contact to the given group identified by name
+    @param aGroupName the group name to add the contact in
+*/
+- (void)addGroupName:(CPString)aGroupName
 {
-    if ([_groupNames containsObject:aNewName])
+    if ([_groupNames containsObject:aGroupName])
         return;
 
-    [_groupNames addObject:aNewName];
+    [_groupNames addObject:aGroupName];
     [self sendRosterSet];
-    [_groupNames removeObject:aNewName];
+    [_groupNames removeObject:aGroupName];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
-- (void)removeGroup:(TNStropheGroup)newGroup
+/*! remove contact from the given group
+    @param aGroup the group to remove the contact from
+*/
+- (void)removeGroup:(TNStropheGroup)aGroup
 {
-    [self changeGroupName:[newGroup name]];
+    [self removeGroupName:[aGroup name]];
 }
 
-- (void)removeGroupName:(CPString)aNewName
+/*! remove contact from the given group identified by name
+    @param aGroupName the group name to remove the contact from
+*/
+- (void)removeGroupName:(CPString)aGroupName
 {
-    if (![_groupNames containsObject:aNewName])
+    if (![_groupNames containsObject:aGroupName])
         return;
 
-    [_groupNames removeObject:aNewName];
+    [_groupNames removeObject:aGroupName];
     [self sendRosterSet];
-    [_groupNames addObject:aNewName];
+    [_groupNames addObject:aGroupName];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
 }
 
+/*! set the groups of the contact
+    @param someGroups array of groups
+*/
+- (void)setGroups:(CPArray)someGroups
+{
+    var groupNames = [CPArray array];
+    for (var i = 0; i < [someGroups count]; i++)
+        [groupNames addObject:[[someGroups objectAtIndex:i] name]];
+
+    [self setGroupNames:groupNames];
+}
+
+/*! set the groups names of the contact
+    @param someGroupNames array of group names
+*/
+- (void)setGroupNames:(CPArray)someGroupNames
+{
+    var oldGroupNames = [someGroupNames copy];
+    _groupNames = someGroupNames;
+    [self sendRosterSet];
+    _groupNames = oldGroupNames;
+}
+
+/*! send a roster SET to the XMPP server according to the content of _groupNames
+*/
 - (void)sendRosterSet
 {
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
@@ -409,6 +444,7 @@
     {
         [stanza addChildWithName:@"group"];
         [stanza addTextNode:[_groupNames objectAtIndex:i]];
+        [stanza up];
     }
 
     [_connection send:stanza];

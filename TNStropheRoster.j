@@ -222,8 +222,12 @@
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
-    for (var i = 0; i < [aGroup count]; i++)
-        [self changeGroup:_defaultGroup ofContact:[[aGroup contacts] objectAtIndex:i]];
+    for (var i = 0; i < [_contacts count]; i++)
+    {
+        var contact = [_contacts objectAtIndex:i];
+        [contact removeGroup:aGroup];
+    }
+
     [_groups removeObject:aGroup];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
 }
@@ -486,7 +490,7 @@
 - (void)removeContact:(TNStropheContact)aContact
 {
     var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
-        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}];
+        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
         params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
     [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
