@@ -220,13 +220,4 @@
     [self changeNickname:aName ofContact:[self contactWithJID:aJID]];
 }
 
-/*! changes the group of the contact with the given JID
-    @param aGroup the new group
-    @param aJID the JID of the contact to change the nickname
-*/
-- (void)changeGroup:(TNStropheGroup)newGroup ofContact:(TNStropheContact)aContact
-{
-    [aContact changeGroup:newGroup];
-}
-
 @end
