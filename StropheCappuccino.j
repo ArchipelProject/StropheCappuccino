@@ -23,6 +23,7 @@
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
 @import "TNStropheGroup.j"
+@import "TNStropheIMClient.j"
 @import "TNStropheClient.j"
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
