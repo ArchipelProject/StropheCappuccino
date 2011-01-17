@@ -25,7 +25,6 @@
 @import "TNStropheStanza.j"
 @import "Resources/Strophe/sha1.js"
 @import "TNStropheGlobals.j"
-@import "TNStropheRoster.j"
 
 
 @implementation TNStropheClient : CPObject
@@ -39,7 +38,6 @@
     id                  _delegate               @accessors(property=delegate);
     TNStropheConnection _connection             @accessors(property=connection);
     TNStropheJID        _JID                    @accessors(property=JID);
-    TNStropheRoster     _roster                 @accessors(getter=roster);
 
     CPString            _userPresenceShow;
     CPString            _userPresenceStatus;
@@ -67,18 +65,6 @@
 /*! instantiate a TNStropheClient object
 
     @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
-
-    @return a valid TNStropheClient
-*/
-+ (TNStropheClient)clientWithService:(CPString)aService rosterClass:(id)aRosterClass
-{
-    return [[TNStropheClient alloc] initWithService:aService rosterClass:aRosterClass];
-}
-
-/*! instantiate a TNStropheClient object
-
-    @param aService a url of a bosh service (MUST be complete url with http://)
     @param aJID a JID to connect to the XMPP server
     @param aPassword the password associated to the JID
 
@@ -87,20 +73,6 @@
 + (TNStropheClient)clientWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
 {
     return [[TNStropheClient alloc] initWithService:aService JID:aJID password:aPassword];
-}
-
-/*! instantiate a TNStropheClient object
-
-    @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aJID a JID to connect to the XMPP server
-    @param aPassword the password associated to the JID
-    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
-
-    @return a valid TNStropheClient
-*/
-+ (TNStropheClient)clientWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword rosterClass:(id)aRosterClass
-{
-    return [[TNStropheClient alloc] initWithService:aService JID:aJID password:aPassword rosterClass:aRosterClass];
 }
 
 
@@ -113,22 +85,9 @@
 */
 - (id)initWithService:(CPString)aService
 {
-    return [self initWithService:aService rosterClass:nil];
-}
-
-/*! initialize the TNStropheClient
-
-    @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
-*/
-- (id)initWithService:(CPString)aService rosterClass:(id)aRosterClass
-{
     if (self = [super init])
     {
         _connection                 = [TNStropheConnection connectionWithService:aService andDelegate:self];
-        if (!aRosterClass)
-            aRosterClass = TNStropheRoster;
-        _roster                     = [aRosterClass rosterWithConnection:_connection];
         _userPresenceShow           = TNStropheContactStatusOffline;
         _userPresenceStatus         = @"";
         _clientNode                 = @"http://cappuccino.org";
@@ -149,19 +108,7 @@
 */
 - (id)initWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword
 {
-    return [self initWithService:aService JID:aJID password:aPassword rosterClass:nil];
-}
-
-/*! initialize the TNStropheClient
-
-    @param aService a url of a bosh service (MUST be complete url with http://)
-    @param aJID a JID to connect to the XMPP server
-    @param aPassword the password associated to the JID
-    @param aRosterClass the specific roster class to use (optional, defaults to TNStropheRoster)
-*/
-- (id)initWithService:(CPString)aService JID:(TNStropheJID)aJID password:(CPString)aPassword rosterClass:(id)aRosterClass
-{
-    if (self = [self initWithService:aService rosterClass:aRosterClass])
+    if (self = [self initWithService:aService])
     {
         _JID        = aJID;
         _password   = aPassword;
@@ -186,7 +133,7 @@
     [_connection disconnect];
 }
 
-- (void)onStropheConnecting:(id)aConnection
+- (void)onStropheConnecting:(TNStropheConnection)aConnection
 {
     if ([_delegate respondsToSelector:@selector(onStropheConnecting:)])
         [_delegate onStropheConnecting:self];
@@ -194,11 +141,6 @@
 
 - (void)onStropheConnected:(TNStropheConnection)aConnection
 {
-    /*! Upon authenticating with a server and binding a resource (thus becoming a connected resource as
-        defined in [XMPP‑CORE]), a client SHOULD request the roster before sending initial presence
-    */
-    [_roster getRoster];
-
     [self _sendInitialPresence];
 
     [self _sendCAPS];
@@ -207,14 +149,13 @@
         [_delegate onStropheConnected:self];
 }
 
-- (void)onStropheConnectFail:(id)aConnection
+- (void)onStropheConnectFail:(TNStropheConnection)aConnection
 {
-    [_roster clear];
     if ([_delegate respondsToSelector:@selector(onStropheConnectFail:)])
         [_delegate onStropheConnectFail:self];
 }
 
-- (void)onStropheDisconnecting:(id)aConnection
+- (void)onStropheDisconnecting:(TNStropheConnection)aConnection
 {
     if ([_delegate respondsToSelector:@selector(onStropheDisconnecting:)])
         [_delegate onStropheDisconnecting:self];
@@ -224,31 +165,30 @@
 {
     _userPresenceShow   = TNStropheContactStatusOffline;
     _userPresenceStatus = @"";
-    [_roster clear];
+
     if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
         [_delegate onStropheDisconnected:self];
 }
 
-- (void)onStropheAuthenticating:(id)aConnection
+- (void)onStropheAuthenticating:(TNStropheConnection)aConnection
 {
     if ([_delegate respondsToSelector:@selector(onStropheAuthenticating:)])
         [_delegate onStropheAuthenticating:self];
 }
 
-- (void)onStropheAuthFail:(id)aConnection
+- (void)onStropheAuthFail:(TNStropheConnection)aConnection
 {
     if ([_delegate respondsToSelector:@selector(onStropheAuthFail:)])
         [_delegate onStropheAuthFail:self];
 }
 
-- (void)onStropheError:(id)aConnection
+- (void)onStropheError:(TNStropheConnection)aConnection
 {
-    [_roster clear];
     if ([_delegate respondsToSelector:@selector(onStropheError:)])
         [_delegate onStropheError:self];
 }
 
-- (void)connection:(id)aConnection errorCondition:(CPString)anErrorCondition
+- (void)connection:(TNStropheConnection)aConnection errorCondition:(CPString)anErrorCondition
 {
     if ([_delegate respondsToSelector:@selector(client:errorCondition:)])
         [_delegate client:self errorCondition:anErrorCondition];
@@ -488,7 +428,6 @@
         _password                   = [aCoder decodeObjectForKey:@"_password"];
         _delegate                   = [aCoder decodeObjectForKey:@"_delegate"];
         _connection                 = [aCoder decodeObjectForKey:@"_connection"];
-        _roster                     = [aCoder decodeObjectForKey:@"_roster"];
         _registeredHandlers         = [aCoder decodeObjectForKey:@"_registeredHandlers"];
         _registeredTimedHandlers    = [aCoder decodeObjectForKey:@"_registeredTimedHandlers"];
     }
@@ -498,10 +437,10 @@
 
 - (void)encodeWithCoder:(CPCoder)aCoder
 {
+    [super encodeWithCoder:aCoder];
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_password forKey:@"_password"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
-    [aCoder encodeObject:_roster forKey:@"_roster"];
     [aCoder encodeObject:_registeredHandlers forKey:@"_registeredHandlers"];
     [aCoder encodeObject:_registeredTimedHandlers forKey:@"_registeredTimedHandlers"];
 }
