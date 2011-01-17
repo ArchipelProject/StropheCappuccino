@@ -53,7 +53,7 @@
 {
     if (self = [super initWithConnection:aConnection])
     {
-        _groups                 = [CPArray array];
+        _groups                 = [CPArray arrayWithObject:_defaultGroup];
         _pendingPresence        = [CPDictionary dictionary];
 
         var rosterPushParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace", @"set", @"type"],
@@ -222,8 +222,9 @@
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
-    for (var i = 0; i < [_contacts count]; i++)
-        [[_contacts objectAtIndex:i] removeGroup:aGroup];
+    // TODO: deactivated for now, seems to work better. maybe it's just a dirty workaround
+    // for (var i = 0; i < [_contacts count]; i++)
+    //     [[_contacts objectAtIndex:i] removeGroup:aGroup];
 
     [_groups removeObject:aGroup];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
@@ -235,12 +236,7 @@
 */
 - (BOOL)containsGroup:(TNStropheGroup)aGroup
 {
-    for (var i = 0; i < [_groups count]; i++)
-    {
-        if ([_groups objectAtIndex:i] == aGroup)
-            return YES;
-    }
-    return NO;
+    return [_groups containsObject:aGroup];
 }
 
 /*! checks if group with given name exist in roster
@@ -377,7 +373,7 @@
     [_contacts addObject:contact];
 
     for (var i = 0; i < [groupNodes count]; i++)
-        [groups addObject:[self groupWithName:[groupNodes objectAtIndex:i] orCreate:YES]];
+        [groups addObject:[self groupWithName:[[groupNodes objectAtIndex:i] text] orCreate:YES]];
 
     if ([groups count] === 0)
         [groups addObject:_defaultGroup];
@@ -437,7 +433,7 @@
             groups      = [CPArray array];
 
         for (var i = 0; i < [groupNodes count]; i++)
-            [groups addObject:[self groupWithName:[groupNodes objectAtIndex:i] orCreate:YES]];
+            [groups addObject:[self groupWithName:[[groupNodes objectAtIndex:i] text] orCreate:YES]];
 
         if ([groups count] === 0)
             [groups addObject:_defaultGroup];
