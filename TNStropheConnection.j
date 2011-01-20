@@ -178,12 +178,10 @@
                 case Strophe.Status.CONNECTING:
                     selector            = @selector(onStropheConnecting:);
                     notificationName    = TNStropheConnectionStatusConnecting;
-
                     _giveUpTimer = [CPTimer scheduledTimerWithTimeInterval:_giveupTimeout callback:function(aTimer) {
                             _currentStatus  = Strophe.Status.DISCONNECTED;
                             _giveUpTimer    = nil;
-                            _connection     = nil; // free
-                            _connection     = new Strophe.Connection(_boshService);
+                            [self reset]
                             if ((_currentStatus === Strophe.Status.CONNECTING) && ([_delegate respondsToSelector:@selector(connection:errorCondition:)]))
                                 [_delegate connection:self errorCondition:@"Cannot connect"];
                         } repeats:NO];
@@ -202,9 +200,12 @@
                     notificationName    = TNStropheConnectionStatusAuthFailure;
                     break;
                 case Strophe.Status.DISCONNECTING:
-                    selector            = @selector(onStropheDisconnecting:);
-                    notificationName    = TNStropheConnectionStatusDisconnecting;
-                    break;
+                    if (_connected)
+                    {
+                        selector            = @selector(onStropheDisconnecting:);
+                        notificationName    = TNStropheConnectionStatusDisconnecting;
+                        break;
+                    }
                 case Strophe.Status.DISCONNECTED:
                     [self deleteAllRegisteredSelectors];
                     selector            = @selector(onStropheDisconnected:);
@@ -221,10 +222,12 @@
             }
         }
 
-        if ([_delegate respondsToSelector:selector])
+        if (selector && [_delegate respondsToSelector:selector])
             [_delegate performSelector:selector withObject:self];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
+        if (notificationName)
+            [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
+
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusDidChangeNotification object:self];
     }, /* wait */ _connectionTimeout, /* hold */ _maxConnections);
 }
@@ -233,7 +236,7 @@
 */
 - (void)disconnect
 {
-    if (_currentStatus !== Strophe.Status.CONNECTED)
+    if (_currentStatus === Strophe.Status.DISCONNECTED)
         return;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusWillDisconnect object:self];
@@ -286,17 +289,10 @@
 - (void)send:(TNStropheStanza)aStanza
 {
     if (_currentStatus == Strophe.Status.CONNECTED)
-        [[CPRunLoop currentRunLoop] performSelector:@selector(_performSend:) target:self argument:aStanza order:0 modes:[CPDefaultRunLoopMode]];
-}
-
-- (void)_performSend:(TNStropheStanza)aStanza
-{
-    if (_currentStatus == Strophe.Status.CONNECTED)
     {
         CPLog.trace("StropheCappuccino Stanza Send:")
         CPLog.trace(aStanza);
         _connection.send([aStanza tree]);
-        [self flush];
     }
 }
 
@@ -349,10 +345,10 @@
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
-                aDict           = null;
-                from            = null;
-                stanzaObject    = null;
-                stanza          = null;
+                aDict           = nil;
+                from            = nil;
+                stanzaObject    = nil;
+                stanza          = nil;
 
                 return ret;
             },
@@ -399,11 +395,11 @@
                 CPLog.trace(stanzaObject);
 
                 // be sure to let the garbage collector all this stuff
-                someUserInfo    = null;
-                aDict           = null;
-                from            = null;
-                stanzaObject    = null;
-                stanza          = null;
+                someUserInfo    = nil;
+                aDict           = nil;
+                from            = nil;
+                stanzaObject    = nil;
+                stanza          = nil;
 
                 return ret;
             },
@@ -440,9 +436,9 @@
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
 
                     // be sure to let the garbage collector all this stuff
-                    aDict   = null;
-                    from    = null;
-                    stanza  = null;
+                    aDict   = nil;
+                    from    = nil;
+                    stanza  = nil;
 
                     return ret;
                 }
