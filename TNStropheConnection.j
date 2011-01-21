@@ -338,7 +338,8 @@
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
 {
     var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
-        handlerId =  _connection.addHandler(function(stanza) {
+        handlerId =  _connection.addHandler(function(stanza)
+            {
                 var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
                     ret             = [anObject performSelector:aSelector withObject:stanzaObject];
 
@@ -382,7 +383,8 @@
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict userInfo:(id)someUserInfo
 {
     var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
-        handlerId =  _connection.addHandler(function(stanza) {
+        handlerId =  _connection.addHandler(function(stanza)
+            {
                 var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
                     ret             = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
 
@@ -447,8 +449,7 @@
 - (void)deleteRegisteredSelector:(id)aHandlerId
 {
     _connection.deleteHandler(aHandlerId);
-    aHandlerId = nil;
-    console.warn(aHandlerId);
+    console.warn("Number of Strophe.Handlers in memory :" +_connection.handlers.length);
 }
 
 /*! delete a registered timed selector
@@ -457,7 +458,7 @@
 - (void)deleteRegisteredTimedSelector:(id)aTimedHandlerId
 {
     _connection.deleteTimedHandler(aTimedHandlerId);
-    aTimedHandlerId = nil;
+    console.warn("Number of Strophe.TimedHandlers in memory :" +_connection.handlers.length);
 }
 
 /*! unrgister all registered selectors (including timeouted ones)
