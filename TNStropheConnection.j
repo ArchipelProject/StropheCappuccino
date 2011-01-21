@@ -345,11 +345,6 @@
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
-                aDict           = nil;
-                from            = nil;
-                stanzaObject    = nil;
-                stanza          = nil;
-
                 return ret;
             },
             [aDict valueForKey:@"namespace"],
@@ -394,12 +389,7 @@
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
-                // be sure to let the garbage collector all this stuff
                 someUserInfo    = nil;
-                aDict           = nil;
-                from            = nil;
-                stanzaObject    = nil;
-                stanza          = nil;
 
                 return ret;
             },
@@ -435,11 +425,6 @@
 
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
 
-                    // be sure to let the garbage collector all this stuff
-                    aDict   = nil;
-                    from    = nil;
-                    stanza  = nil;
-
                     return ret;
                 }
                 return NO;
@@ -461,7 +446,9 @@
 */
 - (void)deleteRegisteredSelector:(id)aHandlerId
 {
-    _connection.deleteHandler(aHandlerId)
+    _connection.deleteHandler(aHandlerId);
+    aHandlerId = nil;
+    console.warn(aHandlerId);
 }
 
 /*! delete a registered timed selector
@@ -469,7 +456,8 @@
 */
 - (void)deleteRegisteredTimedSelector:(id)aTimedHandlerId
 {
-    _connection.deleteTimedHandler(aTimedHandlerId)
+    _connection.deleteTimedHandler(aTimedHandlerId);
+    aTimedHandlerId = nil;
 }
 
 /*! unrgister all registered selectors (including timeouted ones)
