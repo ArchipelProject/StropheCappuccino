@@ -449,7 +449,6 @@
 - (void)deleteRegisteredSelector:(id)aHandlerId
 {
     _connection.deleteHandler(aHandlerId);
-    console.warn("Number of Strophe.Handlers in memory :" +_connection.handlers.length);
 }
 
 /*! delete a registered timed selector
@@ -458,7 +457,6 @@
 - (void)deleteRegisteredTimedSelector:(id)aTimedHandlerId
 {
     _connection.deleteTimedHandler(aTimedHandlerId);
-    console.warn("Number of Strophe.TimedHandlers in memory :" +_connection.handlers.length);
 }
 
 /*! unrgister all registered selectors (including timeouted ones)
