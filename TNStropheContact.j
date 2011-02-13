@@ -134,7 +134,8 @@
     var resource        = [aStanza fromResource],
         presenceStatus  = [aStanza firstChildWithName:@"status"];
 
-    [_JID setResource:[[aStanza from] resource]]
+    if ([[aStanza from] resource])
+        [_JID setResource:[[aStanza from] resource]]
 
     if ([_JID resource] && ([_JID resource] != @"") && ![_resources containsObject:resource])
         [_resources addObject:resource];
@@ -434,7 +435,6 @@
 - (void)sendStanza:(TNStropheStanza)aStanza withUserInfo:(CPDictionary)userInfo
 {
     [aStanza setTo:_JID];
-
     [_connection send:aStanza];
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactStanzaSentNotification object:self userInfo:userInfo];
