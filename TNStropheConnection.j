@@ -346,6 +346,9 @@
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
+                // experimental thing
+                delete aDict.options;
+
                 return ret;
             },
             [aDict valueForKey:@"namespace"],
@@ -391,6 +394,10 @@
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
+                // experimental thing
+                delete aDict.options;
+                delete someUserInfo;
+
                 someUserInfo    = nil;
 
                 return ret;
@@ -426,6 +433,9 @@
                     var ret = [anObject performSelector:aTimeoutSelector];
 
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
+
+                    // experimental thing
+                    delete aDict.options;
 
                     return ret;
                 }
