@@ -117,12 +117,13 @@
 {
     if (self = [super init])
     {
+        var bundle = [CPBundle bundleForClass:[self class]];
         _registeredHandlers         = [CPArray array];
         _registeredTimedHandlers    = [CPArray array];
         _connected                  = NO;
-        _maxConnections             = 10;
-        _connectionTimeout          = 3600;
-        _giveupTimeout              = 8.0;
+        _maxConnections             = [bundle objectForInfoDictionaryKey:@"TNStropheConnectionMaxConnection"];
+        _connectionTimeout          = [bundle objectForInfoDictionaryKey:@"TNStropheConnectionTimeout"];
+        _giveupTimeout              = [bundle objectForInfoDictionaryKey:@"TNStropheConnectionGiveUpTimer"];
         _currentStatus              = Strophe.Status.DISCONNECTED;
         _boshService                = aService;
         _connection                 = new Strophe.Connection(_boshService);

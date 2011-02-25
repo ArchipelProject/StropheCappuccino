@@ -2,13 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CPBundleIdentifier</key>
-	<string>org.archipelproject.strophecappuccino</string>
-	<key>CPBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CPBundleName</key>
-	<string>StropheCappuccino</string>
-	<key>CPBundlePackageType</key>
-	<string>FMWK</string>
+    <key>CPBundleIdentifier</key>
+    <string>org.archipelproject.strophecappuccino</string>
+    <key>CPBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <key>CPBundleName</key>
+    <string>StropheCappuccino</string>
+    <key>CPBundlePackageType</key>
+    <string>FMWK</string>
+    <key>TNStropheConnectionMaxConnection</key>
+    <integer>1</integer>
+    <key>TNStropheConnectionTimeout</key>
+    <integer>3600</integer>
+    <key>TNStropheConnectionGiveUpTimer</key>
+    <real>8.0</real>
 </dict>
 </plist>
