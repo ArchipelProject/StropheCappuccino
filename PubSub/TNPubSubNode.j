@@ -31,12 +31,12 @@
 */
 @implementation TNPubSubNode : CPObject
 {
-    CPArray                 _content        @accessors(getter=content);
-    CPString                _nodeName       @accessors(getter=name);
-    id                      _delegate       @accessors(property=delegate);
-    TNStopheJID             _pubSubServer   @accessors(getter=server);
+    CPArray                 _content            @accessors(getter=content);
+    CPArray                 _subscriptionIDs    @accessors(getter=subscriptionIDs);
+    CPString                _nodeName           @accessors(getter=name);
+    id                      _delegate           @accessors(property=delegate);
+    TNStopheJID             _pubSubServer       @accessors(getter=server);
 
-    CPArray                 _subscriptionIDs;
     id                      _eventSelectorID;
     TNStropheConnection     _connection;
 }
@@ -440,6 +440,53 @@
 
 #pragma mark -
 #pragma mark Subscription Management
+
+/*! retrieve all the subscription of the user
+    from all given servers
+*/
+- (void)recoverSubscriptions
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{"type": "get", "to": _pubSubServer, "id": uid}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid,@"id"];
+
+    [stanza addChildWithName:@"pubsub" andAttributes:{"xmlns": Strophe.NS.PUBSUB}];
+    [stanza addChildWithName:@"subscriptions" andAttributes:{"node": _nodeName}];
+
+    [_connection registerSelector:@selector(_didRetrieveSubscriptions:) ofObject:self withDict:params];
+
+    [_connection send:stanza];
+}
+
+/*! @ignore
+*/
+- (BOOL)_didRetrieveSubscriptions:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+    {
+        var subscriptions   = [aStanza childrenWithName:@"subscription"];
+
+        for (var i = 0; i < [subscriptions count]; i++)
+        {
+            var subscription    = [subscriptions objectAtIndex:i],
+                nodeName        = [subscription valueForAttribute:@"node"],
+                subid           = [subscription valueForAttribute:@"subid"];
+
+            [self addSubscriptionID:subid];
+        }
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubSubscriptionsRetrievedNotification object:self];
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedSubscriptions:)])
+            [_delegate pubSubNode:self retrievedSubscriptions:YES];
+    }
+    else
+    {
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedSubscriptions:)])
+            [_delegate pubSubNode:self pubSubNode:NO];
+    }
+
+    return NO;
+}
 
 /*! Ask the server to subscribe to the node in order to recieve events
 */
