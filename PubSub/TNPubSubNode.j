@@ -482,7 +482,7 @@
     else
     {
         if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedSubscriptions:)])
-            [_delegate pubSubNode:self pubSubNode:NO];
+            [_delegate pubSubNode:self retrievedSubscriptions:NO];
     }
 
     return NO;
