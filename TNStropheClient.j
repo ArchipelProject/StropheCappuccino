@@ -38,6 +38,8 @@
     id                  _delegate               @accessors(property=delegate);
     TNStropheConnection _connection             @accessors(property=connection);
     TNStropheJID        _JID                    @accessors(property=JID);
+    TNXMLNode           _vCard                  @accessors(getter=vCard);
+    CPImage             _avatar                 @accessors(getter=avatar);
 
     CPString            _userPresenceShow;
     CPString            _userPresenceStatus;
@@ -361,9 +363,23 @@
 /*! compute the answer of the vCard stanza
     @param aStanza the stanza containing the vCard
 */
-- (void)_didReceiveCurrentUserVCard:(TNStropheStanza)aStanza
+- (BOOL)_didReceiveCurrentUserVCard:(TNStropheStanza)aStanza
 {
+    _vCard = [aStanza firstChildWithName:@"vCard"];
+
+    var photo = [_vCard firstChildWithName:@"PHOTO"];
+
+    if (photo)
+    {
+        var type = [[photo firstChildWithName:@"TYPE"] text],
+            binval = [[photo firstChildWithName:@"BINVAL"] text];
+
+        _avatar = [TNBase64Image base64ImageWithContentType:type andData:binval];
+    }
+
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientVCardReceived object:self userInfo:aStanza];
+
+    return YES;
 }
 
 /*! set the vCard of the connection JID and send the given message of of the given object with the given user info
@@ -376,7 +392,17 @@
 {
     var uid     = [_connection getUniqueId],
         stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"set"}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
+        photo   = [aVCard firstChildWithName:@"PHOTO"];
+
+    if (photo)
+    {
+        var type = [[photo firstChildWithName:@"TYPE"] text],
+            binval = [[photo firstChildWithName:@"BINVAL"] text];
+
+        _avatar = [TNBase64Image base64ImageWithContentType:type andData:binval];
+    }
+    _vCard = aVCard;
 
     [stanza addNode:aVCard];
 
