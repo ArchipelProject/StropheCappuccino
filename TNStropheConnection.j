@@ -79,13 +79,14 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
     CPArray         _registeredHandlers;
     CPArray         _registeredTimedHandlers;
+    CPDictionary    _timersIds;
     CPString        _boshService;
     CPString        _userPresenceShow;
     CPString        _userPresenceStatus;
     CPTimer         _giveUpTimer;
+    float           _stropheJSRunloopInterval;
     id              _connection;
     TNStropheJID    _JID;
-    CPDictionary    _timersIds;
 }
 
 #pragma mark -
@@ -131,23 +132,27 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
         _connection                 = new Strophe.Connection(_boshService);
         _delegate                   = aDelegate;
         _timersIds                  = [CPDictionary dictionary];
+        _stropheJSRunloopInterval   = [bundle objectForInfoDictionaryKey:@"TNStropheJSRunLoopInterval"];
 
-
-        Strophe.setTimeout = function(f, delay)
+        if ([bundle objectForInfoDictionaryKey:@"TNStropheJSUseCappuccinoRunLoop"] == 1)
         {
-            var timerID = [self getUniqueId],
-                timer = [CPTimer timerWithTimeInterval:0.1 target:self selector:@selector(triggerStropheTimer:) userInfo:{"function": f, "id": timerID} repeats:NO];
+            CPLog.info("StropheCappuccino has been compiled to use the Cappuccino runloop. unsing interval of "+ _stropheJSRunloopInterval);
+            Strophe.setTimeout = function(f, delay)
+            {
+                var timerID = [self getUniqueId],
+                    timer = [CPTimer timerWithTimeInterval:_stropheJSRunloopInterval target:self selector:@selector(triggerStropheTimer:) userInfo:{"function": f, "id": timerID} repeats:NO];
 
-            [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
-            [_timersIds setObject:timer forKey:timerID];
-            return timerID;
-        }
+                [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
+                [_timersIds setObject:timer forKey:timerID];
+                return timerID;
+            }
 
-        Strophe.clearTimeout = function(tid)
-        {
-            var timer = [_timersIds objectForKey:tid];
-            [timer invalidate];
-            [_timersIds removeObjectForKey:tid];
+            Strophe.clearTimeout = function(tid)
+            {
+                var timer = [_timersIds objectForKey:tid];
+                [timer invalidate];
+                [_timersIds removeObjectForKey:tid];
+            }
         }
     }
 
@@ -159,7 +164,6 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     [_timersIds removeObjectForKey:[aTimer userInfo]["id"]];
     [aTimer userInfo]["function"]();
     [aTimer invalidate];
-
 }
 
 

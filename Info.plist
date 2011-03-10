@@ -16,5 +16,22 @@
     <integer>3600</integer>
     <key>TNStropheConnectionGiveUpTimer</key>
     <real>8.0</real>
+
+    <!--
+        0: use stropheJS built-in event loop
+        1: use StropheCappuccino bypass system to use the Cappuccino event loop
+    -->
+    <key>TNStropheJSUseCappuccinoRunLoop</key>
+    <integer>1</integer>
+    <!--
+        be carefull with this one.
+        it is the delay between two runs
+        of the Strophe.js runloop.
+        A too small value should loads too much your CPU,
+        a too high value should make XMPP to be disconnected
+        0.1 is cool
+    -->
+    <key>TNStropheJSRunLoopInterval</key>
+    <real>0.1</real>
 </dict>
 </plist>
