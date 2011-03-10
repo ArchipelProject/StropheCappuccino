@@ -25,6 +25,7 @@
 @import "Resources/Strophe/sha1.js"
 @import "TNStropheGlobals.j"
 
+var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
 /*! @ingroup strophecappuccino
     this is an Cappuccino implementation of an XMPP connection
@@ -84,6 +85,7 @@
     CPTimer         _giveUpTimer;
     id              _connection;
     TNStropheJID    _JID;
+    CPDictionary    _timersIds;
 }
 
 #pragma mark -
@@ -128,9 +130,36 @@
         _boshService                = aService;
         _connection                 = new Strophe.Connection(_boshService);
         _delegate                   = aDelegate;
+        _timersIds                  = [CPDictionary dictionary];
+        
+        
+        Strophe.setTimeout = function(f, delay)
+        {
+            var timerID = [self getUniqueId],
+                timer = [CPTimer timerWithTimeInterval:0.1 target:self selector:@selector(triggerStropheTimer:) userInfo:{"function": f, "id": timerID} repeats:NO];
+            
+            [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
+            [_timersIds setObject:timer forKey:timerID];
+            return timerID;
+        }
+
+        Strophe.clearTimeout = function(tid)
+        {
+            var timer = [_timersIds objectForKey:tid];
+            [timer invalidate];
+            [_timersIds removeObjectForKey:tid];
+        }
     }
 
     return self;
+}
+
+- (void)triggerStropheTimer:(CPTimer)aTimer
+{
+    [_timersIds removeObjectForKey:[aTimer userInfo]["id"]];
+    [aTimer userInfo]["function"]();
+    [aTimer invalidate];
+    
 }
 
 
@@ -293,8 +322,13 @@
     {
         CPLog.trace("StropheCappuccino Stanza Send:")
         CPLog.trace(aStanza);
-        _connection.send([aStanza tree]);
+        [[CPRunLoop currentRunLoop] performSelector:@selector(performSend:) target:self argument:aStanza order:0 modes:[CPDefaultRunLoopMode]];
     }
+}
+
+- (void)performSend:(TNStropheStanza)aStanza
+{
+    _connection.send([aStanza tree]);
 }
 
 /*! generates an unique identifier
