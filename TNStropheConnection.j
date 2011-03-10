@@ -131,13 +131,13 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
         _connection                 = new Strophe.Connection(_boshService);
         _delegate                   = aDelegate;
         _timersIds                  = [CPDictionary dictionary];
-        
-        
+
+
         Strophe.setTimeout = function(f, delay)
         {
             var timerID = [self getUniqueId],
                 timer = [CPTimer timerWithTimeInterval:0.1 target:self selector:@selector(triggerStropheTimer:) userInfo:{"function": f, "id": timerID} repeats:NO];
-            
+
             [[CPRunLoop currentRunLoop] addTimer:timer forMode:CPDefaultRunLoopMode];
             [_timersIds setObject:timer forKey:timerID];
             return timerID;
@@ -159,7 +159,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     [_timersIds removeObjectForKey:[aTimer userInfo]["id"]];
     [aTimer userInfo]["function"]();
     [aTimer invalidate];
-    
+
 }
 
 
