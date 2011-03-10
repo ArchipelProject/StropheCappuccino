@@ -159,6 +159,12 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     return self;
 }
 
+#pragma mark -
+#pragma mark Cappuccino's stropheJS runloop
+
+/*! computer the stropheJS timers
+    @param aTimer the timer that have sent the event
+*/
 - (void)triggerStropheTimer:(CPTimer)aTimer
 {
     [_timersIds removeObjectForKey:[aTimer userInfo]["id"]];
