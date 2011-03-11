@@ -74,7 +74,9 @@
 
         _loadStatus = CPImageLoadStatusLoading;
         _image      = new Image();
-        _image.onload = function(e){
+        _image.onload = function(e)
+        {
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
             [self _imageDidLoad];
         };
         _filename   = data;

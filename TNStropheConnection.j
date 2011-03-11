@@ -139,6 +139,8 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
             CPLog.info("StropheCappuccino has been compiled to use the Cappuccino runloop. unsing interval of "+ _stropheJSRunloopInterval);
             Strophe.setTimeout = function(f, delay)
             {
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
                 var timerID = [self getUniqueId],
                     timer = [CPTimer timerWithTimeInterval:_stropheJSRunloopInterval target:self selector:@selector(triggerStropheTimer:) userInfo:{"function": f, "id": timerID} repeats:NO];
 
@@ -149,6 +151,8 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
             Strophe.clearTimeout = function(tid)
             {
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
                 var timer = [_timersIds objectForKey:tid];
                 [timer invalidate];
                 [_timersIds removeObjectForKey:tid];
@@ -195,6 +199,8 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
     _connection.connect([aJID full], aPassword, function (status, errorCond)
     {
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
         var selector,
             notificationName;
 
@@ -385,6 +391,9 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza)
             {
+                // seems to be a good practice to pump the runloop in async function
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
                 var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
                     ret             = [anObject performSelector:aSelector withObject:stanzaObject];
 
@@ -433,6 +442,9 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza)
             {
+                // seems to be a good practice to pump the runloop in async function
+                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
                 var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
                     ret             = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
 
@@ -475,6 +487,9 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
         handlerId =  _connection.addTimedHandler(aTimeout, function(stanza) {
                 if (!stanza)
                 {
+                    // seems to be a good practice to pump the runloop in async function
+                    [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+
                     var ret = [anObject performSelector:aTimeoutSelector];
 
                     CPLog.trace("StropheCappuccino stanza timeout that trigger selector : " + [anObject class] + "." + aTimeoutSelector);
@@ -530,6 +545,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 - (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
     _connection.xmlInput = function(elem) {
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
     }
 }
@@ -537,6 +553,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 - (void)rawOutputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
     _connection.xmlOutput = function(elem) {
+        [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
     }
 }
