@@ -68,7 +68,7 @@
 
 - (void)addContact:(TNStropheContact)aContact
 {
-    if ([aContact class] != TNStropheContact)
+    if (![aContact isKindOfClass:TNStropheContact])
         [CPException raise:"Invalid Object" reason:"You can only add TNStropheContacts"];
 
     [[aContact groups] addObject:self];

@@ -283,7 +283,7 @@
 
         [stanza addChildWithName:@"field" andAttributes:{@"var": key}];
 
-        if ([value class] == CPArray)
+        if ([value isKindOfClass:CPArray])
         {
             for (var j = 0; j < [value count]; j++)
             {

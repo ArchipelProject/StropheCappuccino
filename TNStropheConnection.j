@@ -388,7 +388,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 */
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
 {
-    var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
+    var from = ([[aDict valueForKey:@"from"] isKindOfClass:CPString]) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza)
             {
                 // seems to be a good practice to pump the runloop in async function
@@ -439,7 +439,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 */
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict userInfo:(id)someUserInfo
 {
-    var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
+    var from = ([[aDict valueForKey:@"from"] isKindOfClass:CPString]) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza)
             {
                 // seems to be a good practice to pump the runloop in async function
@@ -483,7 +483,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 */
 - (id)registerTimeoutSelector:(SEL)aTimeoutSelector ofObject:(CPObject)anObject withDict:(id)aDict forTimeout:(float)aTimeout
 {
-    var from = ([[aDict valueForKey:@"from"] class] == CPString) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
+    var from = ([[aDict valueForKey:@"from"] isKindOfClass:CPString]) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addTimedHandler(aTimeout, function(stanza) {
                 if (!stanza)
                 {

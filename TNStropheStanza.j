@@ -274,7 +274,7 @@
 */
 - (void)setFrom:(id)aFrom
 {
-    if ([aFrom class] == CPString)
+    if ([aFrom isKindOfClass:CPString])
         aFrom = [TNStropheJID stropheJIDWithString:aFrom];
 
     while ([self up]);
@@ -327,7 +327,7 @@
 */
 - (void)setTo:(id)aTo
 {
-    if ([aTo class] == CPString)
+    if ([aTo isKindOfClass:CPString])
         aTo = [TNStropheJID stropheJIDWithString:aTo];
 
     while ([self up]);
