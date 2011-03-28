@@ -33,11 +33,22 @@
     TNStropheGroup  _parentGroup    @accessors(property=parentGroup);
 }
 
+#pragma mark -
+#pragma mark Initialization
+
+/*! alloc and initialize a group with given name
+    @param aName the name of the group
+    @return a new TNStropheGroup
+*/
 + (TNStropheGroup)stropheGroupWithName:(CPString)aName
 {
     return [[TNStropheGroup alloc] initWithName:aName];
 }
 
+/*! initialize a group with given name
+    @param aName the name of the group
+    @return a new TNStropheGroup
+*/
 - (TNStropheGroup)initWithName:(CPString)aName
 {
     if (self = [super init])
@@ -51,11 +62,24 @@
     return self;
 }
 
+
+#pragma mark -
+#pragma mark Overides
+
+/*! return the group name as description
+*/
 - (CPString)description
 {
     return _name;
 }
 
+
+#pragma mark -
+#pragma mark Edition
+
+/*! change the name of the group
+    @param aName the new name
+*/
 - (void)changeName:(CPString)aName
 {
     for (var i = 0; i < [self contactCount]; i++)
@@ -70,6 +94,14 @@
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
 }
 
+
+#pragma mark -
+#pragma mark Contacts
+
+
+/*! add contact to the group
+    @param aContact the contact
+*/
 - (void)addContact:(TNStropheContact)aContact
 {
     if (![aContact isKindOfClass:TNStropheContact])
@@ -79,66 +111,19 @@
     [_contacts addObject:aContact];
 }
 
+/*! remove contact from the group
+    @param aContact the contact
+*/
 - (void)removeContact:(TNStropheContact)aContact
 {
     [[aContact groups] removeObject:self];
     [_contacts removeObject:aContact];
 }
 
-- (void)addSubGroup:(TNStropheGroup)aGroup
-{
-    if (![aGroup isKindOfClass:TNStropheGroup])
-        [CPException raise:"Invalid Object" reason:"addSubGroup only supports to add TNStropheGroups"];
-
-    [aGroup setParentGroup:self];
-    [_subGroups addObject:aGroup];
-}
-
-- (void)removeSubGroups
-{
-    for (var i = 0; i < [self subGroupsCount]; i++)
-    {
-        var subGroup = [[self subGroups] objectAtIndex:i];
-        [self removeSubGroup:subGroup];
-    }
-
-    _subGroups = [CPArray array];
-}
-
-- (void)removeSubGroup:(TNStropheGroup)aGroup
-{
-    if (![_subGroups containsObject:aGroup])
-        return;
-
-    [aGroup setParentGroup:nil];
-    [aGroup removeSubGroups];
-
-    [_subGroups removeObject:aGroup];
-}
-
-- (int)subGroupsCount
-{
-    return [_subGroups count];
-}
-
-- (int)contactCount
-{
-    return [_contacts count];
-}
-
-- (int)count
-{
-    return [self subGroupsCount] + [self contactCount];
-}
-
-- (TNStropheGroup)subGroupWithName:(CPString)aName
-{
-    for (var i = 0; i < [self subGroupsCount]; i++)
-        if ([[[_subGroups objectAtIndex:i] name] uppercaseString] == [aName uppercaseString])
-            return [_subGroups objectAtIndex:i];
-    return nil;
-}
-
+/*! return the contact with given jid
+    @param aJID the TNStropheJID
+    @param matchBare if YES, will use bareEquals, otherwise will use fullEquals
+*/
 - (TNStropheContact)contactWithJID:(TNStropheJID)aJID matchBare:(BOOL)matchBare
 {
     for (var i = 0; i < [_contacts count]; i++)
@@ -158,9 +143,58 @@
     return nil;
 }
 
-- (CPArray)content
+
+#pragma mark -
+#pragma mark Subgroups
+
+/*! add another group as subgroup
+    @param aGroup the other group
+*/
+- (void)addSubGroup:(TNStropheGroup)aGroup
 {
-    return [_subGroups arrayByAddingObjectsFromArray:_contacts];
+    if (![aGroup isKindOfClass:TNStropheGroup])
+        [CPException raise:"Invalid Object" reason:"addSubGroup only supports to add TNStropheGroups"];
+
+    [aGroup setParentGroup:self];
+    [_subGroups addObject:aGroup];
+}
+
+/*! remove the given subgroup
+    @param aGroup the group to remove
+*/
+- (void)removeSubGroup:(TNStropheGroup)aGroup
+{
+    if (![_subGroups containsObject:aGroup])
+        return;
+
+    [aGroup setParentGroup:nil];
+    [aGroup removeSubGroups];
+
+    [_subGroups removeObject:aGroup];
+}
+
+/*! remove all subgroups
+*/
+- (void)removeSubGroups
+{
+    for (var i = 0; i < [self subGroupsCount]; i++)
+    {
+        var subGroup = [[self subGroups] objectAtIndex:i];
+        [self removeSubGroup:subGroup];
+    }
+
+    _subGroups = [CPArray array];
+}
+
+/*! return the subgroup with given name
+    @param aName the name of the subgroup
+*/
+- (TNStropheGroup)subGroupWithName:(CPString)aName
+{
+    for (var i = 0; i < [self subGroupsCount]; i++)
+        if ([[[_subGroups objectAtIndex:i] name] uppercaseString] == [aName uppercaseString])
+            return [_subGroups objectAtIndex:i];
+    return nil;
 }
 
 /*! format the path for the given group
@@ -182,6 +216,38 @@
 }
 
 
+#pragma mark -
+#pragma mark Counting
+
+/*! return the number of groups
+    @return the number of groups
+*/
+- (int)subGroupsCount
+{
+    return [_subGroups count];
+}
+
+/*! return the number of contacts
+    @return the number of contacts
+*/
+- (int)contactCount
+{
+    return [_contacts count];
+}
+
+/*! return the number of entries
+    @return the number of entries
+*/
+- (int)count
+{
+    return [self subGroupsCount] + [self contactCount];
+}
+
+
+- (CPArray)content
+{
+    return [_subGroups.sort() arrayByAddingObjectsFromArray:_contacts.sort()];
+}
 
 @end
 

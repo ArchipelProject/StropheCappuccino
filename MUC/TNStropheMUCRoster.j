@@ -103,10 +103,7 @@
     if (contact)
         [contact _didReceivePresence:aStanza];
     else
-    {
         contact = [self addContact:[aStanza from] withName:[[aStanza from] resource] inGroup:group];
-    }
-
 
     if ([aStanza type] === @"unavailable")
     {
@@ -142,8 +139,7 @@
     [contact setNickname:aName];
 
     [aGroup addContact:contact];
-    // TODO: FIX ME
-    // [_contacts addObject:contact];
+    [self cacheContact:contact];
 
     var userInfo = [CPDictionary dictionaryWithObject:contact forKey:@"contact"];
 

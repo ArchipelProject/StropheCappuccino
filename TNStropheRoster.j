@@ -78,7 +78,7 @@
 
 
 #pragma mark -
-#pragma mark Fetch
+#pragma mark Fetch / Push
 
 /*! ask the server to get the roster of the TNStropheConnection user
 */
@@ -89,9 +89,7 @@
         rosterResultParams  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
     [rosteriq addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
-
     [_connection registerSelector:@selector(_didReceiveRosterResult:) ofObject:self withDict:rosterResultParams];
-
     [_connection send:rosteriq];
 }
 
@@ -161,9 +159,120 @@
     return YES;
 }
 
+/*! add a contact into the roster from a item XML node from roster iq
+    @param aRosterItem TNXMLNode representing the roster item
+    @param return a new TNStropheContact
+*/
+- (void)_addContactFromRosterItem:(TNXMLNode)aRosterItem
+{
+    var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
+
+    if ([theJID bareEquals:[_connection JID]])
+        return;
+
+    var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID group:nil],
+        nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
+        groupNodes      = [aRosterItem childrenWithName:@"group"],
+        groups          = [CPArray array],
+        queuedPresence  = [_pendingPresence valueForKey:[theJID bare]],
+        subscription    = [aRosterItem valueForAttribute:@"subscription"];
+
+    if ([groupNodes count])
+    {
+        for (var i = 0; i < [groupNodes count]; i++)
+        {
+            var groupsLine = [[[groupNodes objectAtIndex:i] text] uppercaseString],
+                currentGroup = [self groupWithPath:groupsLine orCreate:YES];
+
+            [currentGroup addContact:contact];
+            [groups addObject:currentGroup];
+        }
+    }
+    else
+    {
+        // if no groups, we put the contact in the roster's root area
+        [_content addObject:contact];
+    }
+
+    for (var j = 0; j < [queuedPresence count]; j++)
+        [contact _didReceivePresence:[queuedPresence objectAtIndex:j]];
+
+    [contact setNickname:nickname];
+    [contact setSubscription:subscription];
+    [contact getMessages];
+
+    [self cacheContact:contact];
+
+    return contact;
+}
+
+/*! update a contact from a item XML node from roster iq
+    @param aRosterItem TNXMLNode representing the roster item
+    @param return the updated TNStropheContact
+*/
+- (void)_updateContactFromRosterItem:(TNXMLNode)aRosterItem
+{
+    var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
+
+    if ([theJID bareEquals:[_connection JID]])
+        return;
+
+    var contact         = [self contactWithJID:theJID],
+        subscription    = [aRosterItem valueForAttribute:@"subscription"];
+
+    if (subscription == @"remove")
+    {
+        [self uncacheContact:contact];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
+        return contact;
+    }
+
+    var nickname    = [aRosterItem valueForAttribute:@"name"] || [theJID node],
+        groupNodes  = [aRosterItem childrenWithName:@"group"],
+        groups      = [CPArray array];
+
+    [contact setNickname:nickname];
+
+
+    // flush current groups or from root area
+    var oldGroups = [contact groups];
+    if (![oldGroups count])
+    {
+        [_content removeObject:contact];
+    }
+    else
+    {
+        for (var i = 0; i < [oldGroups count]; i++)
+            [[oldGroups objectAtIndex:i] removeContact:contact];
+    }
+
+    if ([groupNodes count] > 0)
+    {
+        for (var i = 0; i < [groupNodes count]; i++)
+        {
+            var currentGroupName = [[groupNodes objectAtIndex:i] text];
+            [groups addObject:[self groupWithPath:currentGroupName orCreate:YES]];
+        }
+
+        for (var i = 0; i < [groups count]; i++)
+            [[groups objectAtIndex:i] addContact:contact];
+    }
+    else if (![groups count] && ![_content containsObject:contact])
+    {
+        [_content addObject:contact];
+    }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushUpdatedContactNotification object:self userInfo:contact];
+
+    return contact;
+}
+
+
+#pragma mark -
+#pragma mark Presence
+
 /*! message sent when a presence information received
     send roster:receiveSubscriptionRequest: to the delegate with the stanza as parameter
-
     @return YES to keep the selector registred in TNStropheConnection
 */
 - (BOOL)_didReceivePresence:(TNStropheStanza)aStanza
@@ -187,11 +296,6 @@
     }
 
     return YES;
-}
-
-- (CPArray)pendingPresenceForJID:(TNStropheJID)aJID
-{
-    return [_pendingPresence valueForKey:[aJID bare]];
 }
 
 
@@ -221,7 +325,11 @@
         return aGroup;
 }
 
-
+/*! return the group with given path or create it if it doesn't exists
+    @param aPath the path of the group
+    @param shouldCreate YES or NO
+    @return the group
+*/
 - (TNStropheGroup)groupWithPath:(CPArray)aPath orCreate:(BOOL)shouldCreate
 {
     var group = [self groupWithPath:aPath];
@@ -234,16 +342,6 @@
     return group;
 }
 
-
-/*! check if roster contains a group with given path
-    @param aPath the path of the group
-    @return YES or NO
-*/
-- (BOOL)containsGroupWithPath:(CPString)aPath
-{
-    return ([self groupWithPath:aPath]) ? YES: NO;
-}
-
 /*! add a group with given path.
     if a group is missing the given path, it will be created
     @param aPath the path of the group
@@ -252,7 +350,7 @@
 {
     var path = [aPath uppercaseString].split("::");
 
-    if ([self containsGroupWithPath:aPath])
+    if ([self groupWithPath:aPath])
         return;
 
     for (var i = 0; i < [path count]; i++)
@@ -281,7 +379,7 @@
     removed groups will also be removed
     @param aPath the path of the group
 */
-- (void)removeGroupAtPath:(CPString)aPath
+- (void)removeGroupWithPath:(CPString)aPath
 {
     var group = [self groupWithPath:aPath],
         parentGroup = [group parentGroup];
@@ -297,6 +395,14 @@
     }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:group];
+}
+
+/*! remove the given group
+    @param aGroup the group
+*/
+- (void)removeGroup:(TNStropheGroup)aGroup
+{
+    [self removeGroupWithPath:[aGroup path]]
 }
 
 /*! return TNStropheGroup object according to the given name
@@ -315,25 +421,7 @@
         if ([group name] == aGroupName)
             return group;
     }
-    return;
-}
-
-/*! return all root TNStropheGroup objects
-    @return CPArray of TNStropheGroup the group. nil if group doesn't exist
-*/
-- (TNStropheGroup)rootGroupWithName:(CPString)aGroupName
-{
-    for (var i = 0; i < [_content count]; i++)
-    {
-        if (![[_content objectAtIndex:i] isKindOfClass:TNStropheGroup])
-            continue;
-
-        var group = [_content objectAtIndex:i];
-
-        if ([group name] == aGroupName)
-            return group;
-    }
-    return;
+    return nil;
 }
 
 
@@ -353,184 +441,27 @@
     if (!aName)
         aName = [aJID node];
 
-    var uid         = [_connection getUniqueId],
-        addReq      = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
-        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
-        group       = aGroupPath ? [self groupWithPath:aGroupPath orCreate:YES] : nil,
+    var group       = aGroupPath ? [self groupWithPath:aGroupPath orCreate:YES] : nil,
         contact     = [TNStropheContact contactWithConnection:_connection JID:aJID group:group];
 
     [contact setNickname:aName];
-
-    [_connection registerSelector:@selector(_didAddContact:userInfo:) ofObject:self withDict:params userInfo:aJID];
-
     [contact sendRosterSet];
 }
 
-- (BOOL)_didAddContact:(TNStropheStanza)aStanza userInfo:(TNStropheJID)theJID
-{
-    if ([aStanza type] === @"result")
-        CPLog.debug("Contact with JID " + theJID + " was added to roster!");
-    else
-        CPLog.error("Error adding contact with JID " + theJID + " to roster!");
-
-    return NO;
-}
-
-/*! add a contact into the roster from a item XML node from roster iq
-    @param aRosterItem TNXMLNode representing the roster item
-    @param return a new TNStropheContact
-*/
-- (void)_addContactFromRosterItem:(TNXMLNode)aRosterItem
-{
-    var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
-
-    if ([theJID bareEquals:[_connection JID]])
-    {
-        CPLog.warn("Cannot add: jid is the current account JID " + theJID)
-        return;
-    }
-
-    var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID group:nil],
-        nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-        groupNodes      = [aRosterItem childrenWithName:@"group"],
-        groups          = [CPArray array],
-        queuedPresence  = [self pendingPresenceForJID:theJID],
-        subscription    = [aRosterItem valueForAttribute:@"subscription"];
-
-    for (var i = 0; i < [groupNodes count]; i++)
-    {
-        var groupsLine = [[[groupNodes objectAtIndex:i] text] uppercaseString];
-
-        [groups addObject:[self groupWithPath:groupsLine orCreate:YES]];
-    }
-
-    if ([groups count] === 0)
-        [_content addObject:contact];
-
-    // Add contact to all new groups
-    for (var i = 0; i < [groups count]; i++)
-        [[groups objectAtIndex:i] addContact:contact];
-
-    for (var j = 0; j < [queuedPresence count]; j++)
-        [contact _didReceivePresence:[queuedPresence objectAtIndex:j]];
-
-    [contact setNickname:nickname];
-    [contact setSubscription:subscription];
-
-    [contact getMessages];
-
-    return contact;
-}
-
-/*! update a contact from a item XML node from roster iq
-    @param aRosterItem TNXMLNode representing the roster item
-    @param return the updated TNStropheContact
-*/
-- (void)_updateContactFromRosterItem:(TNXMLNode)aRosterItem
-{
-    console.warn([aRosterItem tree]);
-    var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
-
-    if ([theJID bareEquals:[_connection JID]])
-    {
-        CPLog.warn("Cannot update: jid is the current account JID " + theJID)
-        return;
-    }
-
-    var contact         = [self contactWithJID:theJID],
-        subscription    = [aRosterItem valueForAttribute:@"subscription"];
-
-    if (subscription === @"remove")
-    {
-        var groups = [contact groups];
-
-        if (!groups || [groups count] == 0)
-            [_content removeObject:contact];
-        else
-            for (var i = 0; i < [groups count]; i++)
-            {
-                var group = [groups objectAtIndex:i];
-                [group removeContact:contact];
-            }
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
-    }
-    else
-    {
-        var nickname    = [aRosterItem valueForAttribute:@"name"] || [theJID node],
-            groupNodes  = [aRosterItem childrenWithName:@"group"],
-            groups      = [CPArray array];
-
-        [contact setNickname:nickname];
-
-        for (var i = 0; i < [groupNodes count]; i++)
-            [groups addObject:[self groupWithPath:[[groupNodes objectAtIndex:i] text] orCreate:YES]];
-
-        if (([groups count] == 0) && ![_content containsObject:contact])
-        {
-            for (var i = 0; i < [[contact groups] count]; i++)
-                [[[contact groups] objectAtIndex:i] removeContact:contact];
-            [_content addObject:contact];
-        }
-        else
-        {
-            // Remove contact from all groups
-            var oldGroups = [contact groups];
-            if (([groups count] > 0) && (!oldGroups || [oldGroups count] == 0))
-                [_content removeObject:contact];
-            else
-                for (var i = 0; i < [oldGroups count]; i++)
-                    [[oldGroups objectAtIndex:i] removeContact:contact];
-
-            // Add contact to all new groups
-            for (var i = 0; i < [groups count]; i++)
-                [[groups objectAtIndex:i] addContact:contact];
-        }
-
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushUpdatedContactNotification object:self userInfo:contact];
-    }
-
-    return contact;
-}
-
 /*! remove a TNStropheContact from the roster
-
     @param aContact the contact to remove
 */
 - (void)removeContact:(TNStropheContact)aContact
 {
-    var uid         = [_connection getUniqueIdWithSuffix:@"roster"],
-        removeReq   = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
-        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+    var groups = [aContact groups];
 
-    [removeReq addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [removeReq addChildWithName:@"item" andAttributes:{'jid': [[aContact JID] bare], 'subscription': 'remove'}];
-
-    [_connection registerSelector:@selector(_didRemoveContact:userInfo:) ofObject:self withDict:params userInfo:aContact];
-
-    [_connection send:removeReq];
-}
-
-/*! remove a contact from the roster according to its JID
-
-    @param aJID the JID of the contact to remove
-*/
-- (void)removeContactWithJID:(TNStropheJID)aJID
-{
-    [self removeContact:[self contactWithJID:aJID]];
-}
-
-- (BOOL)_didRemoveContact:(TNStropheStanza)aStanza userInfo:(TNStropheContact)theContact
-{
-    if ([aStanza type] === @"result")
-        CPLog.debug("Contact was removed from roster!");
+    if (!groups || [groups count] == 0)
+        [_content removeObject:aContact];
     else
-    {
-        CPLog.error("Error removing contact from roster!");
-        CPLog.error(theContact);
-    }
+        for (var i = 0; i < [groups count]; i++)
+            [[groups objectAtIndex:i] removeContact:aContact];
 
-    return NO;
+    [aContact sendRosterUnset];
 }
 
 
@@ -560,7 +491,7 @@
     if (!contact)
         return;
 
-    [[self contactWithJID:aJID] unsubscribe];
+    [contact unsubscribe];
 }
 
 /*! ask subscribtion to the given JID
@@ -573,7 +504,7 @@
     if (!contact)
         return;
 
-    [[self contactWithJID:aJID] askSubscription];
+    [contact askSubscription];
 }
 
 /*! answer to a pending subscription request.
@@ -593,7 +524,7 @@
         [self unauthorizeJID:requester];
 
     if (![self containsJID:requester])
-        [self addContact:requester withName:[requester node] inGroupWithName:nil];
+        [self addContact:requester withName:[requester node] inGroupWithPath:nil];
 
 }
 

@@ -410,6 +410,7 @@
 - (void)sendRosterSet
 {
     var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
     [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
     [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
 
@@ -419,6 +420,18 @@
         [stanza addTextNode:[[_groups objectAtIndex:i] path]];
         [stanza up];
     }
+
+    [_connection send:stanza];
+}
+
+/*! send a roster REMOVE to the XMPP server
+*/
+- (void)sendRosterUnset
+{
+    var stanza  = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+    [stanza addChildWithName:@"item" andAttributes:{'jid': [_JID bare], 'subscription': 'remove'}];
 
     [_connection send:stanza];
 }

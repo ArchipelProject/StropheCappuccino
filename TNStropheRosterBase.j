@@ -32,6 +32,7 @@
 */
 @implementation TNStropheRosterBase : CPObject
 {
+    CPArray                 _contactCache   @accessors(getter=contactCache);
     CPArray                 _content        @accessors(getter=content);
     id                      _delegate       @accessors(property=delegate);
     TNStropheConnection     _connection     @accessors(getter=connection);
@@ -60,6 +61,7 @@
     {
         _connection     = aConnection;
         _content        = [CPArray array];
+        _contactCache   = [CPArray array];
     }
 
     return self;
@@ -75,34 +77,38 @@
 - (void)clear
 {
     [_content removeAllObjects];
+    [_contactCache removeAllObjects];
 }
 
 
 #pragma mark -
 #pragma mark Contacts
 
-- (CPArray)groupsOfContact:(TNStropheContact)aContact
+/*! get an array with all cached contacts
+*/
+- (void)contacts
 {
-    return [contact groups];
+    return _contactCache;
 }
 
-/*! remove a TNStropheContact from the roster
+/*! add contact to roster cache
+    @param aContact the contact to add
+*/
+- (void)cacheContact:(TNStropheContact)aContact
+{
+    if (![_contactCache containsObject:aContact])
+        [_contactCache addObject:aContact];
+}
 
+/*! remove a TNStropheContact from the roster cache
     @param aContact the contact to remove
 */
-- (void)removeContact:(TNStropheContact)aContact
+- (void)uncacheContact:(TNStropheContact)aContact
 {
-    [[self groupOfContact:aContact] removeContact:aContact];
+    [_contactCache removeObject:aContact];
 }
 
-/*! remove a contact from the roster according to its JID
 
-    @param aJID the JID of the contact to remove
-*/
-- (void)removeContactWithJID:(TNStropheJID)aJID
-{
-    [self removeContact:[self contactWithJID:aJID]];
-}
 
 /*! performs contactWithFullJID and contactWithBareJID
     @param aJID CPString containing the JID
@@ -119,22 +125,9 @@
 */
 - (TNStropheContact)contactWithFullJID:(TNStropheJID)aJID
 {
-    for (var i = 0; i < [_content count]; i++)
-    {
-        var obj = [_content objectAtIndex:i];
-        if ([obj isKindOfClass:TNStropheContact] && [[obj JID] equals:aJID])
-            return obj;
-    }
-    
-    var c;
-    for (var i = 0; i < [_content count]; i++)
-    {
-        var obj = [_content objectAtIndex:i];
-        if ([obj isKindOfClass:TNStropheGroup])
-            if (c = [self _searchContactWithJID:aJID matchBare:NO inGroup:obj])
-                return c;
-    }
-    
+    for (var i = 0; i < [_contactCache count]; i++)
+        if ([[[_contactCache objectAtIndex:i] JID] fullEquals:aJID])
+            return [_contactCache objectAtIndex:i];
     return nil;
 }
 
@@ -144,42 +137,48 @@
 */
 - (TNStropheContact)contactWithBareJID:(TNStropheJID)aJID
 {
-    for (var i = 0; i < [_content count]; i++)
-    {
-        var obj = [_content objectAtIndex:i];
-        if ([obj isKindOfClass:TNStropheContact] && [[obj JID] bareEquals:aJID])
-            return obj;
-    }
+    // for (var i = 0; i < [_content count]; i++)
+    // {
+    //     var obj = [_content objectAtIndex:i];
+    //     if ([obj isKindOfClass:TNStropheContact] && [[obj JID] bareEquals:aJID])
+    //         return obj;
+    // }
+    //
+    // var c;
+    // for (var i = 0; i < [_content count]; i++)
+    // {
+    //     var obj = [_content objectAtIndex:i];
+    //     if ([obj isKindOfClass:TNStropheGroup])
+    //         if (c = [self _searchContactWithJID:aJID matchBare:YES inGroup:obj])
+    //             return c;
+    // }
+    //
+    // return nil;
 
-    var c;
-    for (var i = 0; i < [_content count]; i++)
-    {
-        var obj = [_content objectAtIndex:i];
-        if ([obj isKindOfClass:TNStropheGroup])
-            if (c = [self _searchContactWithJID:aJID matchBare:YES inGroup:obj])
-                return c;
-    }
-    
+    console.warn(_contactCache);
+    for (var i = 0; i < [_contactCache count]; i++)
+        if ([[[_contactCache objectAtIndex:i] JID] bareEquals:aJID])
+            return [_contactCache objectAtIndex:i];
     return nil;
 }
 
 
-- (TNStropheContact)_searchContactWithJID:(TNStropheJID)aJID matchBare:(BOOL)matchBare inGroup:(TNStropheGroup)aGroup
-{
-    var contact = [aGroup contactWithJID:aJID matchBare:matchBare];
-    
-    if (contact)
-        return contact;
-    
-    for (var i = 0; i < [[aGroup subGroups] count]; i++)
-    {
-        contact = [self _searchContactWithJID:aJID matchBare:matchBare inGroup:[[aGroup subGroups] objectAtIndex:i]];
-        if (contact)
-            return contact
-    }
-
-    return nil;
-}
+// - (TNStropheContact)_searchContactWithJID:(TNStropheJID)aJID matchBare:(BOOL)matchBare inGroup:(TNStropheGroup)aGroup
+// {
+//     var contact = [aGroup contactWithJID:aJID matchBare:matchBare];
+//
+//     if (contact)
+//         return contact;
+//
+//     for (var i = 0; i < [[aGroup subGroups] count]; i++)
+//     {
+//         contact = [self _searchContactWithJID:aJID matchBare:matchBare inGroup:[[aGroup subGroups] objectAtIndex:i]];
+//         if (contact)
+//             return contact
+//     }
+//
+//     return nil;
+// }
 
 
 /*! perform containsFullJID and containsBareJID
