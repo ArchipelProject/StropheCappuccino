@@ -32,11 +32,11 @@
 */
 @implementation TNStropheRosterBase : CPObject
 {
-    CPArray                 _contacts       @accessors(getter=contacts);
+    CPArray                 _content        @accessors(getter=content);
     id                      _delegate       @accessors(property=delegate);
     TNStropheConnection     _connection     @accessors(getter=connection);
 
-    TNStropheGroup          _defaultGroup;
+    // TNStropheGroup          _defaultGroup;
 }
 
 #pragma mark -
@@ -59,9 +59,7 @@
     if (self = [super init])
     {
         _connection     = aConnection;
-        _contacts       = [CPArray array];
-
-        _defaultGroup   = [TNStropheGroup stropheGroupWithName:@"General"];
+        _content        = [CPArray array];
     }
 
     return self;
@@ -76,7 +74,7 @@
 
 - (void)clear
 {
-    [_contacts removeAllObjects];
+    [_content removeAllObjects];
 }
 
 
@@ -85,8 +83,7 @@
 
 - (CPArray)groupsOfContact:(TNStropheContact)aContact
 {
-    CPLog.error('TNStropheRosterBase groupsOfContact must be implemented in sub-classes.');
-    return;
+    return [contact groups];
 }
 
 /*! remove a TNStropheContact from the roster
@@ -95,7 +92,6 @@
 */
 - (void)removeContact:(TNStropheContact)aContact
 {
-    [_contacts removeObject:aContact];
     [[self groupOfContact:aContact] removeContact:aContact];
 }
 
@@ -123,12 +119,23 @@
 */
 - (TNStropheContact)contactWithFullJID:(TNStropheJID)aJID
 {
-    for (var i = 0; i < [_contacts count]; i++)
+    for (var i = 0; i < [_content count]; i++)
     {
-        var contact = [_contacts objectAtIndex:i];
-        if ([[contact JID] equals:aJID])
-            return contact;
+        var obj = [_content objectAtIndex:i];
+        if ([obj isKindOfClass:TNStropheContact] && [[obj JID] equals:aJID])
+            return obj;
     }
+    
+    var c;
+    for (var i = 0; i < [_content count]; i++)
+    {
+        var obj = [_content objectAtIndex:i];
+        if ([obj isKindOfClass:TNStropheGroup])
+            if (c = [self _searchContactWithJID:aJID matchBare:NO inGroup:obj])
+                return c;
+    }
+    
+    return nil;
 }
 
 /*! return a TNStropheContact object according to the given bare JID
@@ -137,30 +144,41 @@
 */
 - (TNStropheContact)contactWithBareJID:(TNStropheJID)aJID
 {
-    for (var i = 0; i < [_contacts count]; i++)
+    for (var i = 0; i < [_content count]; i++)
     {
-        var contact = [_contacts objectAtIndex:i];
-        if ([[contact JID] bareEquals:aJID])
-            return contact;
+        var obj = [_content objectAtIndex:i];
+        if ([obj isKindOfClass:TNStropheContact] && [[obj JID] bareEquals:aJID])
+            return obj;
     }
 
-    return;
+    var c;
+    for (var i = 0; i < [_content count]; i++)
+    {
+        var obj = [_content objectAtIndex:i];
+        if ([obj isKindOfClass:TNStropheGroup])
+            if (c = [self _searchContactWithJID:aJID matchBare:YES inGroup:obj])
+                return c;
+    }
+    
+    return nil;
 }
 
-/*! return the first TNStropheContact matching to the given bare JID
-    @param aJID CPString containing the JID
-    @return TNStropheContact the contact with the given JID
-*/
-- (TNStropheContact)firstContactWithBareJID:(TNStropheJID)aJID
+
+- (TNStropheContact)_searchContactWithJID:(TNStropheJID)aJID matchBare:(BOOL)matchBare inGroup:(TNStropheGroup)aGroup
 {
-    for (var i = 0; i < [_contacts count]; i++)
+    var contact = [aGroup contactWithJID:aJID matchBare:matchBare];
+    
+    if (contact)
+        return contact;
+    
+    for (var i = 0; i < [[aGroup subGroups] count]; i++)
     {
-        var contact = [_contacts objectAtIndex:i];
-        if ([[contact JID] bareEquals:aJID])
-            return contact;
+        contact = [self _searchContactWithJID:aJID matchBare:matchBare inGroup:[[aGroup subGroups] objectAtIndex:i]];
+        if (contact)
+            return contact
     }
 
-    return;
+    return nil;
 }
 
 
@@ -169,7 +187,7 @@
 */
 - (BOOL)containsJID:(TNStropheJID)aJID
 {
-    return [self containsBareJID:aJID] || [self containsFullJID:aJID];
+    return ([self contactWithBareJID:aJID] || [self contactWithFullJID:aJID]);
 }
 
 /*! check if roster contains a contact with a given full JID
@@ -178,13 +196,7 @@
 */
 - (BOOL)containsFullJID:(TNStropheJID)aJID
 {
-    for (var i = 0; i < [_contacts count]; i++)
-    {
-        if ([[[_contacts objectAtIndex:i] JID] equals:aJID])
-            return YES;
-    }
-
-    return NO;
+    return ([self contactWithFullJID:aJID]) ? YES : NO;
 }
 
 /*! check if roster contains a contact with a given bare JID
@@ -193,13 +205,7 @@
 */
 - (BOOL)containsBareJID:(TNStropheJID)aJID
 {
-    for (var i = 0; i < [_contacts count]; i++)
-    {
-        if ([[[_contacts objectAtIndex:i] JID] bareEquals:aJID])
-            return YES;
-    }
-
-    return NO;
+    return ([self contactWithBareJID:aJID]) ? YES : NO;
 }
 
 /*! changes the nickname of the contact with the given JID

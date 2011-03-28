@@ -28,7 +28,6 @@
 */
 @implementation TNStropheRoster : TNStropheRosterBase
 {
-    CPArray         _groups             @accessors(getter=groups);
     CPDictionary    _pendingPresence    @accessors(getter=pendingPresence);
 }
 
@@ -53,7 +52,6 @@
 {
     if (self = [super initWithConnection:aConnection])
     {
-        _groups                 = [CPArray arrayWithObject:_defaultGroup];
         _pendingPresence        = [CPDictionary dictionary];
 
         var rosterPushParams    = [CPDictionary dictionaryWithObjectsAndKeys:@"iq", @"name", Strophe.NS.ROSTER, @"namespace", @"set", @"type"],
@@ -68,7 +66,12 @@
 
 - (void)clear
 {
-    [_groups removeAllObjects];
+    for (var i = 0; i < [_content count]; i++)
+    {
+        if ([[_content objectAtIndex:i] isKindOfClass:TNStropheGroup])
+            [[_content objectAtIndex:i] removeSubGroups];
+    }
+    _content = [CPArray array];
     [_pendingPresence removeAllObjects];
     [super clear];
 }
@@ -132,7 +135,7 @@
         bare JID of the user's account) or it has a 'from' attribute whose value matches the user's bare
         JID <user@domainpart>.
     */
-    if ([aStanza from] && [aStanza from] != [[_connection JID] bare])
+    if ([aStanza from] && (![[aStanza from] bareEquals:[_connection JID]]))
         return;
 
     /*! TODO: Should only send this if the stuff below has actually been successful
@@ -195,68 +198,119 @@
 #pragma mark -
 #pragma mark Groups
 
-/*! add a group to the roster with given name
-    @param aGroupName the name of the new group
-    @return TNStropheGroup object representing the new group
+/*! get the group with given path
+    @param aPath the path of the group
+    @return the TNStropheGroup object or nil
 */
-- (TNStropheGroup)addGroup:(TNStropheGroup)aGroup
+- (TNStropheGroup)groupWithPath:(CPString)aPath
 {
-    [_groups addObject:aGroup];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedGroupNotification object:aGroup];
-
-    return aGroup;
+    var path = [aPath uppercaseString].split("::"),
+        currentGroup = [self rootGroupWithName:path[0]],
+        lastGroup = [self _subGroupWithPath:[path copy].splice(1, path.length - 1) relativeTo:currentGroup];
+    return ([lastGroup path] == aPath) ? lastGroup : nil;
 }
 
-- (TNStropheGroup)addGroupWithName:(CPString)aGroupName
+/*! @ignore
+*/
+- (TNStropheGroup)_subGroupWithPath:(CPArray)aPath relativeTo:(TNStropheGroup)aGroup
 {
-    if ([self containsGroupWithName:aGroupName])
+    var subGroup = [aGroup subGroupWithName:[aPath[0] uppercaseString]];
+    if (subGroup)
+        return [self _subGroupWithPath:aPath.splice(1, aPath.length - 1) relativeTo:subGroup];
+    else
+        return aGroup;
+}
+
+
+- (TNStropheGroup)groupWithPath:(CPArray)aPath orCreate:(BOOL)shouldCreate
+{
+    var group = [self groupWithPath:aPath];
+    if (!group && shouldCreate)
+    {
+        [self addGroupWithPath:aPath];
+        group = [self groupWithPath:aPath];
+    }
+
+    return group;
+}
+
+
+/*! check if roster contains a group with given path
+    @param aPath the path of the group
+    @return YES or NO
+*/
+- (BOOL)containsGroupWithPath:(CPString)aPath
+{
+    return ([self groupWithPath:aPath]) ? YES: NO;
+}
+
+/*! add a group with given path.
+    if a group is missing the given path, it will be created
+    @param aPath the path of the group
+*/
+- (void)addGroupWithPath:(CPString)aPath
+{
+    var path = [aPath uppercaseString].split("::");
+
+    if ([self containsGroupWithPath:aPath])
         return;
 
-    return [self addGroup:[TNStropheGroup stropheGroupWithName:aGroupName]];
+    for (var i = 0; i < [path count]; i++)
+    {
+        var currentPath = [path copy].splice(0, i + 1).join("::"),
+            parentPath = [path copy].splice(0, i).join("::"),
+            currentGroup = [self groupWithPath:currentPath],
+            parentGroup = [self groupWithPath:parentPath]
+
+        if (!currentGroup)
+        {
+            var tokens = [currentPath uppercaseString].split("::"),
+                groupName = [tokens lastObject];
+                currentGroup =  [TNStropheGroup stropheGroupWithName:groupName];
+            if (parentGroup)
+                [parentGroup addSubGroup:currentGroup];
+            else
+                [_content addObject:currentGroup];
+        }
+    }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedGroupNotification object:[self groupWithPath:aPath]];
 }
 
-/*! remove a group from the roster with given name
-    @param aGroupName the name of the group to remove
-    @return YES if group has been removed, NO otherwise
+/*! remove the group at given path. all sub groups of the
+    removed groups will also be removed
+    @param aPath the path of the group
 */
-- (void)removeGroup:(TNStropheGroup)aGroup
+- (void)removeGroupAtPath:(CPString)aPath
 {
-    // TODO: deactivated for now, seems to work better. maybe it's just a dirty workaround
-    // for (var i = 0; i < [_contacts count]; i++)
-    //     [[_contacts objectAtIndex:i] removeGroup:aGroup];
+    var group = [self groupWithPath:aPath],
+        parentGroup = [group parentGroup];
 
-    [_groups removeObject:aGroup];
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:aGroup];
-}
+    if (!parentGroup)
+    {
+        [group removeSubGroups];
+        [_content removeObject:group]
+    }
+    else
+    {
+        [parentGroup removeSubGroup:group];
+    }
 
-/*! checks if given TNStropheGroup is in roster
-    @param aGroup the group
-    @return YES if group is in roster, NO otherwise
-*/
-- (BOOL)containsGroup:(TNStropheGroup)aGroup
-{
-    return [_groups containsObject:aGroup];
-}
-
-/*! checks if group with given name exist in roster
-    @param aGroup the group name
-    @return YES if group is in roster, NO otherwise
-*/
-- (BOOL)containsGroupWithName:(CPString)aGroupName
-{
-    return [self containsGroup:[self groupWithName:aGroupName]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:group];
 }
 
 /*! return TNStropheGroup object according to the given name
     @param aGroupName the group name
     @return TNStropheGroup the group. nil if group doesn't exist
 */
-- (TNStropheGroup)groupWithName:(CPString)aGroupName
+- (TNStropheGroup)rootGroupWithName:(CPString)aGroupName
 {
-    for (var i = 0; i < [_groups count]; i++)
+    for (var i = 0; i < [_content count]; i++)
     {
-        var group = [_groups objectAtIndex:i];
+        if (![[_content objectAtIndex:i] isKindOfClass:TNStropheGroup])
+            continue;
+
+        var group = [_content objectAtIndex:i];
 
         if ([group name] == aGroupName)
             return group;
@@ -264,46 +318,22 @@
     return;
 }
 
-/*! return or create and return a TNStropheGroup with aGroupName
-    @param aGroupName CPstring of the name
-    @return a TNStropheGroup;
+/*! return all root TNStropheGroup objects
+    @return CPArray of TNStropheGroup the group. nil if group doesn't exist
 */
-- (TNStropheGroup)groupWithName:(CPString)aGroupName orCreate:(BOOL)shouldCreate
+- (TNStropheGroup)rootGroupWithName:(CPString)aGroupName
 {
-    var newGroup = [self groupWithName:aGroupName];
-
-    if (shouldCreate && !newGroup)
-        return [self addGroupWithName:aGroupName];
-
-    return newGroup;
-}
-
-/*! return the group of given contact
-    @param aContact the contact
-    @return CPArray of TNStropheGroups of the the contact
-*/
-- (CPArray)groupsOfContact:(TNStropheContact)aContact
-{
-    return [contact groups];
-}
-
-- (int)populatedGroupsCount
-{
-    return [[self populatedGroups] count];
-}
-
-- (CPArray)populatedGroups
-{
-    var tempGroups = [CPArray array];
-
-    for (var i = 0; i < [_groups count]; i++)
+    for (var i = 0; i < [_content count]; i++)
     {
-        var group = [_groups objectAtIndex:i];
-        if ([group count] > 0)
-            [tempGroups addObject:group];
-    }
+        if (![[_content objectAtIndex:i] isKindOfClass:TNStropheGroup])
+            continue;
 
-    return tempGroups;
+        var group = [_content objectAtIndex:i];
+
+        if ([group name] == aGroupName)
+            return group;
+    }
+    return;
 }
 
 
@@ -315,7 +345,7 @@
     @param aName the nickname of the new contact. If nil, it will be the JID
     @param aGroup the group of the new contact. if nil, it will be "General"
 */
-- (void)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroupWithName:(CPString)aGroupName
+- (void)addContact:(TNStropheJID)aJID withName:(CPString)aName inGroupWithPath:(CPString)aGroupPath
 {
     if ([self containsJID:aJID])
         return;
@@ -323,13 +353,10 @@
     if (!aName)
         aName = [aJID node];
 
-    if (!aGroupName)
-        aGroupName = @"General";
-
     var uid         = [_connection getUniqueId],
         addReq      = [TNStropheStanza iqWithAttributes:{"type": "set", "id": uid}],
         params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
-        group       = [self groupWithName:aGroupName orCreate:YES],
+        group       = aGroupPath ? [self groupWithPath:aGroupPath orCreate:YES] : nil,
         contact     = [TNStropheContact contactWithConnection:_connection JID:aJID group:group];
 
     [contact setNickname:aName];
@@ -370,13 +397,15 @@
         queuedPresence  = [self pendingPresenceForJID:theJID],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
-    [_contacts addObject:contact];
-
     for (var i = 0; i < [groupNodes count]; i++)
-        [groups addObject:[self groupWithName:[[groupNodes objectAtIndex:i] text] orCreate:YES]];
+    {
+        var groupsLine = [[[groupNodes objectAtIndex:i] text] uppercaseString];
+
+        [groups addObject:[self groupWithPath:groupsLine orCreate:YES]];
+    }
 
     if ([groups count] === 0)
-        [groups addObject:_defaultGroup];
+        [_content addObject:contact];
 
     // Add contact to all new groups
     for (var i = 0; i < [groups count]; i++)
@@ -399,6 +428,7 @@
 */
 - (void)_updateContactFromRosterItem:(TNXMLNode)aRosterItem
 {
+    console.warn([aRosterItem tree]);
     var theJID = [TNStropheJID stropheJIDWithString:[aRosterItem valueForAttribute:@"jid"]];
 
     if ([theJID bareEquals:[_connection JID]])
@@ -414,15 +444,14 @@
     {
         var groups = [contact groups];
 
-        for (var i = 0; i < [groups count]; i++)
-        {
-            var group = [groups objectAtIndex:i];
-            [group removeContact:contact];
-            [_contacts removeObject:contact];
-
-            if ([[group contacts] count] === 0)
-                [self removeGroup:group];
-        }
+        if (!groups || [groups count] == 0)
+            [_content removeObject:contact];
+        else
+            for (var i = 0; i < [groups count]; i++)
+            {
+                var group = [groups objectAtIndex:i];
+                [group removeContact:contact];
+            }
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
     }
@@ -432,22 +461,31 @@
             groupNodes  = [aRosterItem childrenWithName:@"group"],
             groups      = [CPArray array];
 
-        for (var i = 0; i < [groupNodes count]; i++)
-            [groups addObject:[self groupWithName:[[groupNodes objectAtIndex:i] text] orCreate:YES]];
-
-        if ([groups count] === 0)
-            [groups addObject:_defaultGroup];
-
         [contact setNickname:nickname];
 
-        // Remove contact from all groups
-        var oldGroups = [contact groups];
-        for (var i = 0; i < [oldGroups count]; i++)
-            [[oldGroups objectAtIndex:i] removeContact:contact];
+        for (var i = 0; i < [groupNodes count]; i++)
+            [groups addObject:[self groupWithPath:[[groupNodes objectAtIndex:i] text] orCreate:YES]];
 
-        // Add contact to all new groups
-        for (var i = 0; i < [groups count]; i++)
-            [[groups objectAtIndex:i] addContact:contact];
+        if (([groups count] == 0) && ![_content containsObject:contact])
+        {
+            for (var i = 0; i < [[contact groups] count]; i++)
+                [[[contact groups] objectAtIndex:i] removeContact:contact];
+            [_content addObject:contact];
+        }
+        else
+        {
+            // Remove contact from all groups
+            var oldGroups = [contact groups];
+            if (([groups count] > 0) && (!oldGroups || [oldGroups count] == 0))
+                [_content removeObject:contact];
+            else
+                for (var i = 0; i < [oldGroups count]; i++)
+                    [[oldGroups objectAtIndex:i] removeContact:contact];
+
+            // Add contact to all new groups
+            for (var i = 0; i < [groups count]; i++)
+                [[groups objectAtIndex:i] addContact:contact];
+        }
 
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushUpdatedContactNotification object:self userInfo:contact];
     }

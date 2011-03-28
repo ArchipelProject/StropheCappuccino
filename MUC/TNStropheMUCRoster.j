@@ -142,7 +142,8 @@
     [contact setNickname:aName];
 
     [aGroup addContact:contact];
-    [_contacts addObject:contact];
+    // TODO: FIX ME
+    // [_contacts addObject:contact];
 
     var userInfo = [CPDictionary dictionaryWithObject:contact forKey:@"contact"];
 

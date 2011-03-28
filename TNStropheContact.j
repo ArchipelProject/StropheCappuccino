@@ -416,7 +416,7 @@
     for (var i = 0; i < [_groups count]; i++)
     {
         [stanza addChildWithName:@"group"];
-        [stanza addTextNode:[[_groups objectAtIndex:i] name]];
+        [stanza addTextNode:[[_groups objectAtIndex:i] path]];
         [stanza up];
     }
 

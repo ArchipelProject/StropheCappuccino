@@ -27,8 +27,10 @@
 */
 @implementation TNStropheGroup : CPObject
 {
-    CPArray     _contacts   @accessors(getter=contacts);
-    CPString    _name       @accessors(getter=name);
+    CPArray         _subGroups      @accessors(getter=subGroups);
+    CPArray         _contacts       @accessors(getter=contacts);
+    CPString        _name           @accessors(getter=name);
+    TNStropheGroup  _parentGroup    @accessors(property=parentGroup);
 }
 
 + (TNStropheGroup)stropheGroupWithName:(CPString)aName
@@ -40,8 +42,10 @@
 {
     if (self = [super init])
     {
-        _contacts   = [CPArray array];
-        _name       = aName;
+        _contacts       = [CPArray array];
+        _subGroups      = [CPArray array];
+        _name           = aName;
+        _parentGroup    = nil;
     }
 
     return self;
@@ -54,9 +58,9 @@
 
 - (void)changeName:(CPString)aName
 {
-    for (var i = 0; i < [self count]; i++)
+    for (var i = 0; i < [self contactCount]; i++)
     {
-        var contact = [_contacts objectAtIndex:i],
+        var contact = [[self content] objectAtIndex:i],
             groups  = [[contact groups] copy];
         [groups removeObject:self];
         [groups addObject:[TNStropheGroup stropheGroupWithName:aName]];
@@ -69,7 +73,7 @@
 - (void)addContact:(TNStropheContact)aContact
 {
     if (![aContact isKindOfClass:TNStropheContact])
-        [CPException raise:"Invalid Object" reason:"You can only add TNStropheContacts"];
+        [CPException raise:"Invalid Object" reason:"addContact only supports to add TNStropheContacts"];
 
     [[aContact groups] addObject:self];
     [_contacts addObject:aContact];
@@ -81,10 +85,103 @@
     [_contacts removeObject:aContact];
 }
 
-- (int)count
+- (void)addSubGroup:(TNStropheGroup)aGroup
+{
+    if (![aGroup isKindOfClass:TNStropheGroup])
+        [CPException raise:"Invalid Object" reason:"addSubGroup only supports to add TNStropheGroups"];
+
+    [aGroup setParentGroup:self];
+    [_subGroups addObject:aGroup];
+}
+
+- (void)removeSubGroups
+{
+    for (var i = 0; i < [self subGroupsCount]; i++)
+    {
+        var subGroup = [[self subGroups] objectAtIndex:i];
+        [self removeSubGroup:subGroup];
+    }
+
+    _subGroups = [CPArray array];
+}
+
+- (void)removeSubGroup:(TNStropheGroup)aGroup
+{
+    if (![_subGroups containsObject:aGroup])
+        return;
+
+    [aGroup setParentGroup:nil];
+    [aGroup removeSubGroups];
+
+    [_subGroups removeObject:aGroup];
+}
+
+- (int)subGroupsCount
+{
+    return [_subGroups count];
+}
+
+- (int)contactCount
 {
     return [_contacts count];
 }
+
+- (int)count
+{
+    return [self subGroupsCount] + [self contactCount];
+}
+
+- (TNStropheGroup)subGroupWithName:(CPString)aName
+{
+    for (var i = 0; i < [self subGroupsCount]; i++)
+        if ([[[_subGroups objectAtIndex:i] name] uppercaseString] == [aName uppercaseString])
+            return [_subGroups objectAtIndex:i];
+    return nil;
+}
+
+- (TNStropheContact)contactWithJID:(TNStropheJID)aJID matchBare:(BOOL)matchBare
+{
+    for (var i = 0; i < [_contacts count]; i++)
+    {
+        if (matchBare)
+        {
+            if ([[[_contacts objectAtIndex:i] JID] bareEquals:aJID])
+                return [_contacts objectAtIndex:i];
+        }
+        else
+        {
+            if ([[[_contacts objectAtIndex:i] JID] fullEquals:aJID])
+                return [_contacts objectAtIndex:i];
+        }
+    }
+
+    return nil;
+}
+
+- (CPArray)content
+{
+    return [_subGroups arrayByAddingObjectsFromArray:_contacts];
+}
+
+/*! format the path for the given group
+    @param aGroup the group to format the path
+    @returna the path of the group
+*/
+- (CPString)path
+{
+    var path = [[self name]],
+        currentGroup = self;
+
+    while (currentGroup)
+    {
+        currentGroup = [currentGroup parentGroup];
+        if (currentGroup)
+            [path addObject:[[currentGroup name] uppercaseString]];
+    }
+    return path.reverse().join("::");
+}
+
+
 
 @end
 
@@ -96,8 +193,10 @@
 
     if (self)
     {
-        _contacts   = [aCoder decodeObjectForKey:@"_contacts"];
-        _name       = [aCoder decodeObjectForKey:@"_name"];
+        _contacts       = [aCoder decodeObjectForKey:@"_contacts"];
+        _name           = [aCoder decodeObjectForKey:@"_name"];
+        _parentGroup    = [aCoder decodeObjectForKey:@"_parentGroup"];
+        _subGroups      = [aCoder decodeObjectForKey:@"_subGroups"];
     }
     return self;
 }
@@ -106,6 +205,8 @@
 {
     [aCoder encodeObject:_contacts forKey:@"_contacts"];
     [aCoder encodeObject:_name forKey:@"_name"];
+    [aCoder encodeObject:_parentGroup forKey:@"_parentGroup"];
+    [aCoder encodeObject:_subGroups forKey:@"_subGroups"];
 }
 
 @end
