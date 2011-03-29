@@ -422,12 +422,12 @@
         var currentPath = [path copy].splice(0, i + 1).join("::"),
             parentPath = [path copy].splice(0, i).join("::"),
             currentGroup = [self groupWithPath:currentPath],
-            parentGroup = [self groupWithPath:parentPath]
+            parentGroup = [self groupWithPath:parentPath];
 
         if (!currentGroup)
         {
             var tokens = [currentPath uppercaseString].split("::"),
-                groupName = [tokens lastObject];
+                groupName = [tokens lastObject],
                 currentGroup =  [TNStropheGroup stropheGroupWithName:groupName];
 
             [_groupCache addObject:currentGroup];
