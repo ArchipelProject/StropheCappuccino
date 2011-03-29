@@ -647,7 +647,8 @@
 {
     var affectedContacts = [self getAllContactsTreeFromGroup:aGroup];
 
-    [aGroup setName:aName];
+    [aGroup setName:[aName uppercaseString]];
+    console.warn([self getAllContactsTreeFromGroup:aGroup]);
     [self sendRosterSet:[self getAllContactsTreeFromGroup:aGroup]];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
 }
