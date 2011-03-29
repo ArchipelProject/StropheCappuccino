@@ -101,9 +101,11 @@ TNStropheRosterRosterDelimiter = @"::";
     if ([aStanza type] == @"result")
     {
         var delimiter = [[aStanza firstChildWithName:@"roster"] text];
+
         if ((!delimiter == @"") && (!delimiter == @" "))
             TNStropheRosterRosterDelimiter = delimiter;
-
+        else
+            [self setSubGroupDelimiter:TNStropheRosterRosterDelimiter];
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterSubGroupDelimiterReceived object:self];
     }
     else
@@ -114,6 +116,34 @@ TNStropheRosterRosterDelimiter = @"::";
     return NO;
 }
 
+/*! set the subgroup delimiter
+    @params aDelimiter the delimiter to use
+*/
+- (void)setSubGroupDelimiter:(CPString)aDelimiter
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"set"}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza addChildWithName:@"query" andAttributes:{@"xmlns": @"jabber:iq:private"}];
+    [stanza addChildWithName:@"roster" andAttributes:{@"xmlns": @"roster:delimiter"}];
+    [stanza addTextNode:aDelimiter];
+    [_connection registerSelector:@selector(_didsetSubGroupDelimiter:) ofObject:self withDict:params];
+    [_connection send:stanza];
+}
+
+/*! called when the delimiter is set
+    @params aStanza the result stanza
+*/
+- (BOOL)_didsetSubGroupDelimiter:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+        CPLog.info("roster's subgroup delimiter has been set");
+    else
+        CPLog.error("Cannot get the roster delimiter")
+
+    return NO;
+}
 
 /*! ask the server to get the roster of the TNStropheConnection user
 */
