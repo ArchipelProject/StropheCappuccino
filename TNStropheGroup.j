@@ -180,7 +180,7 @@
         if (currentGroup)
             [path addObject:[[currentGroup name] uppercaseString]];
     }
-    return path.reverse().join("::");
+    return path.reverse().join(TNStropheRosterRosterDelimiter);
 }
 
 

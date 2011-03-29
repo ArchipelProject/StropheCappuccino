@@ -231,6 +231,14 @@ TNStropheContactMessageGone                     = @"TNStropheContactMessageGone"
 /*!
     @global
     @group TNStropheRoster
+    notification indicates that TNStropheRoster has received the subgroup delimiter
+*/
+
+TNStropheRosterSubGroupDelimiterReceived        = @"TNStropheRosterSubGroupDelimiterReceived"
+
+/*!
+    @global
+    @group TNStropheRoster
     notification indicates that TNStropheRoster has received the data from the XMPP server
 */
 TNStropheRosterRetrievedNotification            = @"TNStropheRosterRetrievedNotification";

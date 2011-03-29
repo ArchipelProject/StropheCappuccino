@@ -23,6 +23,8 @@
 @import "TNStropheJID.j"
 @import "TNStropheRosterBase.j"
 
+TNStropheRosterRosterDelimiter = @"::";
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Roster
 */
@@ -68,9 +70,7 @@
 - (void)clear
 {
     for (var i = 0; i < [_groupCache count]; i++)
-    {
         [[_groupCache objectAtIndex:i] flushAllSubGroups];
-    }
     [_pendingPresence removeAllObjects];
     [super clear];
 }
@@ -78,6 +78,42 @@
 
 #pragma mark -
 #pragma mark Fetch / Push
+
+/*! ask the subgroup delimiter
+*/
+- (void)getSubGroupDelimiter
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"get"}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza addChildWithName:@"query" andAttributes:{@"xmlns": @"jabber:iq:private"}];
+    [stanza addChildWithName:@"roster" andAttributes:{@"xmlns": @"roster:delimiter"}];
+    [_connection registerSelector:@selector(_didReceiveSubGroupDelimiter:) ofObject:self withDict:params];
+    [_connection send:stanza];
+}
+
+/*! called when the delimiter is recieved
+    @params aStanza the result stanza
+*/
+- (BOOL)_didReceiveSubGroupDelimiter:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+    {
+        var delimiter = [[aStanza firstChildWithName:@"roster"] text];
+        if ((!delimiter == @"") && (!delimiter == @" "))
+            TNStropheRosterRosterDelimiter = delimiter;
+
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterSubGroupDelimiterReceived object:self];
+    }
+    else
+    {
+        CPLog.error("Cannot get the roster delimiter")
+    }
+
+    return NO;
+}
+
 
 /*! ask the server to get the roster of the TNStropheConnection user
 */
@@ -372,7 +408,7 @@
 */
 - (TNStropheGroup)groupWithPath:(CPString)aPath
 {
-    var path = [aPath uppercaseString].split("::"),
+    var path = [aPath uppercaseString].split(TNStropheRosterRosterDelimiter),
         currentGroup = [self rootGroupWithName:path[0]],
         lastGroup = [self _subGroupWithPath:[path copy].splice(1, path.length - 1) relativeTo:currentGroup];
     return ([lastGroup path] == aPath) ? lastGroup : nil;
@@ -412,21 +448,21 @@
 */
 - (void)addGroupWithPath:(CPString)aPath
 {
-    var path = [aPath uppercaseString].split("::");
+    var path = [aPath uppercaseString].split(TNStropheRosterRosterDelimiter);
 
     if ([self groupWithPath:aPath])
         return;
 
     for (var i = 0; i < [path count]; i++)
     {
-        var currentPath = [path copy].splice(0, i + 1).join("::"),
-            parentPath = [path copy].splice(0, i).join("::"),
+        var currentPath = [path copy].splice(0, i + 1).join(TNStropheRosterRosterDelimiter),
+            parentPath = [path copy].splice(0, i).join(TNStropheRosterRosterDelimiter),
             currentGroup = [self groupWithPath:currentPath],
             parentGroup = [self groupWithPath:parentPath];
 
         if (!currentGroup)
         {
-            var tokens = [currentPath uppercaseString].split("::"),
+            var tokens = [currentPath uppercaseString].split(TNStropheRosterRosterDelimiter),
                 groupName = [tokens lastObject],
                 currentGroup =  [TNStropheGroup stropheGroupWithName:groupName];
 
