@@ -28,8 +28,8 @@
 @implementation TNStropheGroup : CPObject
 {
     CPArray         _subGroups      @accessors(getter=subGroups);
-    CPArray         _contacts       @accessors(getter=contacts);
-    CPString        _name           @accessors(getter=name);
+    CPArray         _contacts       @accessors(property=contacts);
+    CPString        _name           @accessors(property=name);
     TNStropheGroup  _parentGroup    @accessors(property=parentGroup);
 }
 
@@ -75,50 +75,7 @@
 
 
 #pragma mark -
-#pragma mark Edition
-
-/*! change the name of the group
-    @param aName the new name
-*/
-- (void)changeName:(CPString)aName
-{
-    for (var i = 0; i < [self contactCount]; i++)
-    {
-        var contact = [[self content] objectAtIndex:i],
-            groups  = [[contact groups] copy];
-        [groups removeObject:self];
-        [groups addObject:[TNStropheGroup stropheGroupWithName:aName]];
-        [contact setGroups:groups];
-    }
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
-}
-
-
-#pragma mark -
 #pragma mark Contacts
-
-
-/*! add contact to the group
-    @param aContact the contact
-*/
-- (void)addContact:(TNStropheContact)aContact
-{
-    if (![aContact isKindOfClass:TNStropheContact])
-        [CPException raise:"Invalid Object" reason:"addContact only supports to add TNStropheContacts"];
-
-    [[aContact groups] addObject:self];
-    [_contacts addObject:aContact];
-}
-
-/*! remove contact from the group
-    @param aContact the contact
-*/
-- (void)removeContact:(TNStropheContact)aContact
-{
-    [[aContact groups] removeObject:self];
-    [_contacts removeObject:aContact];
-}
 
 /*! return the contact with given jid
     @param aJID the TNStropheJID
@@ -168,8 +125,6 @@
         return;
 
     [aGroup setParentGroup:nil];
-    [aGroup removeSubGroups];
-
     [_subGroups removeObject:aGroup];
 }
 
@@ -183,7 +138,20 @@
         [self removeSubGroup:subGroup];
     }
 
-    _subGroups = [CPArray array];
+    [_subGroups removeAllObjects];
+}
+
+- (void)flushAllSubGroups
+{
+    for (var i = 0; i < [self subGroupsCount]; i++)
+    {
+        var subGroup = [[self subGroups] objectAtIndex:i];
+        [subGroups flushAllSubGroups];
+        [self removeSubGroup:subGroup];
+    }
+
+    [_contacts removeAllObjects];
+    [_subGroups removeAllObjects];
 }
 
 /*! return the subgroup with given name
@@ -248,6 +216,7 @@
 {
     return [_subGroups.sort() arrayByAddingObjectsFromArray:_contacts.sort()];
 }
+
 
 @end
 

@@ -399,6 +399,7 @@
 {
     for (var i = 0; i < [_nodes count]; i++)
         [[_nodes objectAtIndex:i] unsubscribe];
+    [_nodes removeAllObjects];
 }
 
 @end

@@ -46,11 +46,12 @@
 #pragma mark -
 #pragma mark Initialization
 
-/*! create and initialize and return a new TNPubSubNode
-    @param  aNodeName the name of the pubsub node
-    @param  aConnection the TNStropheConnection to use to communicate
-    @param aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
-    @return initialized TNPubSubNode
+/*! create and initialize and return a new TNStropheMUCRoom
+    @param  aRoom the name of the room
+    @param  aService the service
+    @param aConnection a valid open TNStropheConnection
+    @param aNick the wanted nick
+    @return initialized TNStropheMUCRoom
 */
 + (TNStropheMUCRoom)joinRoom:(CPString)aRoom onService:(CPString)aService usingConnection:(TNStropheConnection)aConnection withNick:(CPString)aNick
 {
@@ -60,11 +61,12 @@
                                   withNick:aNick];
 }
 
-/*! initialize and return a new TNPubSubNode
-    @param  aNodeName the name of the pubsub node
-    @param  aConnection the TNStropheConnection to use to communicate
-    @param aPubSubServer a pubsubserver. if nil, it will be pubsub. + domain of [_connection JID]
-    @return initialized TNPubSubNode
+/*! create and initialize and return a new TNStropheMUCRoom
+    @param  aRoom the name of the room
+    @param  aService the service
+    @param aConnection a valid open TNStropheConnection
+    @param aNick the wanted nick
+    @return initialized TNStropheMUCRoom
 */
 - (id)initWithRoom:(CPString)aRoom onService:(CPString)aService usingConnection:(TNStropheConnection)aConnection withNick:(CPString)aNick
 {

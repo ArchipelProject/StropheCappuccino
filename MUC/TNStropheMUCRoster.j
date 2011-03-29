@@ -138,7 +138,7 @@
     var contact = [TNStropheContact contactWithConnection:_connection JID:aJID group:aGroup];
     [contact setNickname:aName];
 
-    [aGroup addContact:contact];
+    [[aGroup contacts] addObject:contact];
     [self cacheContact:contact];
 
     var userInfo = [CPDictionary dictionaryWithObject:contact forKey:@"contact"];

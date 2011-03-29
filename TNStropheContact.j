@@ -32,7 +32,7 @@
 */
 @implementation TNStropheContact: CPObject
 {
-    CPArray             _groups         @accessors(getter=groups);
+    CPArray             _groups         @accessors(property=groups);
     CPArray             _messagesQueue  @accessors(property=messagesQueue);
     CPArray             _resources      @accessors(property=resources);
     CPImage             _statusIcon     @accessors(property=statusIcon);
@@ -73,12 +73,12 @@
     return [[TNStropheContact alloc] initWithConnection:aConnection JID:aJID group:aGroup];
 }
 
+
 #pragma mark -
 #pragma mark Initialization
 
 /*! init a TNStropheContact with a given connection
     @param aConnection TNStropheConnection to use
-
     @return an initialized TNStropheContact
 */
 - (id)initWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID group:(CPString)aGroup
@@ -352,90 +352,6 @@
     return YES;
 }
 
-/*! this allows to change the contact nickname. Will post TNStropheContactNicknameUpdatedNotification
-    @param newNickname the new nickname
-*/
-- (void)changeNickname:(CPString)newNickname
-{
-    var oldNickname = _nickname;
-    _nickname = newNickname;
-    [self sendRosterSet];
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:self];
-    _nickname = oldNickname;
-}
-
-/*! add contact to the given group
-    @param aGroup the group to add the contact in
-*/
-- (void)addGroup:(TNStropheGroup)aGroup
-{
-    if ([_groups containsObject:aGroup])
-        return;
-
-    [_groups addObject:aGroup];
-    [self sendRosterSet];
-    [_groups removeObject:aGroup];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
-}
-
-/*! remove contact from the given group
-    @param aGroup the group to remove the contact from
-*/
-- (void)removeGroup:(TNStropheGroup)aGroup
-{
-    if (![_groups containsObject:aGroup])
-        return;
-
-    [_groups removeObject:aGroup];
-    [self sendRosterSet];
-    [_groups addObject:aGroup];
-
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactGroupUpdatedNotification object:self];
-}
-
-/*! set the groups of the contact
-    @param someGroups array of groups
-*/
-- (void)setGroups:(CPArray)someGroups
-{
-    var oldGroups = [_groups copy];
-    _groups = someGroups;
-    [self sendRosterSet];
-    _groups = oldGroups;
-}
-
-/*! send a roster SET to the XMPP server according to the content of _groups and _nickname
-*/
-- (void)sendRosterSet
-{
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{"JID": [_JID bare], "name": _nickname}];
-
-    for (var i = 0; i < [_groups count]; i++)
-    {
-        [stanza addChildWithName:@"group"];
-        [stanza addTextNode:[[_groups objectAtIndex:i] path]];
-        [stanza up];
-    }
-
-    [_connection send:stanza];
-}
-
-/*! send a roster REMOVE to the XMPP server
-*/
-- (void)sendRosterUnset
-{
-    var stanza  = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-    [stanza addChildWithName:@"item" andAttributes:{'jid': [_JID bare], 'subscription': 'remove'}];
-
-    [_connection send:stanza];
-}
-
 
 #pragma mark -
 #pragma mark Communicating
@@ -512,12 +428,10 @@
 }
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
-
     @param aStanza the TNStropheStanza to send to the contact
     @param aSelector the selector to perform on response
     @param anObject the object receiving the selector
     @param someUserInfo random information to give to the selector
-
     @return the associated registration id for the selector
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
@@ -540,9 +454,7 @@
 
 /*! message sent when contact listening its message (using getMessages) and send appropriates notifications
     you should never have to use this message.
-
     @param aStanza the response stanza
-
     @return YES in order to listen again
 */
 - (BOOL)_didReceiveMessage:(id)aStanza
