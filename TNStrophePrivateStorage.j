@@ -75,7 +75,7 @@
 
     [stanza addChildWithName:@"query" andAttributes:{@"xmlns": Strophe.NS.PRIVATE_STORAGE}];
     [stanza addChildWithName:aKey andAttributes:{@"xmlns": _namespace}];
-    [stanza addTextNode:[data string]];
+    [stanza addTextNode:[data rawString];
     [_connection registerSelector:@selector(_didSetObject:object:) ofObject:self withDict:params userInfo:anObject];
     [_connection send:stanza];
 }
