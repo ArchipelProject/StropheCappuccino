@@ -714,7 +714,6 @@ TNStropheRosterRosterDelimiter = @"::";
     var affectedContacts = [self getAllContactsTreeFromGroup:aGroup];
 
     [aGroup setName:[aName uppercaseString]];
-    console.warn([self getAllContactsTreeFromGroup:aGroup]);
     [self sendRosterSet:[self getAllContactsTreeFromGroup:aGroup]];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
 }
@@ -768,19 +767,20 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (void)answerAuthorizationRequest:(id)aStanza answer:(BOOL)theAnswer
 {
-    var requester = [aStanza from];
+    var requester   = [aStanza from],
+        nick        = [aStanza firstChildWithName:@"nick"];
 
     if (theAnswer == YES)
     {
         [self authorizeJID:requester];
         [self askAuthorizationTo:requester];
+
+        if (![self containsJID:requester])
+            [self addContact:requester withName:(nick ? [nick text] : [requester node]) inGroupWithPath:nil];
+
     }
     else
         [self unauthorizeJID:requester];
-
-    if (![self containsJID:requester])
-        [self addContact:requester withName:[requester node] inGroupWithPath:nil];
-
 }
 
 @end
