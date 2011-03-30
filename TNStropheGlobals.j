@@ -516,3 +516,49 @@ TNStrophePrivateStorageSetNotification              = @"TNStrophePrivateStorageS
     notification indicates that an error occured while trying to set an object to the XMPP private storage
 */
 TNStrophePrivateStorageSetErrorNotification         = @"TNStrophePrivateStorageSetErrorNotification";
+
+
+#pragma mark -
+#pragma mark TNStropheServerAdministration
+
+/*!
+    @global
+    @group TNStropheServerAdministration
+    notification indicates that an announce has been sent
+*/
+TNStropheServerAdministrationSendAnnouncementNotification       = @"TNStropheServerAdministrationSendAnnouncementNotification";
+
+/*!
+    @global
+    @group TNStropheServerAdministration
+    notification indicates that registered users has been fetched
+*/
+TNStropheServerAdministrationGetRegisteredUserNotification      = @"TNStropheServerAdministrationGetRegisteredUserNotification";
+
+/*!
+    @global
+    @group TNStropheServerAdministration
+    notification indicates that connected users has been fetched
+*/
+TNStropheServerAdministrationGetConnectedUserNotification       = @"TNStropheServerAdministrationGetConnectedUserNotification";
+
+/*!
+    @global
+    @group TNStropheServerAdministration
+    notification indicates that a new user has been registered
+*/
+TNStropheServerAdministrationRegisterUserNotification           = @"TNStropheServerAdministrationRegisterUserNotification";
+
+/*!
+    @global
+    @group TNStropheServerAdministration
+    notification indicates that some users has been unregistered
+*/
+TNStropheServerAdministrationUnregisterUserNotification         = @"TNStropheServerAdministrationUnregisterUserNotification";
+
+/*!
+    @global
+    @group TNStropheServerAdministration
+    notification indicates that connected users has been enabled or disabled
+*/
+TNStropheServerAdministrationSetUserEnabledNotification         = @"TNStropheServerAdministrationSetUserEnabledNotification";
