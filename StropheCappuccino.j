@@ -30,6 +30,7 @@
 @import "TNStropheRoster.j"
 @import "TNBase64Image.j"
 @import "TNPubSub.j"
+@import "TNStrophePrivateStorage.j"
 @import "MUC/TNStropheMUCRoom.j"
 
 
@@ -37,6 +38,7 @@
 [TNStropheClient addNamespaceWithName:@"DELAY" value:@"urn:xmpp:delay"];
 [TNStropheClient addNamespaceWithName:@"X_DATA" value:@"jabber:x:data"];
 [TNStropheClient addNamespaceWithName:@"PING" value:@"urn:xmpp:ping"];
+[TNStropheClient addNamespaceWithName:@"PRIVATE_STORAGE" value:@"jabber:iq:private"];
 
 /*! @mainpage
     StropheCappuccino is distributed under the @ref license "AGPL".

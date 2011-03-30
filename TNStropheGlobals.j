@@ -498,3 +498,21 @@ TNStropheMUCContactJoinedNotification               = @"TNStropheMUCContactJoine
     notification indicates that a MUC member has left the room
 */
 TNStropheMUCContactLeftNotification                 = @"TNStropheMUCContactLeftNotification";
+
+
+#pragma mark -
+#pragma mark Private Storage
+
+/*!
+    @global
+    @group TNStrophePrivateStorage
+    notification indicates that an object as been set to the XMPP private storage
+*/
+TNStrophePrivateStorageSetNotification              = @"TNStrophePrivateStorageSetNotification";
+
+/*!
+    @global
+    @group TNStrophePrivateStorage
+    notification indicates that an error occured while trying to set an object to the XMPP private storage
+*/
+TNStrophePrivateStorageSetErrorNotification         = @"TNStrophePrivateStorageSetErrorNotification";
