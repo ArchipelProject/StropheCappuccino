@@ -361,6 +361,7 @@
     }
     else
     {
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubItemPublishErrorNotification object:self userInfo:aStanza];
         CPLog.error("Cannot publish the pubsub item in node");
         CPLog.error(aStanza);
     }
@@ -421,6 +422,7 @@
     }
     else
     {
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubItemRetractErrorNotification object:self userInfo:aStanza];
         CPLog.error("Cannot remove the pubsub item in node");
         CPLog.error(aStanza);
     }

@@ -355,6 +355,7 @@ TNStrophePubSubVarAccessModelWhitelist      = @"whitelist";
 TNStrophePubSubNodeRetrievedNotification    = @"TNStrophePubSubNodeRetrievedNotification";
 
 
+
 /*!
     @global
     @group TNPubSub
@@ -386,9 +387,23 @@ TNStrophePubSubItemPublishedNotification    = @"TNStrophePubSubItemPublishedNoti
 /*!
     @global
     @group TNPubSub
+    notification indicates that a pubsub item publication has failed
+*/
+TNStrophePubSubItemPublishErrorNotification = @"TNStrophePubSubItemPublishErrorNotification";
+
+/*!
+    @global
+    @group TNPubSub
     notification indicates that a pubsub item has been retracted
 */
 TNStrophePubSubItemRetractedNotification    = @"TNStrophePubSubItemRetractedNotification";
+
+/*!
+    @global
+    @group TNPubSub
+    notification indicates that a pubsub item retraction has failed
+*/
+TNStrophePubSubItemRetractErrorNotification = @"TNStrophePubSubItemRetractErrorNotification";
 
 /*!
     @global
