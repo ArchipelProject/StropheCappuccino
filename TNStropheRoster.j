@@ -679,9 +679,8 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (void)setGroups:(CPArray)someGroups ofContact:(TNStropheContact)aContact
 {
-    var groupsOfContact = [aContact groups];
-
-    var oldGroups = [groupsOfContact copy];
+    var groupsOfContact = [aContact groups],
+        oldGroups = [groupsOfContact copy];
     [aContact setGroups:someGroups];
     [self sendRosterSet:aContact];
     [aContact setGroups:oldGroups];
