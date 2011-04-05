@@ -154,7 +154,7 @@
 */
 - (void)removeContact:(TNStropheContact)aContact withStatusCode:(CPString)aStatusCode
 {
-    [super removeContact:aContact];
+    [super uncacheContact:aContact];
 
     var userInfo = [CPDictionary dictionaryWithObjectsAndKeys:aStatusCode, @"statusCode",
                                                              aContact, @"contact"];

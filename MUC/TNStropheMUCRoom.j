@@ -168,10 +168,17 @@
     if ([aStanza containsChildrenWithName:@"body"])
     {
         var body    = [[aStanza firstChildWithName:@"body"] text],
-            contact = [_roster contactWithJID:[aStanza from]],
-            message = [CPDictionary dictionaryWithObjectsAndKeys:body,@"body",
-                                                                 contact,@"from",
-                                                                 [aStanza delayTime],@"time"];
+            contact = [_roster contactWithJID:[aStanza from]];
+
+        if (!contact)
+        {
+            [_roster addContact:[aStanza from] withName:[[aStanza from] resource] inGroup:[_roster visitors]];
+            contact = [_roster contactWithJID:[aStanza from]];
+        }
+
+        var message = [CPDictionary dictionaryWithObjectsAndKeys:body, @"body",
+                                                                 contact, @"from",
+                                                                 [aStanza delayTime], @"time"];
         [_messages addObject:message];
 
         if (_delegate && [_delegate respondsToSelector:@selector(mucRoom:receivedMessage:)])
