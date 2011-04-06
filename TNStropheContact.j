@@ -324,10 +324,10 @@
     {
         _vCard = aVCard;
 
-        if (!_nickname || (_nickname == [_JID node]))
+        if (!_nickname || (_nickname == [_JID bare]))
         {
-            if ([aVCard firstChildWithName:@"NAME"])
-                _nickname = [[aVCard firstChildWithName:@"NAME"] text];
+            if ([aVCard firstChildWithName:@"FN"])
+                _nickname = [[aVCard firstChildWithName:@"FN"] text];
             else
                 _nickname = [_JID node]
         }

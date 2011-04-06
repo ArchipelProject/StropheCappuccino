@@ -573,7 +573,7 @@ TNStropheRosterRosterDelimiter = @"::";
         return;
 
     if (!aName)
-        aName = [aJID node];
+        aName = [aJID bare];
 
     var group       = aGroupPath ? [self groupWithPath:aGroupPath orCreate:YES] : nil,
         contact     = [TNStropheContact contactWithConnection:_connection JID:aJID group:group];
@@ -775,7 +775,7 @@ TNStropheRosterRosterDelimiter = @"::";
         [self askAuthorizationTo:requester];
 
         if (![self containsJID:requester])
-            [self addContact:requester withName:(nick ? [nick text] : [requester node]) inGroupWithPath:nil];
+            [self addContact:requester withName:(nick ? [nick text] : [requester bare]) inGroupWithPath:nil];
 
     }
     else
