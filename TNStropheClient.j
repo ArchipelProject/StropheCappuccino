@@ -143,8 +143,6 @@
 
 - (void)onStropheConnected:(TNStropheConnection)aConnection
 {
-    [self _sendInitialPresence];
-
     [self _sendCAPS];
 
     if ([_delegate respondsToSelector:@selector(onStropheConnected:)])
@@ -355,7 +353,6 @@
         params      = [CPDictionary dictionaryWithObjectsAndKeys: uid, @"id"];
 
     [vcardStanza addChildWithName:@"vCard" andAttributes:{@"xmlns": @"vcard-temp"}];
-
     [_connection registerSelector:@selector(_didReceiveCurrentUserVCard:) ofObject:self withDict:params];
     [_connection send:vcardStanza];
 }
@@ -365,16 +362,19 @@
 */
 - (BOOL)_didReceiveCurrentUserVCard:(TNStropheStanza)aStanza
 {
-    _vCard = [aStanza firstChildWithName:@"vCard"];
-
-    var photo = [_vCard firstChildWithName:@"PHOTO"];
-
-    if (photo)
+    if ([aStanza type] == @"result")
     {
-        var type = [[photo firstChildWithName:@"TYPE"] text],
-            binval = [[photo firstChildWithName:@"BINVAL"] text];
+        _vCard = [aStanza firstChildWithName:@"vCard"];
 
-        _avatar = [TNBase64Image base64ImageWithContentType:type andData:binval];
+        var photo = [_vCard firstChildWithName:@"PHOTO"];
+
+        if (photo)
+        {
+            var type = [[photo firstChildWithName:@"TYPE"] text],
+                binval = [[photo firstChildWithName:@"BINVAL"] text];
+
+            _avatar = [TNBase64Image base64ImageWithContentType:type andData:binval];
+        }
     }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientVCardReceived object:self userInfo:aStanza];

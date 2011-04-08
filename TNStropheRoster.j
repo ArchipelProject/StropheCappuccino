@@ -106,12 +106,13 @@ TNStropheRosterRosterDelimiter = @"::";
             TNStropheRosterRosterDelimiter = delimiter;
         else
             [self setSubGroupDelimiter:TNStropheRosterRosterDelimiter];
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterSubGroupDelimiterReceived object:self];
     }
     else
     {
         CPLog.error("Cannot get the roster delimiter")
     }
+
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterSubGroupDelimiterReceived object:self];
 
     return NO;
 }

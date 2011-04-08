@@ -122,7 +122,7 @@
         _JID        = aJID;
         _password   = aPassword;
 
-        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveSubGroupDelimiter:) name:TNStropheRosterSubGroupDelimiterReceived object:nil];
+        [[CPNotificationCenter defaultCenter] addObserver:self selector:@selector(_didReceiveRoster:) name:TNStropheRosterRetrievedNotification object:nil];
     }
 
     return self;
@@ -131,12 +131,14 @@
 #pragma mark -
 #pragma mark Notification handler
 
-/*! called when the roster's subgroup delimiter has been defined
+/*! called when the roster has been retrieved and will send initial presence
+    and continue the connection delegate chain
     @param aNotification the notification that triggers the message
 */
-- (void)_didReceiveSubGroupDelimiter:(CPNotification)aNotification
+- (void)_didReceiveRoster:(CPNotification)aNotification
 {
-    [_roster getRoster];
+    [self _sendInitialPresence];
+    [super onStropheConnected:_connection];
 }
 
 #pragma mark -
@@ -145,12 +147,8 @@
 
 - (void)onStropheConnected:(TNStropheConnection)aConnection
 {
-    /*! Upon authenticating with a server and binding a resource (thus becoming a connected resource as
-        defined in [XMPP‑CORE]), a client SHOULD request the roster before sending initial presence
-    */
     [_roster getSubGroupDelimiter];
-
-    [super onStropheConnected:aConnection];
+    [_roster getRoster];
 }
 
 - (void)onStropheConnectFail:(TNStropheConnection)aConnection
