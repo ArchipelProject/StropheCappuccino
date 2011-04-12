@@ -1,3 +1,6 @@
 [submodule "strophejs"]
 	path = strophejs
 	url = git://github.com/primalmotion/strophejs.git
+[submodule "ejabberd-websockets"]
+	path = ejabberd-websockets
+	url = https://github.com/superfeedr/ejabberd-websockets.git

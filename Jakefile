@@ -68,6 +68,18 @@ task("release", ["build-strophe-release"], function()
     JAKE.subjake(["."], "build", ENV);
 });
 
+task("debug-ws", ["build-strophe-ws"], function()
+{
+    ENV["CONFIG"] = "Debug"
+    JAKE.subjake(["."], "build", ENV);
+});
+
+task("release-ws", ["build-strophe-ws"], function()
+{
+    ENV["CONFIG"] = "Release"
+    JAKE.subjake(["."], "build", ENV);
+});
+
 task ("documentation", function()
 {
     // try to find a doxygen executable in the PATH;
@@ -140,6 +152,15 @@ task("build-strophe-debug", ["build-strophe"], function()
     if (code !== 0)
        OS.exit(code);
 });
+
+task("build-strophe-ws", function()
+{
+    var cmdString = "cp ejabberd-websockets/demo/strophe.js Resources/Strophe/strophe.js";
+    var code = OS.system(cmdString);
+    if (code !== 0)
+       OS.exit(code);
+});
+
 
 task ("default", ["release"]);
 task ("docs", ["documentation"]);
