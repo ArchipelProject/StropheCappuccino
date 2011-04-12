@@ -542,6 +542,10 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     [_registeredTimedHandlers removeAllObjects];
 }
 
+/*! register a selector to listen every incoming data
+    @param aSelector the selector to call
+    @param the target of the message
+*/
 - (void)rawInputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
     _connection.xmlInput = function(elem) {
@@ -550,12 +554,35 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     }
 }
 
+/*! remove incoming data listener
+*/
+- (void)removeRawInputSelector
+{
+    _connection.xmlInput = function(elem){
+        return;
+    };
+}
+
+
+/*! register a selector to listen every outgoing data
+    @param aSelector the selector to call
+    @param the target of the message
+*/
 - (void)rawOutputRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
     _connection.xmlOutput = function(elem) {
         [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
         [anObject performSelector:aSelector withObject:[TNStropheStanza nodeWithXMLNode:elem]];
     }
+}
+
+/*! remove outgoing data listener
+*/
+- (void)removeRawOutputSelector
+{
+    _connection.xmlOutput = function(elem){
+        return;
+    };
 }
 
 @end
