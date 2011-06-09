@@ -412,18 +412,17 @@ TNStropheRosterRosterDelimiter = @"::";
     {
         if ([_delegate respondsToSelector:@selector(roster:receiveSubscriptionRequest:)])
             [_delegate roster:self receiveSubscriptionRequest:aStanza];
+        return YES;
     }
+
+    if ([self containsJID:[aStanza from]])
+        [[self contactWithJID:[aStanza from]] _didReceivePresence:aStanza];
     else
     {
-        if ([self containsJID:[aStanza from]])
-            [[self contactWithJID:[aStanza from]] _didReceivePresence:aStanza];
-        else
-        {
-            var from = [aStanza fromBare];
-            if (![_pendingPresence containsKey:from])
-                [_pendingPresence setValue:[CPArray array] forKey:from];
-            [[_pendingPresence valueForKey:from] addObject:aStanza];
-        }
+        var from = [aStanza fromBare];
+        if (![_pendingPresence containsKey:from])
+            [_pendingPresence setValue:[CPArray array] forKey:from];
+        [[_pendingPresence valueForKey:from] addObject:aStanza];
     }
 
     return YES;
