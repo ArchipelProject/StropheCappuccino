@@ -519,6 +519,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 - (void)deleteRegisteredSelector:(id)aHandlerId
 {
     _connection.deleteHandler(aHandlerId);
+    [_registeredHandlers removeObject:aHandlerId];
 }
 
 /*! delete a registered timed selector
@@ -527,6 +528,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 - (void)deleteRegisteredTimedSelector:(id)aTimedHandlerId
 {
     _connection.deleteTimedHandler(aTimedHandlerId);
+    [_registeredTimedHandlers removeObject:aTimedHandlerId];
 }
 
 /*! unrgister all registered selectors (including timeouted ones)
