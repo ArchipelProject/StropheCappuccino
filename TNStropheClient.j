@@ -165,7 +165,6 @@
 {
     _userPresenceShow   = TNStropheContactStatusOffline;
     _userPresenceStatus = @"";
-
     if ([_delegate respondsToSelector:@selector(onStropheDisconnected:)])
         [_delegate onStropheDisconnected:self];
 }

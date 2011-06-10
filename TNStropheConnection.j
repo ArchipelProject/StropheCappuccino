@@ -236,22 +236,23 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
                 case Strophe.Status.CONNFAIL:
                     selector            = @selector(onStropheConnectFail:);
                     notificationName    = TNStropheConnectionStatusConnectionFailure;
+                    _connected          = NO;
                     break;
                 case Strophe.Status.AUTHENTICATING:
                     selector            = @selector(onStropheAuthenticating:);
                     notificationName    = TNStropheConnectionStatusAuthenticating;
+                    _connected          = NO;
                     break;
                 case Strophe.Status.AUTHFAIL:
                     selector            = @selector(onStropheAuthFail:);
                     notificationName    = TNStropheConnectionStatusAuthFailure;
+                    _connected          = NO;
                     break;
                 case Strophe.Status.DISCONNECTING:
-                    if (_connected)
-                    {
-                        selector            = @selector(onStropheDisconnecting:);
-                        notificationName    = TNStropheConnectionStatusDisconnecting;
-                        break;
-                    }
+                    selector            = @selector(onStropheDisconnecting:);
+                    notificationName    = TNStropheConnectionStatusDisconnecting;
+                    _connected          = YES;
+                    break;
                 case Strophe.Status.DISCONNECTED:
                     [self deleteAllRegisteredSelectors];
                     selector            = @selector(onStropheDisconnected:);
@@ -274,7 +275,6 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
         if (notificationName)
             [[CPNotificationCenter defaultCenter] postNotificationName:notificationName object:self];
 
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusDidChangeNotification object:self];
     }, /* wait */ _connectionTimeout, /* hold */ _maxConnections);
 }
 

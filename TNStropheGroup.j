@@ -134,23 +134,10 @@
 {
     for (var i = 0; i < [self subGroupsCount]; i++)
     {
-        var subGroup = [[self subGroups] objectAtIndex:i];
+        var subGroup = [_subGroups objectAtIndex:i];
         [self removeSubGroup:subGroup];
     }
 
-    [_subGroups removeAllObjects];
-}
-
-- (void)flushAllSubGroups
-{
-    for (var i = 0; i < [self subGroupsCount]; i++)
-    {
-        var subGroup = [[self subGroups] objectAtIndex:i];
-        [subGroups flushAllSubGroups];
-        [self removeSubGroup:subGroup];
-    }
-
-    [_contacts removeAllObjects];
     [_subGroups removeAllObjects];
 }
 

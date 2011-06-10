@@ -70,7 +70,9 @@ TNStropheRosterRosterDelimiter = @"::";
 - (void)clear
 {
     for (var i = 0; i < [_groupCache count]; i++)
-        [[_groupCache objectAtIndex:i] flushAllSubGroups];
+        [[_groupCache objectAtIndex:i] removeSubGroups];
+
+    [_groupCache removeAllObjects];
     [_pendingPresence removeAllObjects];
     [super clear];
 }
