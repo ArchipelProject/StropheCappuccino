@@ -104,7 +104,7 @@
 {
     var uid         = [_connection getUniqueId],
         stanza      = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"get"}],
-        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"]
+        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
         listener    = {@"target": aTarget, @"selector": aSelector, @"key": aKey};
 
     [stanza addChildWithName:@"query" andAttributes:{@"xmlns": Strophe.NS.PRIVATE_STORAGE}];
