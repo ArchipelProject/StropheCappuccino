@@ -86,17 +86,33 @@ TNStropheConnectionStatusError              = @"TNStropheConnectionStatusError";
 
 /*!
     @global
-    @group TNStropheClientPresence
+    @group TNStropheClient
     Notification sent when other connection update presence
 */
 TNStropheClientPresenceUpdatedNotification  = @"TNStropheClientPresenceUpdatedNotification";
 
 /*!
     @global
-    @group TNStropheClientVCard
+    @group TNStropheClient
     Notification sent on connecting
 */
 TNStropheClientVCardReceived                = @"TNStropheClientVCardReceived";
+
+
+/*!
+    @global
+    @group TNStropheClient
+    Notification sent when sucessfully changed password
+*/
+TNStropheClientPasswordChanged          = @"TNStropheClientPasswordChanged";
+
+/*!
+    @global
+    @group TNStropheClientVCard
+    Notification sent when error occured while changing password
+*/
+TNStropheClientPasswordChangeError      = @"TNStropheClientPasswordChangeError";
+
 
 #pragma mark -
 #pragma mark globals of TNStropheContact

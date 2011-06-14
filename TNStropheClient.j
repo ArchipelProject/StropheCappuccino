@@ -439,6 +439,45 @@
     CPLog.trace([aStanza stringValue]);
 }
 
+
+#pragma mark -
+#pragma mark Password management
+
+/*! Change the current user password using XEP-0077 (InBand Registration)
+    @param aPassword string containing the new password
+*/
+- (void)changePassword:(CPString)aPassword
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": "set"}],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza addChildWithName:@"query" andAttributes:{"xmlns": @"jabber:iq:register"}];
+
+    [stanza addChildWithName:@"username"];
+    [stanza addTextNode:[[_connection JID] node]];
+    [stanza up]
+
+    [stanza addChildWithName:@"password"];
+    [stanza addTextNode:aPassword];
+    [stanza up]
+
+    [_connection registerSelector:@selector(_didChangePassword:) ofObject:self withDict:params];
+    [_connection send:stanza];
+}
+
+/*! Called when result of password changing is recieved
+    if can send TNStropheClientPasswordChanged or TNStropheClientPasswordChangeError notification
+    @param aStanza the stanza containing the answer
+*/
+- (void)_didChangePassword:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientPasswordChanged object:self userInfo:aStanza];
+    else
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientPasswordChangeError object:self userInfo:aStanza];
+}
+
 @end
 
 @implementation TNStropheClient (CPCoding)
