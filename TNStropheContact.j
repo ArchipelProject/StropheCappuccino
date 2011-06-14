@@ -134,11 +134,12 @@
     var resource        = [aStanza fromResource],
         presenceStatus  = [aStanza firstChildWithName:@"status"];
 
-    if ([[aStanza from] resource])
-        [_JID setResource:[[aStanza from] resource]]
-
-    if ([_JID resource] && ([_JID resource] != @"") && ![_resources containsObject:resource])
-        [_resources addObject:resource];
+    if (resource && (typeof(resource) != "undefined") && resource != @"")
+    {
+        if (![_resources containsObject:resource])
+            [_resources addObject:resource];
+        [_JID setResource:resource]
+    }
 
     switch ([aStanza type])
     {
