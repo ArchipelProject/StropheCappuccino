@@ -138,7 +138,7 @@
     {
         if (![_resources containsObject:resource])
             [_resources addObject:resource];
-        [_JID setResource:resource]
+        [_JID setResource:resource];
     }
 
     switch ([aStanza type])
@@ -149,11 +149,10 @@
             _XMPPStatus     = @"Error code: " + errorCode;
             _statusIcon     = _imageNewError;
             _statusReminder = _imageNewError;
-
             return NO;
         case @"unavailable":
             [_resources removeObject:resource];
-            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources);
+            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources + "("+ [_resources count] +")");
 
             if ([_resources count] == 0)
             {
@@ -164,8 +163,10 @@
                 if (presenceStatus)
                     _XMPPStatus = [presenceStatus text];
                 else
-                    _XMPPStatus = "Online";
+                    _XMPPStatus = "Offline";
             }
+            else
+                [_JID setResource:[_resources lastObject]];
             break;
         case @"subscribe":
             _XMPPStatus = @"Asking subscribtion";
