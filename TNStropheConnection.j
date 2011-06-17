@@ -403,6 +403,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
                 // experimental thing
                 delete aDict.options;
 
+                [_registeredHandlers removeObject:handlerId];
                 return ret;
             },
             [aDict valueForKey:@"namespace"],
@@ -457,6 +458,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
                 someUserInfo    = nil;
 
+                [_registeredHandlers removeObject:handlerId];
                 return ret;
             },
             [aDict valueForKey:@"namespace"],
@@ -499,6 +501,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
                     return ret;
                 }
+                [_registeredTimedHandlers removeObject:handlerId];
                 return NO;
             },
             [aDict valueForKey:@"namespace"],
