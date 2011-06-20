@@ -542,6 +542,13 @@ TNStrophePrivateStorageSetNotification              = @"TNStrophePrivateStorageS
 */
 TNStrophePrivateStorageSetErrorNotification         = @"TNStrophePrivateStorageSetErrorNotification";
 
+/*!
+    @global
+    @group TNStrophePrivateStorage
+    notification indicates that an error occured while trying to get an object from the XMPP private storage
+*/
+TNStrophePrivateStorageGetErrorNotification         = @"TNStrophePrivateStorageGetErrorNotification";
+
 
 #pragma mark -
 #pragma mark TNStropheServerAdministration

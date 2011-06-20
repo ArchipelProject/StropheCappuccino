@@ -123,8 +123,16 @@
     if ([aStanza type] == @"result")
     {
         var dataString = [[aStanza firstChildWithName:listener.key] text];
-        if (dataString)
-            var obj =  [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:dataString]];
+
+        try
+        {
+            if (dataString)
+                var obj =  [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:dataString]];
+        }
+        catch(ex)
+        {
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePrivateStorageGetErrorNotification object:self userInfo:ex];
+        }
     }
 
     [listener.target performSelector:listener.selector withObject:aStanza withObject:obj];
