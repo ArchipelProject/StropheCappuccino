@@ -117,6 +117,9 @@
 */
 - (void)addNode:(TNXMLNode)aNode
 {
+    if (!aNode)
+        return;
+
     _xmlNode.cnode([aNode tree]);
 }
 
