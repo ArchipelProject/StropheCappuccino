@@ -332,3 +332,47 @@
 }
 
 @end
+
+
+/*! Subclass of TNStropheServerAdministration that handles
+    the ejabberd way to get registred users
+*/
+@implementation TNStropheEjabberdAdministration : TNStropheServerAdministration
+
+/*! get all the rgistered users
+    ONLY WITH EJABBERD
+*/
+- (void)registredUsers
+{
+    var uid         = [_connection getUniqueId],
+        stanza      = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"get"}],
+        params      = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza setTo:_server];
+    [stanza addChildWithName:@"query" andAttributes:{
+        @"xmlns": @"http://jabber.org/protocol/disco#items",
+        @"node": @"all users"}];
+
+    [_connection registerSelector:@selector(_didGetRegisteredUsers:) ofObject:self withDict:params];
+    [_connection send:stanza];
+}
+
+- (void)_didGetRegisteredUsers:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] != @"result")
+        [CPException raise:@"error" reason:@"stanza error"];
+
+    var users = [CPArray array],
+        items = [aStanza childrenWithName:@"item"];
+
+    for (var i = 0; i < [items count]; i++)
+        [users addObject:[TNStropheJID stropheJIDWithString:[[items objectAtIndex:i] valueForAttribute:@"jid"]]];
+
+    if (_delegate && [_delegate respondsToSelector:@selector(serverAdmin:didGetRegisteredUsers:)])
+        [_delegate serverAdmin:self didGetRegisteredUsers:users];
+    else
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheServerAdministrationGetRegisteredUserNotification object:self userInfo:users];
+}
+
+
+@end
