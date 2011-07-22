@@ -19,6 +19,23 @@
 @import "TNStropheGlobals.j"
 @import "TNStropheConnection.j"
 
+function stripHTMLCharCode(str)
+{
+    str = str.replace('&nbsp;', ' ');
+    str = str.replace('&quote;', '\"');
+    str = str.replace('&#34;', '\"');
+    str = str.replace('&apos;', '\'');
+    str = str.replace('&#39;', '\'');
+    str = str.replace('&lt;', '<');
+    str = str.replace('&gt;', '>');
+    str = str.replace('&agrave;', 'à');
+    str = str.replace('&ccedil;', 'ç');
+    str = str.replace('&egrave;', 'è');
+    str = str.replace('&eacute;', 'é');
+    str = str.replace('&ecirc;', 'ê');
+    return str;
+}
+
 /*! @ingroup strophecappuccino
     This class allows to store random objects in XMPP private storage
 */
@@ -127,7 +144,7 @@
         try
         {
             if (dataString)
-                var obj =  [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:dataString]];
+                var obj =  [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:stripHTMLCharCode(dataString)]];
         }
         catch(ex)
         {
