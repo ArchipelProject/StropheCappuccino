@@ -21,18 +21,16 @@
 
 function stripHTMLCharCode(str)
 {
-    str = str.replace('&nbsp;', ' ');
-    str = str.replace('&quote;', '\"');
-    str = str.replace('&#34;', '\"');
-    str = str.replace('&apos;', '\'');
-    str = str.replace('&#39;', '\'');
-    str = str.replace('&lt;', '<');
-    str = str.replace('&gt;', '>');
-    str = str.replace('&agrave;', 'à');
-    str = str.replace('&ccedil;', 'ç');
-    str = str.replace('&egrave;', 'è');
-    str = str.replace('&eacute;', 'é');
-    str = str.replace('&ecirc;', 'ê');
+    str = str.replace(/&nbsp;/g, ' ');
+    str = str.replace(/&quote;/g, '\"');
+    str = str.replace(/&apos;/g, '\'');
+    str = str.replace(/&lt;/g, '<');
+    str = str.replace(/&gt;/g, '>');
+    str = str.replace(/&agrave;/g, 'à');
+    str = str.replace(/&ccedil;/g, 'ç');
+    str = str.replace(/&egrave;/g, 'è');
+    str = str.replace(/&eacute;/g, 'é');
+    str = str.replace(/&ecirc;/g, 'ê');
     return str;
 }
 
