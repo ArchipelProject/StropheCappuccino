@@ -21,6 +21,7 @@
 
 function stripHTMLCharCode(str)
 {
+    str = str.replace(/&amp;/g, '&');
     str = str.replace(/&nbsp;/g, ' ');
     str = str.replace(/&quote;/g, '\"');
     str = str.replace(/&apos;/g, '\'');
@@ -139,6 +140,11 @@ function stripHTMLCharCode(str)
     {
         var dataString = [[aStanza firstChildWithName:listener.key] text];
 
+        // check if a an LPCrashReporter is here.
+        // and if yes deactive it during parsing
+        // data
+        if (typeof(LPCrashReporterDisable) != "undefined")
+            LPCrashReporterDisable();
         try
         {
             if (dataString)
@@ -148,6 +154,9 @@ function stripHTMLCharCode(str)
         {
             [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePrivateStorageGetErrorNotification object:self userInfo:ex];
         }
+        // and reactive it.
+        if (typeof(LPCrashReporterEnable) != "undefined")
+            LPCrashReporterEnable();
     }
 
     [listener.target performSelector:listener.selector withObject:aStanza withObject:obj];
