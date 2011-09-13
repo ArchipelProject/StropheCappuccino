@@ -152,7 +152,7 @@
             return NO;
         case @"unavailable":
             [_resources removeObject:resource];
-            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources + "("+ [_resources count] +")");
+            CPLogConsole(@"contact become unavailable from resource: " + resource + @". Resources left : " + _resources + "("+ [_resources count] + ")");
 
             if ([_resources count] == 0)
             {
@@ -170,18 +170,23 @@
             break;
         case @"subscribe":
             _XMPPStatus = @"Asking subscribtion";
+            _subscription = [aStanza type];
             break;
         case @"subscribed":
+            _subscription = [aStanza type];
             break;
         case @"unsubscribe":
+            _subscription = [aStanza type];
             break;
         case @"unsubscribed":
+            _subscription = [aStanza type];
             _XMPPStatus = @"Unauthorized";
             break;
         default:
             _XMPPShow       = TNStropheContactStatusOnline;
             _statusReminder = _imageOnline;
             _statusIcon     = _imageOnline;
+            _subscription   = @"subscribed";
 
             if ([aStanza firstChildWithName:@"show"])
             {
