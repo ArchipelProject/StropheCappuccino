@@ -572,9 +572,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:aCoder];
-
-    if (self)
+    if (self = [super init])
     {
         _JID            = [aCoder decodeObjectForKey:@"_JID"];
         _nodeName       = [aCoder decodeObjectForKey:@"_nodeName"];

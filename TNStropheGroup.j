@@ -174,6 +174,14 @@
 #pragma mark -
 #pragma mark Counting
 
+/*! flush the content of the group
+*/
+- (void)flush
+{
+    [self removeSubGroups];
+    [_contacts removeAllObjects];
+}
+
 /*! return the number of groups
     @return the number of groups
 */
@@ -211,9 +219,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:aCoder];
-
-    if (self)
+    if (self = [super init])
     {
         _contacts       = [aCoder decodeObjectForKey:@"_contacts"];
         _name           = [aCoder decodeObjectForKey:@"_name"];

@@ -308,9 +308,7 @@
 
 - (id)initWithCoder:(CPCoder)aCoder
 {
-    self = [super initWithCoder:aCoder];
-
-    if (self)
+    if (self = [super init])
     {
        // _xmlNode = [aCoder decodeObjectForKey:@"_xmlNode"];
     }
