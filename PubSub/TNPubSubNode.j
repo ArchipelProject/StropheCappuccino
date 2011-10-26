@@ -24,6 +24,15 @@
 @import "../TNStropheConnection.j"
 @import "../TNStropheStanza.j"
 
+
+TNPubSubNodeAffiliationOwner            = @"owner";
+TNPubSubNodeAffiliationPublisher        = @"publisher";
+TNPubSubNodeAffiliationPublisherOnly    = @"publish-only";
+TNPubSubNodeAffiliationMember           = @"member";
+TNPubSubNodeAffiliationNone             = @"none";
+TNPubSubNodeAffiliationOutcast          = @"outcast";
+
+
 // TODO: Abstract out subscription related stuff into TNPubSubNodeSubscription in order to handle multiple node subscriptions better
 
 /*! @ingroup strophecappuccino
@@ -33,6 +42,7 @@
 {
     CPArray                 _content            @accessors(getter=content);
     CPArray                 _subscriptionIDs    @accessors(getter=subscriptionIDs);
+    CPDictionary            _affiliations       @accessors(getter=affiliations);
     CPString                _nodeName           @accessors(getter=name);
     id                      _delegate           @accessors(property=delegate);
     TNStopheJID             _pubSubServer       @accessors(getter=server);
@@ -90,6 +100,7 @@
         _connection         = aConnection;
         _pubSubServer       = aPubSubServer ? aPubSubServer : [TNStropheJID stropheJIDWithString:@"pubsub." + [[_connection JID] domain]];
         _subscriptionIDs    = [CPArray array];
+        _affiliations       = [CPDictionary dictionary];
 
         [self _setEventHandler];
     }
@@ -366,6 +377,8 @@
         CPLog.error(aStanza);
     }
 
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:publishedItem:)])
+        [_delegate pubSubNode:self publishedItem:aStanza];
 
     return NO;
 }
@@ -426,6 +439,9 @@
         CPLog.error("Cannot remove the pubsub item in node");
         CPLog.error(aStanza);
     }
+
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retractedItem:)])
+        [_delegate pubSubNode:self retractedItem:aStanza];
 
     return NO;
 }
@@ -676,6 +692,103 @@
 - (int)numberOfSubscriptions
 {
     return [_subscriptionIDs count];
+}
+
+#pragma mark -
+#pragma mark Affiliation Management
+
+/*! Retrieve the node affiliations
+    When done, call delegate method pubSubNode:retrievedAffiliations:
+*/
+- (void)retrieveAffiliations
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iq],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza setTo:_pubSubServer];
+    [stanza setType:@"get"];
+    [stanza setID:uid];
+
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB_OWNER}];
+    [stanza addChildWithName:@"affiliations" andAttributes:{@"node": _nodeName}];
+
+    [_connection registerSelector:@selector(_didRetrieveAffiliations:) ofObject:self withDict:params];
+    [_connection send:stanza];
+}
+
+/*! @ignore
+*/
+- (void)_didRetrieveAffiliations:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"result")
+    {
+        var affiliations = [aStanza childrenWithName:@"affiliation"];
+
+        for (var i = 0; i < [affiliations count]; i++)
+        {
+            var affiliation = [affiliations objectAtIndex:i];
+            [_affiliations setObject:[affiliation valueForAttribute:@"affiliation"] forKey:[TNStropheJID stropheJIDWithString:[affiliation valueForAttribute:@"jid"]]];
+        }
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedAffiliations:)])
+            [_delegate pubSubNode:self retrievedAffiliations:YES];
+    }
+    else
+    {
+        CPLog.error("Cannot get affiliations");
+        CPLog.error(aStanza);
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedAffiliations:)])
+            [_delegate pubSubNode:self retrievedAffiliations:NO];
+    }
+
+    return NO;
+}
+
+/*! Change an affilation for a given JID
+    When done, call delegate method pubSubNode:changedAffiliations:
+    @param anAffiliation the affilition to set
+    @param aJID target TNStropheJID for the affilition
+*/
+- (void)changeAffiliation:(CPString)anAffiliation forJID:(TNStropheJID)aJID
+{
+    var uid     = [_connection getUniqueId],
+        stanza  = [TNStropheStanza iq],
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
+
+    [stanza setTo:_pubSubServer];
+    [stanza setType:@"set"];
+    [stanza setID:uid];
+
+    [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB_OWNER}];
+    [stanza addChildWithName:@"affiliations" andAttributes:{@"node": _nodeName}];
+
+    [stanza addChildWithName:@"affiliation" andAttributes:{@"jid": [aJID bare], @"affiliation": anAffiliation}];
+
+    var affiliationInformations = [CPDictionary dictionaryWithObjectsAndKeys: [aJID bare], @"jid",
+                                                                              anAffiliation, @"affiliation"];
+    [_connection registerSelector:@selector(_didChangeAffiliations:userInfo:) ofObject:self withDict:params userInfo:affiliationInformations];
+    [_connection send:stanza];
+}
+
+/*! ignore
+*/
+- (void)_didChangeAffiliations:(TNStropheStanza)aStanza userInfo:(CPDictionary)newAffiliation
+{
+    if ([aStanza type] == @"result")
+    {
+        [_affiliations setObject:[newAffiliation objectForKey:@"affiliation"]  forKey:[newAffiliation objectForKey:@"jid"]];
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:changedAffiliations:)])
+            [_delegate pubSubNode:self changedAffiliations:YES];
+    }
+    else
+    {
+        CPLog.error("Cannot change affiliations");
+        CPLog.error(aStanza);
+        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:changedAffiliations:)])
+            [_delegate pubSubNode:self changedAffiliations:NO];
+    }
+
+    return NO;
 }
 
 
