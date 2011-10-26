@@ -730,16 +730,16 @@ TNPubSubNodeAffiliationOutcast          = @"outcast";
             var affiliation = [affiliations objectAtIndex:i];
             [_affiliations setObject:[affiliation valueForAttribute:@"affiliation"] forKey:[TNStropheJID stropheJIDWithString:[affiliation valueForAttribute:@"jid"]]];
         }
-        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedAffiliations:)])
-            [_delegate pubSubNode:self retrievedAffiliations:YES];
     }
     else
     {
         CPLog.error("Cannot get affiliations");
         CPLog.error(aStanza);
-        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedAffiliations:)])
-            [_delegate pubSubNode:self retrievedAffiliations:NO];
     }
+
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:retrievedAffiliations:)])
+        [_delegate pubSubNode:self retrievedAffiliations:aStanza];
+
 
     return NO;
 }
@@ -777,16 +777,17 @@ TNPubSubNodeAffiliationOutcast          = @"outcast";
     if ([aStanza type] == @"result")
     {
         [_affiliations setObject:[newAffiliation objectForKey:@"affiliation"]  forKey:[newAffiliation objectForKey:@"jid"]];
-        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:changedAffiliations:)])
-            [_delegate pubSubNode:self changedAffiliations:YES];
+
+        [self retrieveAffiliations];
     }
     else
     {
         CPLog.error("Cannot change affiliations");
         CPLog.error(aStanza);
-        if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:changedAffiliations:)])
-            [_delegate pubSubNode:self changedAffiliations:NO];
     }
+
+    if (_delegate && [_delegate respondsToSelector:@selector(pubSubNode:changedAffiliations:)])
+        [_delegate pubSubNode:self changedAffiliations:aStanza];
 
     return NO;
 }
