@@ -564,7 +564,6 @@
                 [_delegate pubSubNode:self subscribed:YES];
         }
 
-
         [self _setEventHandler];
     }
     else
@@ -687,6 +686,10 @@
 {
     var params = [CPDictionary dictionaryWithObjectsAndKeys:@"message", @"name",
                                                             [_pubSubServer node], @"from"];
+
+    if (_eventSelectorID)
+        [_connection deleteRegisteredSelector:_eventSelectorID];
+
     _eventSelectorID = [_connection registerSelector:@selector(_didReceiveEvent:) ofObject:self withDict:params];
 }
 
