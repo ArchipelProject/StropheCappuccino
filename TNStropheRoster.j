@@ -188,7 +188,7 @@ TNStropheRosterRosterDelimiter = @"::";
 /*! this called when a roster push is recieved. Will post TNStropheRosterPushNotification
     @return YES to keep the selector registered with TNStropheConnection
 */
-- (BOOL)_didReceiveRosterPush:(id)aStanza
+- (BOOL)_didReceiveRosterPush:(TNStropheStanzas)aStanza
 {
     var item            = [aStanza firstChildWithName:@"item"],
         theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
@@ -202,7 +202,7 @@ TNStropheRosterRosterDelimiter = @"::";
         JID <user@domainpart>.
     */
     if ([aStanza from] && (![[aStanza from] bareEquals:[_connection JID]]))
-        return;
+        return YES;
 
     /*! TODO: Should only send this if the stuff below has actually been successful
         Otherwise should send appropriate error response
@@ -212,14 +212,27 @@ TNStropheRosterRosterDelimiter = @"::";
     if (!subscription || ![allowedSubs containsObject:subscription])
         [item setValue:@"none" forAttribute:@"subscription"];
 
-    if ([self containsJID:theJID])
+    if (subscription == @"remove")
     {
-        contact = [self _updateContactFromRosterItem:item];
+        if ([self containsJID:theJID])
+        {
+            [self removeContact:[self contactWithJID:theJID] push:NO];
+            [self uncacheContact:contact];
+            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
+        }
     }
     else
     {
-        contact = [self _addContactFromRosterItem:item];
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushAddedContactNotification object:self userInfo:contact];
+        if ([self containsJID:theJID])
+        {
+            contact = [self _updateContactFromRosterItem:item];
+        }
+        else
+        {
+            contact = [self _addContactFromRosterItem:item];
+            if (contact)
+                [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushAddedContactNotification object:self userInfo:contact];
+        }
     }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushNotification object:self];
@@ -241,7 +254,6 @@ TNStropheRosterRosterDelimiter = @"::";
     var contact         = [TNStropheContact contactWithConnection:_connection JID:theJID group:nil],
         nickname        = [aRosterItem valueForAttribute:@"name"] || [theJID node],
         groupNodes      = [aRosterItem childrenWithName:@"group"],
-        groups          = [CPArray array],
         queuedPresence  = [_pendingPresence valueForKey:[theJID bare]],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
@@ -253,7 +265,6 @@ TNStropheRosterRosterDelimiter = @"::";
                 currentGroup = [self groupWithPath:groupsLine orCreate:YES];
 
             [self addContact:contact inGroup:currentGroup push:NO];
-            [groups addObject:currentGroup];
         }
     }
     else
@@ -287,31 +298,25 @@ TNStropheRosterRosterDelimiter = @"::";
     var contact         = [self contactWithJID:theJID],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
-    if (subscription == @"remove")
-    {
-        [self uncacheContact:contact];
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterPushRemovedContactNotification object:self userInfo:contact];
-        return contact;
-    }
-
-    var nickname    = [aRosterItem valueForAttribute:@"name"] || [theJID node],
+    var nickname    = [aRosterItem valueForAttribute:@"name"] || nil,
         groupNodes  = [aRosterItem childrenWithName:@"group"],
         groups      = [CPArray array],
         oldGroups   = [[contact groups] copy];
 
-    if (nickname != [contact nickname])
+    if (nickname && nickname != [contact nickname])
         [contact setNickname:nickname];
 
     // flush current groups or from root area
     if ([_content containsObject:contact])
         [_content removeObject:contact];
+
     for (var i = 0; i < [oldGroups count]; i++)
         [self removeContact:contact fromGroup:[oldGroups objectAtIndex:i] push:NO];
 
     // readd contact in new groups
     for (var i = 0; i < [groupNodes count]; i++)
     {
-        var currentGroupName = [[groupNodes objectAtIndex:i] text],
+        var currentGroupName = [[[groupNodes objectAtIndex:i] text] uppercaseString],
             currentGroup = [self groupWithPath:currentGroupName orCreate:YES];
         [self addContact:contact inGroup:currentGroup push:NO];
     }
@@ -464,6 +469,7 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (TNStropheGroup)groupWithPath:(CPArray)aPath orCreate:(BOOL)shouldCreate
 {
+    aPath = [aPath uppercaseString];
     var group = [self groupWithPath:aPath];
     if (!group && shouldCreate)
     {
@@ -480,6 +486,7 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (void)addGroupWithPath:(CPString)aPath
 {
+    aPath = [aPath uppercaseString];
     var path = [aPath uppercaseString].split(TNStropheRosterRosterDelimiter);
 
     if ([self groupWithPath:aPath])
@@ -516,6 +523,7 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (void)removeGroupWithPath:(CPString)aPath
 {
+    aPath = [aPath uppercaseString];
     var group = [self groupWithPath:aPath],
         parentGroup = [group parentGroup];
 
@@ -538,7 +546,7 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (void)removeGroup:(TNStropheGroup)aGroup
 {
-    [self removeGroupWithPath:[aGroup path]]
+    [self removeGroupWithPath:[[aGroup path] uppercaseString]]
 }
 
 /*! return TNStropheGroup object according to the given name
@@ -547,6 +555,8 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (TNStropheGroup)rootGroupWithName:(CPString)aGroupName
 {
+    aGroupName = [aGroupName uppercaseString];
+
     for (var i = 0; i < [_content count]; i++)
     {
         if (![[_content objectAtIndex:i] isKindOfClass:TNStropheGroup])
@@ -586,8 +596,9 @@ TNStropheRosterRosterDelimiter = @"::";
 
 /*! remove a TNStropheContact from the roster
     @param aContact the contact to remove
+    @param shouldPush if YES, send a roster push
 */
-- (void)removeContact:(TNStropheContact)aContact
+- (void)removeContact:(TNStropheContact)aContact push:(BOOL)shouldPush
 {
     var groups = [aContact groups];
 
@@ -597,7 +608,16 @@ TNStropheRosterRosterDelimiter = @"::";
         for (var i = 0; i < [groups count]; i++)
             [[[groups objectAtIndex:i] contacts] removeObject:aContact];
 
-    [self sendRosterUnset:aContact];
+    if (shouldPush)
+        [self sendRosterUnset:aContact];
+}
+
+/*! Remove a contact and send a roster push
+    @param aContact the contact to remove
+*/
+- (void)removeContact:(TNStropheContact)aContact
+{
+    [self removeContact:aContact push:YES];
 }
 
 /*! return an array of all contacts in group and all its subgroups
@@ -632,18 +652,16 @@ TNStropheRosterRosterDelimiter = @"::";
 */
 - (void)addContact:(TNStropheContact)aContact inGroup:(TNStropheGroup)aGroup push:(BOOL)shouldPush
 {
-    var groupsOfContact = [aContact groups];
-
-    if ([groupsOfContact containsObject:aGroup])
+    if ([[aContact groups] containsObject:aGroup])
         return;
 
-    [groupsOfContact addObject:aGroup];
+    [[aContact groups] addObject:aGroup];
     [[aGroup contacts] addObject:aContact];
 
     if (shouldPush)
     {
         [self sendRosterSet:aContact];
-        [groupsOfContact removeObject:aGroup];
+        [[aContact groups] removeObject:aGroup];
         [[aGroup contacts] removeObject:aContact];
     }
 

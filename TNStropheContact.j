@@ -58,6 +58,7 @@
     CPImage             _statusReminder;
 }
 
+
 #pragma mark -
 #pragma mark Class methods
 
@@ -68,7 +69,7 @@
 
     @return an allocated and initialized TNStropheContact
 */
-+ (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(CPString)aJID group:(CPString)aGroup
++ (TNStropheContact)contactWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID group:(TNStropheGroup)aGroup
 {
     return [[TNStropheContact alloc] initWithConnection:aConnection JID:aJID group:aGroup];
 }
@@ -81,7 +82,7 @@
     @param aConnection TNStropheConnection to use
     @return an initialized TNStropheContact
 */
-- (id)initWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID group:(CPString)aGroup
+- (id)initWithConnection:(TNStropheConnection)aConnection JID:(TNStropheJID)aJID group:(TNStropheGroup)aGroup
 {
     if (self = [super init])
     {
@@ -104,6 +105,7 @@
         _numberOfEvents     = 0;
         _isComposing        = NO;
         _askingVCard        = NO;
+        _nickname           = [_JID bare];
 
         _resources          = [CPArray array];
 
@@ -331,7 +333,7 @@
     {
         _vCard = aVCard;
 
-        if (!_nickname || (_nickname == [_JID bare]))
+        if (!_nickname || (_nickname == [_JID bare]) || (_nickname == [_JID node]))
         {
             if ([aVCard firstChildWithName:@"FN"])
                 _nickname = [[aVCard firstChildWithName:@"FN"] text];
