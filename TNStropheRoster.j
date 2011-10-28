@@ -90,10 +90,6 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     [super clear];
 }
 
-
-#pragma mark -
-#pragma mark Fetch / Push
-
 /*! ask the subgroup delimiter
 */
 - (void)getSubGroupDelimiter
@@ -105,6 +101,85 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     [stanza addChildWithName:@"query" andAttributes:{@"xmlns": @"jabber:iq:private"}];
     [stanza addChildWithName:@"roster" andAttributes:{@"xmlns": @"roster:delimiter"}];
     [_connection registerSelector:@selector(_didReceiveSubGroupDelimiter:) ofObject:self withDict:params];
+    [_connection send:stanza];
+}
+
+
+#pragma mark -
+#pragma mark Fetch / Push
+
+/*! send a roster SET to the XMPP server according to the content of groups and nickname
+    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
+*/
+- (void)sendRosterSet:(id)anObject
+{
+    var contents;
+    switch ([anObject class])
+    {
+        case TNStropheContact:
+            contents = [CPArray arrayWithObject:anObject];
+            break;
+        case _CPJavaScriptArray:
+        case CPArray:
+            contents = anObject;
+            break;
+        default:
+            CPLog.error("sendRosterSet: only accepts TNStropheContact or CPArray. given " + [anObject class]);
+            return;
+    }
+
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
+    [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
+
+    for (var i = 0; i < [contents count]; i++)
+    {
+        var contact = [contents objectAtIndex:i];
+        [stanza addChildWithName:@"item" andAttributes:{"JID": [[contact JID] bare], "name": [contact nickname]}];
+
+        for (var j = 0; j < [[contact groups] count]; j++)
+        {
+            [stanza addChildWithName:@"group"];
+            [stanza addTextNode:[[[contact groups] objectAtIndex:j] path]];
+            [stanza up];
+        }
+
+        [stanza up];
+    }
+    [_connection send:stanza];
+}
+
+/*! send a roster REMOVE to the XMPP server
+    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
+*/
+- (void)sendRosterUnset:(id)anObject
+{
+    var contents;
+    switch ([anObject class])
+    {
+        case TNStropheContact:
+            contents = [CPArray arrayWithObject:anObject];
+            break;
+        case _CPJavaScriptArray:
+        case CPArray:
+            contents = anObject;
+            break;
+        default:
+            CPLog.error("sendRosterUnset: only accepts TNStropheContact or CPArray. given " + [anObject class]);
+            return;
+    }
+    var stanza  = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+
+    for (var j = 0; j < [contents count]; j++)
+    {
+        var contact = [contents objectAtIndex:j];
+
+        [stanza addChildWithName:@"item" andAttributes:{'jid': [[contact JID] bare], 'subscription': 'remove'}];
+        [stanza up];
+    }
+
     [_connection send:stanza];
 }
 
@@ -354,81 +429,6 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
             [[[groups objectAtIndex:i] contacts] removeObject:contact];
 
     [self uncacheContact:contact];
-}
-
-/*! send a roster SET to the XMPP server according to the content of groups and nickname
-    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
-*/
-- (void)sendRosterSet:(id)anObject
-{
-    var contents;
-    switch ([anObject class])
-    {
-        case TNStropheContact:
-            contents = [CPArray arrayWithObject:anObject];
-            break;
-        case _CPJavaScriptArray:
-        case CPArray:
-            contents = anObject;
-            break;
-        default:
-            CPLog.error("sendRosterSet: only accepts TNStropheContact or CPArray. given " + [anObject class]);
-            return;
-    }
-
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
-
-    for (var i = 0; i < [contents count]; i++)
-    {
-        var contact = [contents objectAtIndex:i];
-        [stanza addChildWithName:@"item" andAttributes:{"JID": [[contact JID] bare], "name": [contact nickname]}];
-
-        for (var j = 0; j < [[contact groups] count]; j++)
-        {
-            [stanza addChildWithName:@"group"];
-            [stanza addTextNode:[[[contact groups] objectAtIndex:j] path]];
-            [stanza up];
-        }
-
-        [stanza up];
-    }
-    [_connection send:stanza];
-}
-
-/*! send a roster REMOVE to the XMPP server
-    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
-*/
-- (void)sendRosterUnset:(id)anObject
-{
-    var contents;
-    switch ([anObject class])
-    {
-        case TNStropheContact:
-            contents = [CPArray arrayWithObject:anObject];
-            break;
-        case _CPJavaScriptArray:
-        case CPArray:
-            contents = anObject;
-            break;
-        default:
-            CPLog.error("sendRosterUnset: only accepts TNStropheContact or CPArray. given " + [anObject class]);
-            return;
-    }
-    var stanza  = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-
-    for (var j = 0; j < [contents count]; j++)
-    {
-        var contact = [contents objectAtIndex:j];
-
-        [stanza addChildWithName:@"item" andAttributes:{'jid': [[contact JID] bare], 'subscription': 'remove'}];
-        [stanza up];
-    }
-
-    [_connection send:stanza];
 }
 
 
@@ -712,9 +712,33 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 {
     var groupsOfContact = [aContact groups],
         oldGroups = [groupsOfContact copy];
-    [aContact setGroups:someGroups];
+
+    [aContact setGroups:someGroups || [CPArray array]];
     [self sendRosterSet:aContact];
     [aContact setGroups:oldGroups];
+}
+
+/*! Move the given group into another group. if another group is nil,
+    the group will be move into roster root space
+    @param aGroup the origin group
+    @param anotherGroup the destination group
+*/
+- (void)moveGroup:(TNStropheGroup)aGroup intoGroup:(TNStropheGroup)anotherGroup
+{
+    if (aGroup === anotherGroup)
+        return;
+
+    if ([aGroup parentGroup])
+        [[aGroup parentGroup] removeSubGroup:aGroup];
+    else
+        [_content removeObject:aGroup];
+
+    if (anotherGroup)
+        [anotherGroup addSubGroup:aGroup];
+    else if (![_content containsObject:aGroup])
+        [_content addObject:aGroup];
+
+    [self sendRosterSet:[self getAllContactsTreeFromGroup:anotherGroup]];
 }
 
 
