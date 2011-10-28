@@ -20,11 +20,41 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheJID.j"
-@import "TNStropheGroup.j"
-@import "TNStropheConnection.j"
 @import "TNBase64Image.j"
-@import "TNStropheGlobals.j"
+@import "TNStropheConnection.j"
+@import "TNStropheGroup.j"
+@import "TNStropheJID.j"
+
+
+TNStropheContactStatusAway       = @"away";
+TNStropheContactStatusBusy       = @"xa";
+TNStropheContactStatusDND        = @"dnd";
+TNStropheContactStatusOffline    = @"offline";
+TNStropheContactStatusOnline     = @"online";
+
+TNStropheContactGroupUpdatedNotification        = @"TNStropheContactGroupUpdatedNotification";
+TNStropheContactMessageActiveNotification       = @"TNStropheContactMessageActiveNotification";
+TNStropheContactMessageComposingNotification    = @"TNStropheContactMessageComposingNotification";
+TNStropheContactMessageGoneNotification         = @"TNStropheContactMessageGoneNotification";
+TNStropheContactMessageInactiveNotification     = @"TNStropheContactMessageInactiveNotification";
+TNStropheContactMessagePausedNotification       = @"TNStropheContactMessagePausedNotification";
+TNStropheContactMessageReceivedNotification     = @"TNStropheContactMessageReceivedNotification";
+TNStropheContactMessageSentNotification         = @"TNStropheContactMessageSentNotification";
+TNStropheContactMessageTreatedNotification      = @"TNStropheContactMessageTreatedNotification";
+TNStropheContactNicknameUpdatedNotification     = @"TNStropheContactNicknameUpdatedNotification";
+TNStropheContactPresenceUpdatedNotification     = @"TNStropheContactPresenceUpdatedNotification";
+TNStropheContactStanzaSentNotification          = @"TNStropheContactStanzaSentNotification"
+TNStropheContactSubscriptionUpdatedNotification = @"TNStropheContactSubscriptionUpdatedNotification";
+TNStropheContactVCardReceivedNotification       = @"TNStropheContactVCardReceivedNotification";
+
+
+var TNStropheContactImageOffline,
+    TNStropheContactImageOnline,
+    TNStropheContactImageBusy,
+    TNStropheContactImageAway,
+    TNStropheContactImageDND,
+    TNStropheContactImageNewMessage,
+    TNStropheContactImageNewError;
 
 
 /*! @ingroup strophecappuccino
@@ -50,11 +80,6 @@
 
     BOOL                _isComposing;
     BOOL                _askingVCard;
-    CPImage             _imageAway;
-    CPImage             _imageNewError;
-    CPImage             _imageNewMessage;
-    CPImage             _imageOffline;
-    CPImage             _imageOnline;
     CPImage             _statusReminder;
 }
 
@@ -78,6 +103,22 @@
 #pragma mark -
 #pragma mark Initialization
 
+/*! Initialize the class, by creating the images
+*/
++ (void)initialize
+{
+    var bundle = [CPBundle bundleForClass:TNStropheContact];
+
+    TNStropheContactImageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Offline.png"]];
+    TNStropheContactImageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Available.png"]];
+    TNStropheContactImageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Away.png"]];
+    TNStropheContactImageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Idle.png"]];
+    TNStropheContactImageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Blocked.png"]];
+    TNStropheContactImageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"NewMessage.png"]];
+    TNStropheContactImageNewError      = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Error.png"]];
+}
+
+
 /*! init a TNStropheContact with a given connection
     @param aConnection TNStropheConnection to use
     @return an initialized TNStropheContact
@@ -86,18 +127,8 @@
 {
     if (self = [super init])
     {
-        var bundle = [CPBundle bundleForClass:[self class]];
-
-        _imageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Offline.png"]];
-        _imageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Available.png"]];
-        _imageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Away.png"]];
-        _imageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Idle.png"]];
-        _imageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Blocked.png"]];
-        _imageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"NewMessage.png"]];
-        _imageNewError      = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Error.png"]];
-
         _type               = @"contact";
-        _statusIcon         = _imageOffline;
+        _statusIcon         = TNStropheContactImageOffline;
         _XMPPShow           = TNStropheContactStatusOffline;
         _XMPPStatus         = @"Offline";
         _connection         = aConnection;
@@ -149,8 +180,8 @@
             var errorCode   = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
             _XMPPShow       = TNStropheContactStatusOffline;
             _XMPPStatus     = @"Error code: " + errorCode;
-            _statusIcon     = _imageNewError;
-            _statusReminder = _imageNewError;
+            _statusIcon     = TNStropheContactImageNewError;
+            _statusReminder = TNStropheContactImageNewError;
             return NO;
         case @"unavailable":
             [_resources removeObject:resource];
@@ -159,8 +190,8 @@
             if ([_resources count] == 0)
             {
                 _XMPPShow       = TNStropheContactStatusOffline;
-                _statusIcon     = _imageOffline;
-                _statusReminder = _imageOffline;
+                _statusIcon     = TNStropheContactImageOffline;
+                _statusReminder = TNStropheContactImageOffline;
 
                 if (presenceStatus)
                     _XMPPStatus = [presenceStatus text];
@@ -186,8 +217,8 @@
             break;
         default:
             _XMPPShow       = TNStropheContactStatusOnline;
-            _statusReminder = _imageOnline;
-            _statusIcon     = _imageOnline;
+            _statusReminder = TNStropheContactImageOnline;
+            _statusIcon     = TNStropheContactImageOnline;
             _subscription   = @"subscribed";
 
             if ([aStanza firstChildWithName:@"show"])
@@ -196,22 +227,22 @@
                 switch (_XMPPShow)
                 {
                     case TNStropheContactStatusBusy:
-                        _statusIcon     = _imageBusy;
-                        _statusReminder = _imageBusy;
+                        _statusIcon     = TNStropheContactImageBusy;
+                        _statusReminder = TNStropheContactImageBusy;
                         break;
                     case TNStropheContactStatusAway:
-                        _statusIcon     = _imageAway;
-                        _statusReminder = _imageAway;
+                        _statusIcon     = TNStropheContactImageAway;
+                        _statusReminder = TNStropheContactImageAway;
                         break;
                     case TNStropheContactStatusDND:
-                        _statusIcon     = _imageDND;
-                        _statusReminder = _imageDND;
+                        _statusIcon     = TNStropheContactImageDND;
+                        _statusReminder = TNStropheContactImageDND;
                         break;
                 }
             }
 
             if (_numberOfEvents > 0)
-                _statusIcon = _imageNewMessage
+                _statusIcon = TNStropheContactImageNewMessage
 
             if (presenceStatus)
                 _XMPPStatus = [presenceStatus text];
@@ -472,23 +503,23 @@
         userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", [CPDate date], @"date"];
 
     if ([aStanza containsChildrenWithName:@"composing"])
-        [center postNotificationName:TNStropheContactMessageComposing object:self userInfo:userInfo];
+        [center postNotificationName:TNStropheContactMessageComposingNotification object:self userInfo:userInfo];
 
     if ([aStanza containsChildrenWithName:@"paused"])
-        [center postNotificationName:TNStropheContactMessagePaused object:self userInfo:userInfo];
+        [center postNotificationName:TNStropheContactMessagePausedNotification object:self userInfo:userInfo];
 
     if ([aStanza containsChildrenWithName:@"active"])
-        [center postNotificationName:TNStropheContactMessageActive object:self userInfo:userInfo];
+        [center postNotificationName:TNStropheContactMessageActiveNotification object:self userInfo:userInfo];
 
     if ([aStanza containsChildrenWithName:@"inactive"])
-        [center postNotificationName:TNStropheContactMessageInactive object:self userInfo:userInfo];
+        [center postNotificationName:TNStropheContactMessageInactiveNotification object:self userInfo:userInfo];
 
     if ([aStanza containsChildrenWithName:@"gone"])
-        [center postNotificationName:TNStropheContactMessageGone object:self userInfo:userInfo];
+        [center postNotificationName:TNStropheContactMessageGoneNotification object:self userInfo:userInfo];
 
     if ([aStanza containsChildrenWithName:@"body"])
     {
-        _statusIcon = _imageNewMessage;
+        _statusIcon = TNStropheContactImageNewMessage;
         [_messagesQueue addObject:aStanza];
 
         _numberOfEvents++;

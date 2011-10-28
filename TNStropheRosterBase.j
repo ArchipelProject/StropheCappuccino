@@ -20,12 +20,12 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNStropheJID.j"
-@import "TNStropheConnection.j";
-@import "TNStropheStanza.j";
-@import "TNStropheGroup.j"
+@import "TNStropheConnection.j"
 @import "TNStropheContact.j"
-@import "TNStropheGlobals.j"
+@import "TNStropheGroup.j"
+@import "TNStropheJID.j"
+@import "TNStropheStanza.j"
+
 
 /*! @ingroup strophecappuccino
     this is an implementation of the functionality shared between real rosters and MUC memberships

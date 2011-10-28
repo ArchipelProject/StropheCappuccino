@@ -16,8 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "TNStropheGlobals.j"
 @import "TNStropheConnection.j"
+
+
+TNStrophePrivateStorageGetErrorNotification = @"TNStrophePrivateStorageGetErrorNotification";
+TNStrophePrivateStorageSetErrorNotification = @"TNStrophePrivateStorageSetErrorNotification";
+TNStrophePrivateStorageSetNotification      = @"TNStrophePrivateStorageSetNotification";
+
 
 function stripHTMLCharCode(str)
 {

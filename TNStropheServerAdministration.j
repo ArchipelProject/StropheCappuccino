@@ -16,8 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "TNStropheGlobals.j"
 @import "TNStropheConnection.j"
+
+
+TNStropheServerAdministrationGetConnectedUserNotification       = @"TNStropheServerAdministrationGetConnectedUserNotification";
+TNStropheServerAdministrationGetRegisteredUserNotification      = @"TNStropheServerAdministrationGetRegisteredUserNotification";
+TNStropheServerAdministrationRegisterUserNotification           = @"TNStropheServerAdministrationRegisterUserNotification";
+TNStropheServerAdministrationSendAnnouncementNotification       = @"TNStropheServerAdministrationSendAnnouncementNotification";
+TNStropheServerAdministrationSetUserEnabledNotification         = @"TNStropheServerAdministrationSetUserEnabledNotification";
+TNStropheServerAdministrationUnregisterUserNotification         = @"TNStropheServerAdministrationUnregisterUserNotification";
+
 
 /*! @ingroup strophecappuccino
     This class allows to manage XMPP server using XMPP

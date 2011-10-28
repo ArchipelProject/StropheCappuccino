@@ -20,9 +20,14 @@
 
 @import <Foundation/Foundation.j>
 
-@import "../TNStropheGlobals.j"
 @import "../TNStropheConnection.j"
 @import "TNPubSubNode.j"
+
+
+TNStrophePubSubBatchSubscribeCompleteNotification       = @"TNStrophePubSubBatchSubscribeCompleteNotification";
+TNStrophePubSubBatchUnsubscribeCompleteNotification     = @"TNStrophePubSubBatchUnsubscribeCompleteNotification";
+TNStrophePubSubNoOldSubscriptionsLeftNotification       = @"TNStrophePubSubNoOldSubscriptionsLeft";
+TNStrophePubSubSubscriptionsRetrievedNotification       = @"TNStrophePubSubSubscriptionsReceivedNotification";
 
 
 /*! @ingroup strophecappuccino
@@ -120,7 +125,7 @@
     [batch removeObjectIdenticalTo:[node name]];
 
     if ([batch count] === 0)
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchSubscribeComplete object:self userInfo:params];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchSubscribeCompleteNotification object:self userInfo:params];
 }
 
 /*! notification send when a batch unsubscription is done
@@ -135,7 +140,7 @@
     [batch removeObjectIdenticalTo:[node name]];
 
     if ([batch count] === 0)
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchUnsubscribeComplete object:self userInfo:params];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubBatchUnsubscribeCompleteNotification object:self userInfo:params];
 }
 
 
@@ -304,7 +309,7 @@
 
 /*! batch subscribe to nodes
     @param someNodes a CPDictionnary servers as key, and CPArray of node names as values
-    posts TNStrophePubSubBatchSubscribeComplete when all nodes have been subscribed
+    posts TNStrophePubSubBatchSubscribeCompleteNotification when all nodes have been subscribed
     @return batchID an ID for this batch used to establish the relevance of completion notification
 */
 - (CPString)subscribeToNodesWithNames:(CPDictionary)someNodes nodesDelegate:(id)aDelegate
@@ -362,7 +367,7 @@
 
 /*! batch unsubscribe to nodes
     @param someNodes a CPDictionnary servers as key, and CPArray of node names as values
-    posts TNStrophePubSubBatchSubscribeComplete when all nodes have been subscribed
+    posts TNStrophePubSubBatchSubscribeCompleteNotification when all nodes have been subscribed
     @return batchID an ID for this batch used to establish the relevance of completion notification
 */
 - (CPString)unsubscribeFromNodesWithNames:(CPDictionary)someNodes nodesDelegate:(id)aDelegate

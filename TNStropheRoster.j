@@ -25,6 +25,19 @@
 
 TNStropheRosterRosterDelimiter = @"::";
 
+TNStropheRosterContactAddedNotification                 = @"TNStropheRosterContactAddedNotification";
+TNStropheRosterContactRemovedNotification               = @"TNStropheRosterContactRemovedNotification";
+TNStropheRosterGroupAddedNotification                   = @"TNStropheRosterGroupAddedNotification";
+TNStropheRosterGroupRemovedNotification                 = @"TNStropheRosterGroupRemovedNotification";
+TNStropheRosterGroupRenamedNotification                 = @"TNStropheRosterGroupRenamedNotification";
+TNStropheRosterPushAddedContactNotification             = @"TNStropheRosterPushAddedContactNotification";
+TNStropheRosterPushNotification                         = @"TNStropheRosterPushNotification";
+TNStropheRosterPushRemovedContactNotification           = @"TNStropheRosterPushRemovedContactNotification";
+TNStropheRosterPushUpdatedContactNotification           = @"TNStropheRosterPushUpdatedContactNotification";
+TNStropheRosterRetrievedNotification                    = @"TNStropheRosterRetrievedNotification";
+TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGroupDelimiterReceivedNotification";
+
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Roster
 */
@@ -114,7 +127,7 @@ TNStropheRosterRosterDelimiter = @"::";
         CPLog.error("Cannot get the roster delimiter")
     }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterSubGroupDelimiterReceived object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterSubGroupDelimiterReceivedNotification object:self];
 
     return NO;
 }
@@ -514,7 +527,7 @@ TNStropheRosterRosterDelimiter = @"::";
         }
     }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterAddedGroupNotification object:[self groupWithPath:aPath]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterGroupAddedNotification object:[self groupWithPath:aPath]];
 }
 
 /*! remove the group at given path. all sub groups of the
@@ -538,7 +551,7 @@ TNStropheRosterRosterDelimiter = @"::";
     }
 
     [_groupCache removeObject:group];
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRemovedGroupNotification object:group];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterGroupRemovedNotification object:group];
 }
 
 /*! remove the given group
@@ -734,7 +747,7 @@ TNStropheRosterRosterDelimiter = @"::";
 
     [aGroup setName:[aName uppercaseString]];
     [self sendRosterSet:[self getAllContactsTreeFromGroup:aGroup]];
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheGroupRenamedNotification object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterGroupRenamedNotification object:self];
 }
 
 

@@ -19,7 +19,14 @@
  */
 
 @import <Foundation/Foundation.j>
-@import "TNStropheGlobals.j"
+
+
+/*!
+    @global
+    @group TNStropheGroup
+    notification indicates that a group has been removed
+*/
+TNStropheGroupRemovedNotification = @"TNStropheGroupRemoved";
 
 
 /*! @ingroup strophecappuccino

@@ -22,6 +22,10 @@
 @import "../TNStropheRosterBase.j"
 
 
+TNStropheMUCContactJoinedNotification   = @"TNStropheMUCContactJoinedNotification";
+TNStropheMUCContactLeftNotification     = @"TNStropheMUCContactLeftNotification";
+
+
 /*! @ingroup strophecappuccino
     this is an implementation of a basic XMPP Multi-User Chat Roster
 */

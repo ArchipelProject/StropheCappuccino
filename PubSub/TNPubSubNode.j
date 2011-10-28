@@ -20,17 +20,54 @@
 
 @import <Foundation/Foundation.j>
 
-@import "../TNStropheGlobals.j"
 @import "../TNStropheConnection.j"
 @import "../TNStropheStanza.j"
 
 
-TNPubSubNodeAffiliationOwner            = @"owner";
-TNPubSubNodeAffiliationPublisher        = @"publisher";
-TNPubSubNodeAffiliationPublisherOnly    = @"publish-only";
-TNPubSubNodeAffiliationMember           = @"member";
-TNPubSubNodeAffiliationNone             = @"none";
-TNPubSubNodeAffiliationOutcast          = @"outcast";
+TNStrophePubSubVarAccessModel               = @"pubsub#access_model";
+TNStrophePubSubVarBodyXSLT                  = @"pubsub#body_xslt";
+TNStrophePubSubVarDeliverNotification       = @"pubsub#deliver_notifications";
+TNStrophePubSubVarDeliverPayloads           = @"pubsub#deliver_payloads";
+TNStrophePubSubVarItemExpire                = @"pubsub#item_expire";
+TNStrophePubSubVarMaxItems                  = @"pubsub#max_items";
+TNStrophePubSubVarMaxPayloadSize            = @"pubsub#max_payload_size";
+TNStrophePubSubVarNotificationType          = @"pubsub#notification_type";
+TNStrophePubSubVarNotifyConfig              = @"pubsub#notify_config";
+TNStrophePubSubVarNotifyDelete              = @"pubsub#notify_delete";
+TNStrophePubSubVarNotifyRectract            = @"pubsub#notify_retract";
+TNStrophePubSubVarNotifySub                 = @"pubsub#notify_sub";
+TNStrophePubSubVarPersistItems              = @"pubsub#persist_items";
+TNStrophePubSubVarPresenceBasedDelivery     = @"pubsub#presence_based_delivery";
+TNStrophePubSubVarPublishModel              = @"pubsub#publish_model";
+TNStrophePubSubVarPurgeOffline              = @"pubsub#purge_offline";
+TNStrophePubSubVarRosterGroupAllowed        = @"pubsub#roster_groups_allowed";
+TNStrophePubSubVarSendLastPublishedItem     = @"pubsub#send_last_published_item";
+TNStrophePubSubVarTitle                     = @"pubsub#title";
+TNStrophePubSubVarType                      = @"pubsub#type";
+
+TNStrophePubSubVarAccessModelAuthorize      = @"authorize";
+TNStrophePubSubVarAccessModelOpen           = @"open";
+TNStrophePubSubVarAccessModelRoster         = @"roster";
+TNStrophePubSubVarAccessModelWhitelist      = @"whitelist";
+
+TNPubSubNodeAffiliationMember               = @"member";
+TNPubSubNodeAffiliationNone                 = @"none";
+TNPubSubNodeAffiliationOutcast              = @"outcast";
+TNPubSubNodeAffiliationOwner                = @"owner";
+TNPubSubNodeAffiliationPublisher            = @"publisher";
+TNPubSubNodeAffiliationPublisherOnly        = @"publish-only";
+
+TNStrophePubSubItemPublishedNotification    = @"TNStrophePubSubItemPublishedNotification";
+TNStrophePubSubItemPublishErrorNotification = @"TNStrophePubSubItemPublishErrorNotification";
+TNStrophePubSubItemRetractedNotification    = @"TNStrophePubSubItemRetractedNotification";
+TNStrophePubSubItemRetractErrorNotification = @"TNStrophePubSubItemRetractErrorNotification";
+TNStrophePubSubNodeConfiguredNotification   = @"TNStrophePubSubNodeConfiguredNotification";
+TNStrophePubSubNodeCreatedNotification      = @"TNStrophePubSubNodeCreatedNotification";
+TNStrophePubSubNodeDeletedNotification      = @"TNStrophePubSubNodeDeletedNotification";
+TNStrophePubSubNodeEventNotification        = @"TNStrophePubSubNodeEventNotification"
+TNStrophePubSubNodeRetrievedNotification    = @"TNStrophePubSubNodeRetrievedNotification";
+TNStrophePubSubNodeSubscribedNotification   = @"TNStrophePubSubNodeSubscribedNotification";
+TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedNotification";
 
 
 // TODO: Abstract out subscription related stuff into TNPubSubNodeSubscription in order to handle multiple node subscriptions better

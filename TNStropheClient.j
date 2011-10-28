@@ -20,11 +20,16 @@
 
 @import <Foundation/Foundation.j>
 
+@import "Resources/Strophe/sha1.js"
 @import "TNStropheConnection.j"
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
-@import "Resources/Strophe/sha1.js"
-@import "TNStropheGlobals.j"
+
+
+TNStropheClientPasswordChangedNotification      = @"TNStropheClientPasswordChangedNotification";
+TNStropheClientPasswordChangeErrorNotification  = @"TNStropheClientPasswordChangeErrorNotification";
+TNStropheClientPresenceUpdatedNotification      = @"TNStropheClientPresenceUpdatedNotification";
+TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceivedNotification";
 
 
 @implementation TNStropheClient : CPObject
@@ -376,7 +381,7 @@
         }
     }
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientVCardReceived object:self userInfo:aStanza];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientVCardReceivedNotification object:self userInfo:aStanza];
 
     return YES;
 }
@@ -467,15 +472,15 @@
 }
 
 /*! Called when result of password changing is recieved
-    if can send TNStropheClientPasswordChanged or TNStropheClientPasswordChangeError notification
+    if can send TNStropheClientPasswordChangedNotification or TNStropheClientPasswordChangeErrorNotification notification
     @param aStanza the stanza containing the answer
 */
 - (void)_didChangePassword:(TNStropheStanza)aStanza
 {
     if ([aStanza type] == @"result")
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientPasswordChanged object:self userInfo:aStanza];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientPasswordChangedNotification object:self userInfo:aStanza];
     else
-        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientPasswordChangeError object:self userInfo:aStanza];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientPasswordChangeErrorNotification object:self userInfo:aStanza];
 }
 
 @end

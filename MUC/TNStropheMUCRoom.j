@@ -20,12 +20,17 @@
 
 @import <Foundation/Foundation.j>
 
-@import "../TNStropheGlobals.j"
-@import "../TNStropheJID.j"
 @import "../TNStropheConnection.j"
+@import "../TNStropheJID.j"
 @import "../TNStropheStanza.j"
 @import "TNStropheMUCRoster.j"
 
+
+TNStropheMUCConversationWasUpdatedNotification      = @"TNStropheMUCConversationWasUpdatedNotification";
+TNStropheMUCDataReceivedNotification                = @"TNStropheMUCDataReceivedNotification";
+TNStropheMUCPrivateMessageWasReceivedNotification   = @"TNStropheMUCPrivateMessageWasReceivedNotification";
+TNStropheMUCRosterWasUpdatedNotification            = @"TNStropheMUCRosterWasUpdatedNotification";
+TNStropheMUCSubjectWasUpdatedNotification           = @"TNStropheMUCSubjectWasUpdatedNotification";
 
 
 /*! @ingroup strophecappuccino

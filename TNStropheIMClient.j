@@ -20,13 +20,12 @@
 
 @import <Foundation/Foundation.j>
 
+@import "Resources/Strophe/sha1.js"
+@import "TNStropheClient.j"
 @import "TNStropheConnection.j"
 @import "TNStropheJID.j"
-@import "TNStropheStanza.j"
-@import "Resources/Strophe/sha1.js"
-@import "TNStropheGlobals.j"
 @import "TNStropheRoster.j"
-@import "TNStropheClient.j"
+@import "TNStropheStanza.j"
 
 
 @implementation TNStropheIMClient : TNStropheClient

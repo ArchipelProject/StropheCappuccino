@@ -20,10 +20,20 @@
 
 @import <Foundation/Foundation.j>
 
+@import "Resources/Strophe/sha1.js"
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
-@import "Resources/Strophe/sha1.js"
-@import "TNStropheGlobals.j"
+
+TNStropheConnectionStatusAuthenticatingNotification     = @"TNStropheConnectionStatusAuthenticatingNotification"
+TNStropheConnectionStatusAuthFailureNotification        = @"TNStropheConnectionStatusAuthFailureNotification";
+TNStropheConnectionStatusConnectedNotification          = @"TNStropheConnectionStatusConnectedNotification";
+TNStropheConnectionStatusConnectingNotification         = @"TNStropheConnectionStatusConnectingNotification";
+TNStropheConnectionStatusConnectionFailureNotification  = @"TNStropheConnectionStatusConnectionFailureNotification";
+TNStropheConnectionStatusDisconnectedNotification       = @"TNStropheConnectionStatusDisconnectedNotification";
+TNStropheConnectionStatusDisconnectingNotification      = @"TNStropheConnectionStatusDisconnectingNotification";
+TNStropheConnectionStatusErrorNotification              = @"TNStropheConnectionStatusErrorNotification";
+TNStropheConnectionStatusWillDisconnectNotification     = @"TNStropheConnectionStatusWillDisconnectNotification";
+
 
 var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
@@ -34,37 +44,37 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     @par Delegate Methods
 
     \c -onStropheConnecting:
-    when strophe is connecting (notification TNStropheConnectionStatusConnecting sent)
+    when strophe is connecting (notification TNStropheConnectionStatusConnectingNotification sent)
 
     \c -onStropheConnectFail:
     if strophe connection fails (notification TNStropheConnectionStatusFailure sent)
 
     \c -onStropheDisconnecting
-    when strophe is disconnecting (notification TNStropheConnectionStatusDisconnecting sent)
+    when strophe is disconnecting (notification TNStropheConnectionStatusDisconnectingNotification sent)
 
     \c  -onStropheConnected:
-    when strophe is disconnected (notification TNStropheConnectionStatusDisconnected sent)
+    when strophe is disconnected (notification TNStropheConnectionStatusDisconnectedNotification sent)
 
     \c  -onStropheConnecting:
-    when strophe is connected (notification TNStropheConnectionStatusConnected sent)
+    when strophe is connected (notification TNStropheConnectionStatusConnectedNotification sent)
 
     @par Notifications:
 
     The following notifications are sent by TNStropheConnection:
 
-    #TNStropheConnectionStatusConnecting
+    #TNStropheConnectionStatusConnectingNotification
 
-    #TNStropheConnectionStatusConnected
+    #TNStropheConnectionStatusConnectedNotification
 
-    #TNStropheConnectionStatusDisconnecting
+    #TNStropheConnectionStatusDisconnectingNotification
 
-    #TNStropheConnectionStatusDisconnected
+    #TNStropheConnectionStatusDisconnectedNotification
 
-    #TNStropheConnectionStatusConnectionFailure
+    #TNStropheConnectionStatusConnectionFailureNotification
 
-    # TNStropheConnectionStatusAuthFailure
+    # TNStropheConnectionStatusAuthFailureNotification
 
-    #TNStropheConnectionStatusError
+    #TNStropheConnectionStatusErrorNotification
 */
 
 @implementation TNStropheConnection : CPObject
@@ -219,11 +229,11 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
             {
                 case Strophe.Status.ERROR:
                     selector            = @selector(onStropheError:);
-                    notificationName    = TNStropheConnectionStatusError;
+                    notificationName    = TNStropheConnectionStatusErrorNotification;
                     break;
                 case Strophe.Status.CONNECTING:
                     selector            = @selector(onStropheConnecting:);
-                    notificationName    = TNStropheConnectionStatusConnecting;
+                    notificationName    = TNStropheConnectionStatusConnectingNotification;
                     _giveUpTimer = [CPTimer scheduledTimerWithTimeInterval:_giveupTimeout callback:function(aTimer) {
                             _currentStatus  = Strophe.Status.DISCONNECTED;
                             _giveUpTimer    = nil;
@@ -235,33 +245,33 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
                     break;
                 case Strophe.Status.CONNFAIL:
                     selector            = @selector(onStropheConnectFail:);
-                    notificationName    = TNStropheConnectionStatusConnectionFailure;
+                    notificationName    = TNStropheConnectionStatusConnectionFailureNotification;
                     _connected          = NO;
                     break;
                 case Strophe.Status.AUTHENTICATING:
                     selector            = @selector(onStropheAuthenticating:);
-                    notificationName    = TNStropheConnectionStatusAuthenticating;
+                    notificationName    = TNStropheConnectionStatusAuthenticatingNotification;
                     _connected          = NO;
                     break;
                 case Strophe.Status.AUTHFAIL:
                     selector            = @selector(onStropheAuthFail:);
-                    notificationName    = TNStropheConnectionStatusAuthFailure;
+                    notificationName    = TNStropheConnectionStatusAuthFailureNotification;
                     _connected          = NO;
                     break;
                 case Strophe.Status.DISCONNECTING:
                     selector            = @selector(onStropheDisconnecting:);
-                    notificationName    = TNStropheConnectionStatusDisconnecting;
+                    notificationName    = TNStropheConnectionStatusDisconnectingNotification;
                     _connected          = YES;
                     break;
                 case Strophe.Status.DISCONNECTED:
                     [self deleteAllRegisteredSelectors];
                     selector            = @selector(onStropheDisconnected:);
-                    notificationName    = TNStropheConnectionStatusDisconnected;
+                    notificationName    = TNStropheConnectionStatusDisconnectedNotification;
                     _connected          = NO;
                     break;
                 case Strophe.Status.CONNECTED:
                     selector            = @selector(onStropheConnected:);
-                    notificationName    = TNStropheConnectionStatusConnected;
+                    notificationName    = TNStropheConnectionStatusConnectedNotification;
                     _connected          = YES;
                     if (_giveUpTimer)
                         [_giveUpTimer invalidate];
@@ -285,7 +295,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     if (_currentStatus === Strophe.Status.DISCONNECTED)
         return;
 
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusWillDisconnect object:self];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheConnectionStatusWillDisconnectNotification object:self];
     _connection.disconnect();
 }
 
