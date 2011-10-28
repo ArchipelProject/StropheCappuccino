@@ -90,6 +90,10 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     [super clear];
 }
 
+
+#pragma mark -
+#pragma mark Nested roster groups
+
 /*! ask the subgroup delimiter
 */
 - (void)getSubGroupDelimiter
@@ -101,85 +105,6 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     [stanza addChildWithName:@"query" andAttributes:{@"xmlns": @"jabber:iq:private"}];
     [stanza addChildWithName:@"roster" andAttributes:{@"xmlns": @"roster:delimiter"}];
     [_connection registerSelector:@selector(_didReceiveSubGroupDelimiter:) ofObject:self withDict:params];
-    [_connection send:stanza];
-}
-
-
-#pragma mark -
-#pragma mark Fetch / Push
-
-/*! send a roster SET to the XMPP server according to the content of groups and nickname
-    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
-*/
-- (void)sendRosterSet:(id)anObject
-{
-    var contents;
-    switch ([anObject class])
-    {
-        case TNStropheContact:
-            contents = [CPArray arrayWithObject:anObject];
-            break;
-        case _CPJavaScriptArray:
-        case CPArray:
-            contents = anObject;
-            break;
-        default:
-            CPLog.error("sendRosterSet: only accepts TNStropheContact or CPArray. given " + [anObject class]);
-            return;
-    }
-
-    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
-
-    for (var i = 0; i < [contents count]; i++)
-    {
-        var contact = [contents objectAtIndex:i];
-        [stanza addChildWithName:@"item" andAttributes:{"JID": [[contact JID] bare], "name": [contact nickname]}];
-
-        for (var j = 0; j < [[contact groups] count]; j++)
-        {
-            [stanza addChildWithName:@"group"];
-            [stanza addTextNode:[[[contact groups] objectAtIndex:j] path]];
-            [stanza up];
-        }
-
-        [stanza up];
-    }
-    [_connection send:stanza];
-}
-
-/*! send a roster REMOVE to the XMPP server
-    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
-*/
-- (void)sendRosterUnset:(id)anObject
-{
-    var contents;
-    switch ([anObject class])
-    {
-        case TNStropheContact:
-            contents = [CPArray arrayWithObject:anObject];
-            break;
-        case _CPJavaScriptArray:
-        case CPArray:
-            contents = anObject;
-            break;
-        default:
-            CPLog.error("sendRosterUnset: only accepts TNStropheContact or CPArray. given " + [anObject class]);
-            return;
-    }
-    var stanza  = [TNStropheStanza iqWithAttributes:{"type": "set"}];
-
-    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
-
-    for (var j = 0; j < [contents count]; j++)
-    {
-        var contact = [contents objectAtIndex:j];
-
-        [stanza addChildWithName:@"item" andAttributes:{'jid': [[contact JID] bare], 'subscription': 'remove'}];
-        [stanza up];
-    }
-
     [_connection send:stanza];
 }
 
@@ -236,6 +161,10 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     return NO;
 }
 
+
+#pragma mark -
+#pragma mark Fetch / Push
+
 /*! ask the server to get the roster of the TNStropheConnection user
 */
 - (void)getRoster
@@ -271,6 +200,81 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
 
     return NO;
+}
+
+/*! send a roster SET to the XMPP server according to the content of groups and nickname
+    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
+*/
+- (void)_sendRosterSet:(id)anObject
+{
+    var contents;
+    switch ([anObject class])
+    {
+        case TNStropheContact:
+            contents = [CPArray arrayWithObject:anObject];
+            break;
+        case _CPJavaScriptArray:
+        case CPArray:
+            contents = anObject;
+            break;
+        default:
+            CPLog.error("_sendRosterSet: only accepts TNStropheContact or CPArray. given " + [anObject class]);
+            return;
+    }
+
+    var stanza = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
+    [stanza addChildWithName:@"query" andAttributes:{'xmlns':Strophe.NS.ROSTER}];
+
+    for (var i = 0; i < [contents count]; i++)
+    {
+        var contact = [contents objectAtIndex:i];
+        [stanza addChildWithName:@"item" andAttributes:{"JID": [[contact JID] bare], "name": [contact nickname]}];
+
+        for (var j = 0; j < [[contact groups] count]; j++)
+        {
+            [stanza addChildWithName:@"group"];
+            [stanza addTextNode:[[[contact groups] objectAtIndex:j] path]];
+            [stanza up];
+        }
+
+        [stanza up];
+    }
+    [_connection send:stanza];
+}
+
+/*! send a roster REMOVE to the XMPP server
+    @param anObject the target object (an CPArray of TNStropheContact or a TNStropheContact)
+*/
+- (void)_sendRosterUnset:(id)anObject
+{
+    var contents;
+    switch ([anObject class])
+    {
+        case TNStropheContact:
+            contents = [CPArray arrayWithObject:anObject];
+            break;
+        case _CPJavaScriptArray:
+        case CPArray:
+            contents = anObject;
+            break;
+        default:
+            CPLog.error("_sendRosterUnset: only accepts TNStropheContact or CPArray. given " + [anObject class]);
+            return;
+    }
+    var stanza  = [TNStropheStanza iqWithAttributes:{"type": "set"}];
+
+    [stanza addChildWithName:@"query" andAttributes: {'xmlns':Strophe.NS.ROSTER}];
+
+    for (var j = 0; j < [contents count]; j++)
+    {
+        var contact = [contents objectAtIndex:j];
+
+        [stanza addChildWithName:@"item" andAttributes:{'jid': [[contact JID] bare], 'subscription': 'remove'}];
+        [stanza up];
+    }
+
+    [_connection send:stanza];
 }
 
 /*! this called when a roster push is recieved. Will post TNStropheRosterPushNotification
@@ -575,6 +579,19 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     [self removeGroupWithPath:[[aGroup path] uppercaseString]]
 }
 
+/*! change the name of the given group
+    @param aName the new name
+    @param aGroup the target group
+*/
+- (void)changeName:(CPString)aName ofGroup:(TNStropheGroup)aGroup
+{
+    var affectedContacts = [self getAllContactsTreeFromGroup:aGroup];
+
+    [aGroup setName:[aName uppercaseString]];
+    [self _sendRosterSet:[self getAllContactsTreeFromGroup:aGroup]];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterGroupRenamedNotification object:self];
+}
+
 /*! return TNStropheGroup object according to the given name
     @param aGroupName the group name
     @return TNStropheGroup the group. nil if group doesn't exist
@@ -620,7 +637,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
         contact     = [TNStropheContact contactWithConnection:_connection JID:aJID group:group];
 
     [contact setNickname:aName];
-    [self sendRosterSet:contact];
+    [self _sendRosterSet:contact];
 }
 
 /*! Remove a contact and send a roster push
@@ -628,7 +645,21 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 */
 - (void)removeContact:(TNStropheContact)aContact
 {
-    [self sendRosterUnset:aContact];
+    [self _sendRosterUnset:aContact];
+}
+
+/*! this allows to change the given contact nickname.
+    Will post TNStropheContactNicknameUpdatedNotification
+    @param newNickname the new nickname
+    @param aContact the target contact
+*/
+- (void)changeNickname:(CPString)newNickname ofContact:(TNStropheContact)aContact
+{
+    var oldNickname = [aContact nickname];
+    [aContact setNickname:newNickname];
+    [self _sendRosterSet:aContact];
+    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:aContact];
+    [aContact setNickname:oldNickname];
 }
 
 /*! return an array of all contacts in group and all its subgroups
@@ -671,7 +702,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 
     if (shouldPush)
     {
-        [self sendRosterSet:aContact];
+        [self _sendRosterSet:aContact];
         [[aContact groups] removeObject:aGroup];
         [[aGroup contacts] removeObject:aContact];
     }
@@ -696,7 +727,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 
     if (shouldPush)
     {
-        [self sendRosterSet:aContact];
+        [self _sendRosterSet:aContact];
         [groupsOfContact addObject:aGroup];
         [[aGroup contacts] addObject:aContact];
     }
@@ -714,7 +745,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
         oldGroups = [groupsOfContact copy];
 
     [aContact setGroups:someGroups || [CPArray array]];
-    [self sendRosterSet:aContact];
+    [self _sendRosterSet:aContact];
     [aContact setGroups:oldGroups];
 }
 
@@ -738,38 +769,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     else if (![_content containsObject:aGroup])
         [_content addObject:aGroup];
 
-    [self sendRosterSet:[self getAllContactsTreeFromGroup:anotherGroup]];
-}
-
-
-#pragma mark -
-#pragma mark Edition
-
-/*! this allows to change the given contact nickname.
-    Will post TNStropheContactNicknameUpdatedNotification
-    @param newNickname the new nickname
-    @param aContact the target contact
-*/
-- (void)changeNickname:(CPString)newNickname ofContact:(TNStropheContact)aContact
-{
-    var oldNickname = [aContact nickname];
-    [aContact setNickname:newNickname];
-    [self sendRosterSet:aContact];
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactNicknameUpdatedNotification object:aContact];
-    [aContact setNickname:oldNickname];
-}
-
-/*! change the name of the given group
-    @param aName the new name
-    @param aGroup the target group
-*/
-- (void)changeName:(CPString)aName ofGroup:(TNStropheGroup)aGroup
-{
-    var affectedContacts = [self getAllContactsTreeFromGroup:aGroup];
-
-    [aGroup setName:[aName uppercaseString]];
-    [self sendRosterSet:[self getAllContactsTreeFromGroup:aGroup]];
-    [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterGroupRenamedNotification object:self];
+    [self _sendRosterSet:[self getAllContactsTreeFromGroup:anotherGroup]];
 }
 
 
