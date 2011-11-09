@@ -418,10 +418,11 @@ var TNStropheContactImageOffline,
     @param anObject the object receiving the selector
     @param anId the specific stanza ID to use
     @param someUserInfo random information to give to the selector
+    @param aDelegate the handler id delegate
 
     @return the associated registration id for the selector
 */
-- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId userInfo:(id)someUserInfo
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(id)anId userInfo:(id)someUserInfo handlerDelegate:(id)aDelegate
 {
     var params      = [CPDictionary dictionaryWithObjectsAndKeys:anId, @"id"],
         userInfo    = [CPDictionary dictionaryWithObjectsAndKeys:aStanza, @"stanza", anId, @"id"],
@@ -429,10 +430,14 @@ var TNStropheContactImageOffline,
 
     [aStanza setID:anId];
 
-    if (aSelector && !someUserInfo)
-        ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params];
-    else if (aSelector && someUserInfo)
+    if (aSelector && someUserInfo && aDelegate)
+        ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo handlerDelegate:aDelegate];
+    else if (aSelector && !someUserInfo && aDelegate)
+        ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params handlerDelegate:aDelegate];
+    else if (aSelector && someUserInfo && !aDelegate)
         ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo];
+    else if (aSelector && !someUserInfo && !aDelegate)
+        ret = [_connection registerSelector:aSelector ofObject:anObject withDict:params];
 
     [self sendStanza:aStanza withUserInfo:userInfo];
 
@@ -450,7 +455,7 @@ var TNStropheContactImageOffline,
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject
 {
-    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:nil];
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:nil handlerDelegate:nil];
 }
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
@@ -464,7 +469,7 @@ var TNStropheContactImageOffline,
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject withSpecificID:(int)anId
 {
-    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:anId userInfo:nil];
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:anId userInfo:nil handlerDelegate:nil];
 }
 
 /*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
@@ -476,9 +481,21 @@ var TNStropheContactImageOffline,
 */
 - (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject userInfo:(id)someUserInfo
 {
-    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:someUserInfo];
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:someUserInfo handlerDelegate:nil];
 }
 
+/*! send a TNStropheStanza to the contact. From, ant To value are rewritten.
+    @param aStanza the TNStropheStanza to send to the contact
+    @param aSelector the selector to perform on response
+    @param anObject the object receiving the selector
+    @param someUserInfo random information to give to the selector
+    @param aDelegate the handler id delegate
+    @return the associated registration id for the selector
+*/
+- (id)sendStanza:(TNStropheStanza)aStanza andRegisterSelector:(SEL)aSelector ofObject:(id)anObject handlerDelegate:(id)aDelegate
+{
+    return [self sendStanza:aStanza andRegisterSelector:aSelector ofObject:anObject withSpecificID:[_connection getUniqueId] userInfo:nil handlerDelegate:aDelegate];
+}
 
 /*! register the contact to listen incoming messages
     you should never have to use this message if you use TNStropheRoster

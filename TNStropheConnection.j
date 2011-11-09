@@ -393,10 +393,12 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     @param aSelector the selector to be performed
     @param anObject the receiver of the selector
     @param aDict a dictionnary of parameters
+    @param someUserInfo user infos
+    @param handlerDelegate a temp delegate that can implement stropheConnection:performedHandlerId:
 
     @return an id of the handler registration used to remove it
 */
-- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict userInfo:(id)someUserInfo handlerDelegate:(id)aHandlerDelegate
 {
     var from = ([[aDict valueForKey:@"from"] isKindOfClass:CPString]) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
         handlerId =  _connection.addHandler(function(stanza)
@@ -405,13 +407,24 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
                 var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
-                    ret             = [anObject performSelector:aSelector withObject:stanzaObject];
+                    ret;
+
+                if (someUserInfo)
+                    ret = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
+                else
+                    ret = [anObject performSelector:aSelector withObject:stanzaObject];
 
                 CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
                 CPLog.trace(stanzaObject);
 
                 // experimental thing
                 delete aDict.options;
+                delete someUserInfo;
+
+                if (aHandlerDelegate && [aHandlerDelegate respondsToSelector:@selector(stropheConnection:performedHandlerId:)])
+                    [aHandlerDelegate stropheConnection:self performedHandlerId:handlerId]
+
+                someUserInfo = nil;
 
                 [_registeredHandlers removeObject:handlerId];
                 return ret;
@@ -444,43 +457,62 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
     @param aSelector the selector to be performed
     @param anObject the receiver of the selector
     @param aDict a dictionnary of parameters
+    @param handlerDelegate a temp delegate that can implement stropheConnection:performedHandlerId:
+
+    @return an id of the handler registration used to remove it
+*/
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict handlerDelegate:(id)aHandlerDelegate
+{
+    return [self registerSelector:aSelector ofObject:anObject withDict:aDict userInfo:nil handlerDelegate:aHandlerDelegate];
+}
+
+/*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
+    The dictionnary should contains zero to many of the followings :
+     - <b>namespace</b>: the namespace of the stanza or of the first child (like query)
+     - <b>name</b>: the name of the stanza (message, iq or presence)
+     - <b>type</b>: the type of the stanza
+     - <b>id</b>: the unique identifier
+     - <b>from</b>: the stanza sender
+     - <b>options</b>: an array of options. only {MatchBare: True} works.
+    if all the conditions are mets, the selector is fired and the stanza is given as parameter.
+
+    The selector should return YES to not be unregistered. If it returns NO or nothing, it will be
+    unregistered
+
+    @param aSelector the selector to be performed
+    @param anObject the receiver of the selector
+    @param aDict a dictionnary of parameters
     @param someUserInfo user infos
 
     @return an id of the handler registration used to remove it
 */
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict userInfo:(id)someUserInfo
 {
-    var from = ([[aDict valueForKey:@"from"] isKindOfClass:CPString]) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
-        handlerId =  _connection.addHandler(function(stanza)
-            {
-                // seems to be a good practice to pump the runloop in async function
-                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+    return [self registerSelector:aSelector ofObject:anObject withDict:aDict userInfo:someUserInfo handlerDelegate:nil];
+}
 
-                var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
-                    ret             = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
+/*! allows to register a selector for beeing fired on XMPP events, according to the content of a dictionnary parameter.
+    The dictionnary should contains zero to many of the followings :
+     - <b>namespace</b>: the namespace of the stanza or of the first child (like query)
+     - <b>name</b>: the name of the stanza (message, iq or presence)
+     - <b>type</b>: the type of the stanza
+     - <b>id</b>: the unique identifier
+     - <b>from</b>: the stanza sender
+     - <b>options</b>: an array of options. only {MatchBare: True} works.
+    if all the conditions are mets, the selector is fired and the stanza is given as parameter.
 
-                CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                CPLog.trace(stanzaObject);
+    The selector should return YES to not be unregistered. If it returns NO or nothing, it will be
+    unregistered
 
-                // experimental thing
-                delete aDict.options;
-                delete someUserInfo;
+    @param aSelector the selector to be performed
+    @param anObject the receiver of the selector
+    @param aDict a dictionnary of parameters
 
-                someUserInfo    = nil;
-
-                [_registeredHandlers removeObject:handlerId];
-                return ret;
-            },
-            [aDict valueForKey:@"namespace"],
-            [aDict valueForKey:@"name"],
-            [aDict valueForKey:@"type"],
-            [aDict valueForKey:@"id"],
-            from,
-            [aDict valueForKey:@"options"]);
-
-    [_registeredHandlers addObject:handlerId];
-
-    return handlerId;
+    @return an id of the handler registration used to remove it
+*/
+- (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict
+{
+    return [self registerSelector:aSelector ofObject:anObject withDict:aDict userInfo:nil handlerDelegate:nil];
 }
 
 /*! Registred selector will be performed if the stanza response is not received after a given amout of time.
@@ -508,7 +540,6 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
                     // experimental thing
                     delete aDict.options;
-
                     return ret;
                 }
                 [_registeredTimedHandlers removeObject:handlerId];
