@@ -443,6 +443,11 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
 */
 - (void)retractItemWithID:(CPString)anID
 {
+    [self retractItemsWithIDs:[anID]];
+}
+
+- (void)retractItemsWithIDs:(CPArray)someIDs
+{
     var uid     = [_connection getUniqueId],
         stanza  = [TNStropheStanza iq],
         params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
@@ -452,10 +457,16 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
     [stanza setID:uid];
 
     [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
-    [stanza addChildWithName:@"retract" andAttributes:{@"node": _nodeName}];
-    [stanza addChildWithName:@"item" andAttributes:{@"id": anID}];
 
-    [_connection registerSelector:@selector(_didRetractPubSubItem:) ofObject:self withDict:params];
+    for (var i = 0; i < [someIDs count]; i++)
+    {
+        [stanza addChildWithName:@"retract" andAttributes:{@"node": _nodeName}];
+        [stanza addChildWithName:@"item" andAttributes:{@"id": [someIDs objectAtIndex:i]}];
+        [stanza up];
+        [stanza up];
+    }
+
+    [_connection registerSelector:@selector(_didRetractPubSubItems:) ofObject:self withDict:params];
     [_connection send:stanza];
 }
 
@@ -463,7 +474,7 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
     @param aStanza TNStropheStanza contaning the response of the server
     @return NO in order to unregister the selector from connection
 */
-- (BOOL)_didRetractPubSubItem:(TNStropheStanza)aStanza
+- (BOOL)_didRetractPubSubItems:(TNStropheStanza)aStanza
 {
     if ([aStanza type] == @"result")
     {
@@ -473,7 +484,7 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
     else
     {
         [[CPNotificationCenter defaultCenter] postNotificationName:TNStrophePubSubItemRetractErrorNotification object:self userInfo:aStanza];
-        CPLog.error("Cannot remove the pubsub item in node");
+        CPLog.error("Cannot remove the pubsub items from node");
         CPLog.error(aStanza);
     }
 
