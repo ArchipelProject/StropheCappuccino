@@ -117,9 +117,11 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
         domain = aStringJID.split("@")[1].split("/")[0],
         resource = aStringJID.split("/")[1];
     }
-
     if (!node)
         [CPException raise:TNStropheJIDExceptionJID reason:aStringJID + @" is not a valid JID"];
+
+    if ((node && node.indexOf(" ")) != -1 || (domain && domain.indexOf(" ") != -1) || (resource && resource.indexOf(" ") != -1))
+        [CPException raise:TNStropheJIDExceptionJID reason:aStringJID + @" is not a valid JID. No space allowed"];
 
     return [self initWithNode:node domain:domain resource:resource];
 }
