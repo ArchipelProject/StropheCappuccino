@@ -23,6 +23,7 @@
 @import "../TNStropheConnection.j"
 @import "../TNStropheJID.j"
 @import "../TNStropheStanza.j"
+@import "../TNStropheUtils.j"
 @import "TNStropheMUCRoster.j"
 
 
@@ -172,7 +173,7 @@ TNStropheMUCSubjectWasUpdatedNotification           = @"TNStropheMUCSubjectWasUp
 
     if ([aStanza containsChildrenWithName:@"body"])
     {
-        var body    = [[aStanza firstChildWithName:@"body"] text],
+        var body    = stripHTMLCharCode([[aStanza firstChildWithName:@"body"] text]),
             contact = [_roster contactWithJID:[aStanza from]];
 
         if (!contact)

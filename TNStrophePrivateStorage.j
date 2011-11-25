@@ -17,28 +17,14 @@
  */
 
 @import "TNStropheConnection.j"
-
+@import "TNStropheUtils.j"
 
 TNStrophePrivateStorageGetErrorNotification = @"TNStrophePrivateStorageGetErrorNotification";
 TNStrophePrivateStorageSetErrorNotification = @"TNStrophePrivateStorageSetErrorNotification";
 TNStrophePrivateStorageSetNotification      = @"TNStrophePrivateStorageSetNotification";
 
 
-function stripHTMLCharCode(str)
-{
-    str = str.replace(/&amp;/g, '&');
-    str = str.replace(/&nbsp;/g, ' ');
-    str = str.replace(/&quote;/g, '\"');
-    str = str.replace(/&apos;/g, '\'');
-    str = str.replace(/&lt;/g, '<');
-    str = str.replace(/&gt;/g, '>');
-    str = str.replace(/&agrave;/g, 'à');
-    str = str.replace(/&ccedil;/g, 'ç');
-    str = str.replace(/&egrave;/g, 'è');
-    str = str.replace(/&eacute;/g, 'é');
-    str = str.replace(/&ecirc;/g, 'ê');
-    return str;
-}
+
 
 /*! @ingroup strophecappuccino
     This class allows to store random objects in XMPP private storage
