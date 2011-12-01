@@ -87,7 +87,7 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
         _isServer   = (!aDomain && !aResource);
 
         if ((_node && _node.indexOf(" ")) != -1 || (_domain && _domain.indexOf(" ") != -1) || (_resource && _resource.indexOf(" ") != -1))
-            [CPException raise:TNStropheJIDExceptionJID reason:aStringJID + @" is not a valid JID. No space allowed"];
+            [CPException raise:TNStropheJIDExceptionJID reason:@"Given information are not a valid JID."];
     }
 
     return self;
