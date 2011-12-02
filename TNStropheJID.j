@@ -86,7 +86,7 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
         _resource   = aResource;
         _isServer   = (!aDomain && !aResource);
 
-        if ((_node && _node.indexOf(" ")) != -1 || (_domain && _domain.indexOf(" ") != -1) || (_resource && _resource.indexOf(" ") != -1))
+        if ((_node && _node.indexOf(" ") != -1) || (_domain && _domain.indexOf(" ") != -1) || (_resource && _resource.indexOf(" ") != -1))
             [CPException raise:TNStropheJIDExceptionJID reason:@"Given information are not a valid JID."];
     }
 
