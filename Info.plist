@@ -13,7 +13,7 @@
     <key>TNStropheConnectionMaxConnection</key>
     <integer>1</integer>
     <key>TNStropheConnectionTimeout</key>
-    <integer>3600</integer>
+    <integer>60</integer>
     <key>TNStropheConnectionGiveUpTimer</key>
     <real>8.0</real>
 
