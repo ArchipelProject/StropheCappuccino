@@ -137,7 +137,7 @@ TNStrophePrivateStorageSetNotification      = @"TNStrophePrivateStorageSetNotifi
         try
         {
             if (dataString)
-                var obj =  [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:stripHTMLCharCode(dataString)]];
+                var obj =  [CPKeyedUnarchiver unarchiveObjectWithData:[CPData dataWithRawString:TNStropheStripHTMLCharCode(dataString)]];
         }
         catch(ex)
         {

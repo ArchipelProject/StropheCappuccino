@@ -584,7 +584,6 @@ var TNStropheContactImageOffline,
         CPLog.error(@"Unable to send message. Resp is: " + aStanza);
 }
 
-
 /*! return the last TNStropheStanza message in the message queue and remove it form the queue.
     Will post TNStropheContactMessageTreatedNotification.
 
