@@ -267,7 +267,15 @@ var TNStropheContactImageOffline,
 
     [statusStanza addChildWithName:aStatus andAttributes:{"xmlns": "http://jabber.org/protocol/chatstates"}];
 
-    [self sendStanza:statusStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
+    [self sendStanza:statusStanza andRegisterSelector:@selector(_didSendStatus:) ofObject:self];
+}
+
+/*! @ignore
+*/
+- (void)_didSendStatus:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"error")
+        CPLog.error(@"Unable to send status. Resp is: " + aStanza);
 }
 
 /*! this allows to send "composing" information to a user. This will never send "paused".
@@ -565,8 +573,17 @@ var TNStropheContactImageOffline,
     [messageStanza addChildWithName:@"body"];
     [messageStanza addTextNode:aMessage];
 
-    [self sendStanza:messageStanza];
+    [self sendStanza:messageStanza andRegisterSelector:@selector(_didSendMessage:) ofObject:self];
 }
+
+/*! @ignore
+*/
+- (void)_didSendMessage:(TNStropheStanza)aStanza
+{
+    if ([aStanza type] == @"error")
+        CPLog.error(@"Unable to send message. Resp is: " + aStanza);
+}
+
 
 /*! return the last TNStropheStanza message in the message queue and remove it form the queue.
     Will post TNStropheContactMessageTreatedNotification.
