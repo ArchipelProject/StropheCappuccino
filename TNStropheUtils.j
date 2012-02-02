@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-stripHTMLCharCode = function(str)
+TNStropheStripHTMLCharCode = function(str)
 {
     str = str.replace(/&amp;/g, '&');
     str = str.replace(/&nbsp;/g, ' ');
