@@ -346,6 +346,8 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
         queuedPresence  = [_pendingPresence valueForKey:[theJID bare]],
         subscription    = [aRosterItem valueForAttribute:@"subscription"];
 
+    [contact setDelegate:_delegate];
+
     if ([groupNodes count])
     {
         for (var i = 0; i < [groupNodes count]; i++)
@@ -636,6 +638,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     var group       = aGroupPath ? [self groupWithPath:aGroupPath orCreate:YES] : nil,
         contact     = [TNStropheContact contactWithConnection:_connection JID:aJID group:group];
 
+    [contact setDelegate:_delegate];
     [contact setNickname:aName];
     [self _sendRosterSet:contact];
 }
@@ -831,7 +834,6 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 
         if (![self containsJID:requester])
             [self addContact:requester withName:(nick ? [nick text] : [requester bare]) inGroupWithPath:nil];
-
     }
     else
         [self unauthorizeJID:requester];
