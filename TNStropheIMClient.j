@@ -147,7 +147,6 @@
 - (void)onStropheConnected:(TNStropheConnection)aConnection
 {
     [_roster getSubGroupDelimiter];
-    [_roster getRoster];
 }
 
 - (void)onStropheConnectFail:(TNStropheConnection)aConnection
