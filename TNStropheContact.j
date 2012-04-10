@@ -26,28 +26,28 @@
 @import "TNStropheJID.j"
 
 
-TNStropheContactStatusAway                                  = @"away";
-TNStropheContactStatusBusy                                  = @"xa";
-TNStropheContactStatusDND                                   = @"dnd";
-TNStropheContactStatusOffline                               = @"offline";
-TNStropheContactStatusOnline                                = @"online";
+TNStropheContactStatusAway                          = @"away";
+TNStropheContactStatusBusy                          = @"xa";
+TNStropheContactStatusDND                           = @"dnd";
+TNStropheContactStatusOffline                       = @"offline";
+TNStropheContactStatusOnline                        = @"online";
 
-TNStropheContactGroupUpdatedNotification                    = @"TNStropheContactGroupUpdatedNotification";
-TNStropheContactMessageActiveNotification                   = @"TNStropheContactMessageActiveNotification";
-TNStropheContactMessageComposingNotification                = @"TNStropheContactMessageComposingNotification";
-TNStropheContactMessageGoneNotification                     = @"TNStropheContactMessageGoneNotification";
-TNStropheContactMessageInactiveNotification                 = @"TNStropheContactMessageInactiveNotification";
-TNStropheContactMessagePausedNotification                   = @"TNStropheContactMessagePausedNotification";
-TNStropheContactMessageReceivedNotification                 = @"TNStropheContactMessageReceivedNotification";
-TNStropheContactMessageSentNotification                     = @"TNStropheContactMessageSentNotification";
-TNStropheContactMessageTreatedNotification                  = @"TNStropheContactMessageTreatedNotification";
-TNStropheContactNicknameUpdatedNotification                 = @"TNStropheContactNicknameUpdatedNotification";
-TNStropheContactPresenceUpdatedNotification                 = @"TNStropheContactPresenceUpdatedNotification";
-TNStropheContactStanzaSentNotification                      = @"TNStropheContactStanzaSentNotification"
-TNStropheContactSubscriptionUpdatedNotification             = @"TNStropheContactSubscriptionUpdatedNotification";
-TNStropheContactVCardReceivedNotification                   = @"TNStropheContactVCardReceivedNotification";
+TNStropheContactGroupUpdatedNotification            = @"TNStropheContactGroupUpdatedNotification";
+TNStropheContactMessageActiveNotification           = @"TNStropheContactMessageActiveNotification";
+TNStropheContactMessageComposingNotification        = @"TNStropheContactMessageComposingNotification";
+TNStropheContactMessageGoneNotification             = @"TNStropheContactMessageGoneNotification";
+TNStropheContactMessageInactiveNotification         = @"TNStropheContactMessageInactiveNotification";
+TNStropheContactMessagePausedNotification           = @"TNStropheContactMessagePausedNotification";
+TNStropheContactMessageReceivedNotification         = @"TNStropheContactMessageReceivedNotification";
+TNStropheContactMessageSentNotification             = @"TNStropheContactMessageSentNotification";
+TNStropheContactMessageTreatedNotification          = @"TNStropheContactMessageTreatedNotification";
+TNStropheContactNicknameUpdatedNotification         = @"TNStropheContactNicknameUpdatedNotification";
+TNStropheContactPresenceUpdatedNotification         = @"TNStropheContactPresenceUpdatedNotification";
+TNStropheContactStanzaSentNotification              = @"TNStropheContactStanzaSentNotification"
+TNStropheContactSubscriptionUpdatedNotification     = @"TNStropheContactSubscriptionUpdatedNotification";
+TNStropheContactVCardReceivedNotification           = @"TNStropheContactVCardReceivedNotification";
 
-TNStropheContactDelegate_contactNeedsImageForAvatarName_    = 1 << 0;
+TNStropheContactDelegate_avatarForContact_          = 1 << 0;
 
 var TNStropheContactImageOffline,
     TNStropheContactImageOnline,
@@ -177,8 +177,8 @@ var TNStropheContactImageOffline,
     _delegate = aDelegate;
     _implementedDelegateMethods = 0;
 
-    if ([_delegate respondsToSelector:@selector(contact:needsImageForAvatarName:)])
-        _implementedDelegateMethods |= TNStropheContactDelegate_contactNeedsImageForAvatarName_;
+    if ([_delegate respondsToSelector:@selector(avatarForContact:)])
+        _implementedDelegateMethods |= TNStropheContactDelegate_avatarForContact_;
 }
 
 
@@ -422,7 +422,7 @@ var TNStropheContactImageOffline,
         }
         else
         {
-            if (_implementedDelegateMethods & TNStropheContactDelegate_contactNeedsImageForAvatarName_)
+            if (_implementedDelegateMethods & TNStropheContactDelegate_avatarForContact_)
                 _avatar = [_delegate avatarForContact:self];
 
             [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
