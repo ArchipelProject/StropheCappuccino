@@ -136,7 +136,7 @@
 */
 - (CPString)text
 {
-    return Strophe.getText([self tree]);
+    return TNStropheStripHTMLCharCode(Strophe.getText([self tree]));
 }
 
 /*! return a DOM Element of the TNXMLNode

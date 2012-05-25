@@ -173,7 +173,7 @@ TNStropheMUCSubjectWasUpdatedNotification           = @"TNStropheMUCSubjectWasUp
 
     if ([aStanza containsChildrenWithName:@"body"])
     {
-        var body    = TNStropheStripHTMLCharCode([[aStanza firstChildWithName:@"body"] text]),
+        var body    = [[aStanza firstChildWithName:@"body"] text],
             contact = [_roster contactWithJID:[aStanza from]];
 
         if (!contact)
