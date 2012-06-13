@@ -1,3 +1,3 @@
 [submodule "strophejs"]
 	path = strophejs
-	url = git://github.com/primalmotion/strophejs.git
+	url = git://github.com/ArchipelProject/strophejs.git
