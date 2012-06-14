@@ -377,7 +377,7 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
             var type = [[photo firstChildWithName:@"TYPE"] text],
                 binval = [[photo firstChildWithName:@"BINVAL"] text];
 
-            _avatar = [TNBase64Image base64ImageWithContentType:type andData:binval];
+            _avatar = [[CPImage alloc] initWithData:[CPData dataWithBase64:binval]];
         }
     }
 
@@ -401,10 +401,9 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
 
     if (photo)
     {
-        var type = [[photo firstChildWithName:@"TYPE"] text],
-            binval = [[photo firstChildWithName:@"BINVAL"] text];
+        var binval = [[photo firstChildWithName:@"BINVAL"] text];
 
-        _avatar = [TNBase64Image base64ImageWithContentType:type andData:binval];
+        _avatar = [[CPImage alloc] initWithData:[CPData dataWithBase64:binval]];
     }
     _vCard = aVCard;
 

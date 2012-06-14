@@ -22,6 +22,7 @@
 
 
 /*! @ingroup strophecappuccino
+    @deperecated
     this is a subclass of CPImage that allows to create a CPImage from a image
     encoded in a base64 CPString.
 */
@@ -38,6 +39,8 @@
 */
 + (TNBase64Image)base64ImageWithContentType:(CPString)aContentType andData:(CPString)someBase64Data
 {
+    CPLog.warn("DEPRECATED: TNBase64Image is deprecated. Please use new CPImage base64 encoding capabilities");
+
     var img = [[TNBase64Image alloc] init];
 
     [img setBase64EncodedData:someBase64Data];
@@ -50,6 +53,8 @@
 
 + (TNBase64Image)base64ImageWithContentType:(CPString)aContentType data:(CPString)someBase64Data delegate:(id)aDelegate
 {
+    CPLog.warn("DEPRECATED: TNBase64Image is deprecated. Please use new CPImage base64 encoding capabilities");
+
     var img = [[TNBase64Image alloc] init];
 
     [img setBase64EncodedData:someBase64Data];

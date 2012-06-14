@@ -20,7 +20,6 @@
 
 @import <Foundation/Foundation.j>
 
-@import "TNBase64Image.j"
 @import "TNStropheConnection.j"
 @import "TNStropheGroup.j"
 @import "TNStropheJID.j"
@@ -76,7 +75,7 @@ var TNStropheContactImageOffline,
     CPString            _XMPPShow       @accessors(property=XMPPShow);
     CPString            _XMPPStatus     @accessors(property=XMPPStatus);
     id                  _delegate       @accessors(getter=delegate);
-    TNBase64Image       _avatar         @accessors(property=avatar);
+    CPImage             _avatar         @accessors(property=avatar);
     TNStropheConnection _connection     @accessors(property=connection);
     TNStropheJID        _JID            @accessors(property=JID);
 
@@ -385,7 +384,7 @@ var TNStropheContactImageOffline,
 }
 
 /*! executed on getVCard result. Will post TNStropheContactVCardReceivedNotification
-    and send notifications. If vCard contains a PHOTO node, it will set the avatar TNBase64Image
+    and send notifications. If vCard contains a PHOTO node, it will set the avatar CPImage
     property of the TNStropheContact
     You should never have to use this method
     @param aStanza the response TNStropheStanza
@@ -414,11 +413,12 @@ var TNStropheContactImageOffline,
 
         if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
         {
-            var contentType = [[photoNode firstChildWithName:@"TYPE"] text],
-                data        = [[photoNode firstChildWithName:@"BINVAL"] text];
+            var data = [[photoNode firstChildWithName:@"BINVAL"] text];
 
             // the delegate will send the TNStropheContactVCardReceivedNotification when image will be ready
-            _avatar = [TNBase64Image base64ImageWithContentType:contentType data:data delegate:self];
+            _avatar = [[CPImage alloc] initWithData:[CPData dataWithBase64:data]];
+            [_avatar setDelegate:self];
+
         }
         else
         {
@@ -658,7 +658,7 @@ var TNStropheContactImageOffline,
 /*! this method is called when the avatar image is ready.
     @param anImage the image that sent the message
 */
-- (void)imageDidLoad:(TNBase64Image)anImage
+- (void)imageDidLoad:(CPImage)anImage
 {
     [anImage setDelegate:nil];
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
