@@ -28,7 +28,6 @@
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
 @import "TNStropheRoster.j"
-@import "TNBase64Image.j"
 @import "TNPubSub.j"
 @import "TNStrophePrivateStorage.j"
 @import "TNStropheServerAdministration.j"
