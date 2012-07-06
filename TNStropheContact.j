@@ -89,6 +89,19 @@ var TNStropheContactImageOffline,
 #pragma mark -
 #pragma mark Class methods
 
++ (void)initialize
+{
+    [self exposeBinding:@"statusIcon"];
+    [self exposeBinding:@"nickname"];
+    [self exposeBinding:@"subscription"];
+    [self exposeBinding:@"vCard"];
+    [self exposeBinding:@"XMPPShow"];
+    [self exposeBinding:@"XMPPStatus"];
+    [self exposeBinding:@"avatar"];
+    [self exposeBinding:@"JID"];
+    [self exposeBinding:@"resources"];
+}
+
 /*! create a contact using a given connection, JID and group
     @param aConnection TNStropheConnection to use
     @param aJID the JID of the contact
@@ -130,24 +143,22 @@ var TNStropheContactImageOffline,
     if (self = [super init])
     {
         _type               = @"contact";
-        _statusIcon         = TNStropheContactImageOffline;
-        _XMPPShow           = TNStropheContactStatusOffline;
-        _XMPPStatus         = @"Offline";
         _connection         = aConnection;
         _messagesQueue      = [CPArray array];
         _numberOfEvents     = 0;
         _isComposing        = NO;
         _askingVCard        = NO;
-        _nickname           = [_JID bare];
         _resources          = [CPArray array];
-        _JID                = aJID;
         _groups             = [CPArray array];
+
+        [self setNickname:[_JID bare]];
+        [self setJID:aJID];
+        [self setXMPPStatus:@"Offline"];
+        [self setXMPPShow:TNStropheContactStatusOffline];
+        [self setStatusIcon:TNStropheContactImageOffline];
 
         if (aGroup)
             [_groups addObject:aGroup];
-
-        // if (!_vCard && !_askingVCard)
-        //     [self getVCard];
     }
 
     return self;
@@ -205,9 +216,10 @@ var TNStropheContactImageOffline,
     {
         case @"error":
             var errorCode   = [[aStanza firstChildWithName:@"error"] valueForAttribute:@"code"];
-            _XMPPShow       = TNStropheContactStatusOffline;
-            _XMPPStatus     = @"Error code: " + errorCode;
-            _statusIcon     = TNStropheContactImageNewError;
+            [self setXMPPShow:TNStropheContactStatusOffline];
+            [self setXMPPStatus:@"Error code: " + errorCode];
+            [self setStatusIcon:TNStropheContactImageNewError];
+
             _statusReminder = TNStropheContactImageNewError;
             return NO;
         case @"unavailable":
@@ -216,65 +228,68 @@ var TNStropheContactImageOffline,
 
             if ([_resources count] == 0)
             {
-                _XMPPShow       = TNStropheContactStatusOffline;
-                _statusIcon     = TNStropheContactImageOffline;
+                [self setXMPPShow:TNStropheContactStatusOffline];
+                [self setStatusIcon:TNStropheContactImageOffline];
+
                 _statusReminder = TNStropheContactImageOffline;
 
                 if (presenceStatus)
-                    _XMPPStatus = [presenceStatus text];
+                    [self setXMPPStatus:[presenceStatus text]];
                 else
-                    _XMPPStatus = "Offline";
+                    [self setXMPPStatus:@"Offline"];
             }
             else
                 [_JID setResource:[_resources lastObject]];
             break;
         case @"subscribe":
-            _XMPPStatus = @"Asking subscribtion";
-            _subscription = [aStanza type];
+            [self setXMPPStatus:@"Asking subscribtion"];
+            [self setSubscription:[aStanza type]];
             break;
         case @"subscribed":
-            _subscription = [aStanza type];
+            [self setSubscription:[aStanza type]];
             break;
         case @"unsubscribe":
-            _subscription = [aStanza type];
+            [self setSubscription:[aStanza type]];
             break;
         case @"unsubscribed":
-            _subscription = [aStanza type];
-            _XMPPStatus = @"Unauthorized";
+            [self setSubscription:[aStanza type]];
+            [self setXMPPStatus:@"Unauthorized"];
             break;
         default:
-            _XMPPShow       = TNStropheContactStatusOnline;
+
+            [self setXMPPShow:TNStropheContactStatusOnline];
+            [self setStatusIcon:TNStropheContactImageOnline];
+            [self setSubscription:@"subscribed"];
+
             _statusReminder = TNStropheContactImageOnline;
-            _statusIcon     = TNStropheContactImageOnline;
-            _subscription   = @"subscribed";
 
             if ([aStanza firstChildWithName:@"show"])
             {
-                _XMPPShow = [[aStanza firstChildWithName:@"show"] text];
+                [self setXMPPShow:[[aStanza firstChildWithName:@"show"] text]];
                 switch (_XMPPShow)
                 {
                     case TNStropheContactStatusBusy:
-                        _statusIcon     = TNStropheContactImageBusy;
+                        [self setStatusIcon:TNStropheContactImageBusy];
                         _statusReminder = TNStropheContactImageBusy;
                         break;
                     case TNStropheContactStatusAway:
-                        _statusIcon     = TNStropheContactImageAway;
+                        [self setStatusIcon:TNStropheContactImageAway];
                         _statusReminder = TNStropheContactImageAway;
                         break;
                     case TNStropheContactStatusDND:
-                        _statusIcon     = TNStropheContactImageDND;
+                        [self setStatusIcon:TNStropheContactImageDND];
                         _statusReminder = TNStropheContactImageDND;
                         break;
                 }
             }
 
             if (_numberOfEvents > 0)
-                _statusIcon = TNStropheContactImageNewMessage
+                [self setStatusIcon:TNStropheContactImageNewMessage];
 
             if (presenceStatus)
-                _XMPPStatus = [presenceStatus text];
+                [self setXMPPStatus:[presenceStatus text]];
             else
-                _XMPPStatus = "Online";
+                [self setXMPPStatus:@"Online"];
 
             if ([aStanza firstChildWithName:@"x"]
                 && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update"
@@ -282,7 +297,6 @@ var TNStropheContactImageOffline,
             {
                 [self getVCard];
             }
-
 
             break;
     }
@@ -358,8 +372,10 @@ var TNStropheContactImageOffline,
 
 - (void)setSubscription:(CPString)aSubscription
 {
-    _subcription = aSubscription;
+    [self willChangeValueForKey:@"subscription"];
+    _subscription = aSubscription;
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactSubscriptionUpdatedNotification object:self];
+    [self didChangeValueForKey:@"subscription"];
 }
 
 
@@ -403,14 +419,14 @@ var TNStropheContactImageOffline,
 
     if (aVCard)
     {
-        _vCard = aVCard;
+        [self setVCard:aVCard];
 
         if (!_nickname || (_nickname == [_JID bare]) || (_nickname == [_JID node]))
         {
             if ([aVCard firstChildWithName:@"FN"])
-                _nickname = [[aVCard firstChildWithName:@"FN"] text];
+                [self setNickname:[[aVCard firstChildWithName:@"FN"] text]];
             else
-                _nickname = [_JID node]
+                [self setNickname:[_JID node]];
         }
 
         var photoNode,
@@ -421,14 +437,14 @@ var TNStropheContactImageOffline,
             var data = [[photoNode firstChildWithName:@"BINVAL"] text];
 
             // the delegate will send the TNStropheContactVCardReceivedNotification when image will be ready
-            _avatar = [[CPImage alloc] initWithData:[CPData dataWithBase64:data]];
+            [self setAvatar:[[CPImage alloc] initWithData:[CPData dataWithBase64:data]]];
             [_avatar setDelegate:self];
 
         }
         else
         {
             if (_implementedDelegateMethods & TNStropheContactDelegate_avatarForContact_)
-                _avatar = [_delegate avatarForContact:self];
+                [self setAvatar:[_delegate avatarForContact:self]];
 
             [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
         }
@@ -649,7 +665,7 @@ var TNStropheContactImageOffline,
 - (void)freeMessagesQueue
 {
     _numberOfEvents = 0;
-    _statusIcon     = _statusReminder;
+    [self setStatusIcon:_statusReminder];
 
     [_messagesQueue removeAllObjects];
 

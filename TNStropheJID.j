@@ -37,6 +37,13 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
 #pragma mark -
 #pragma mark Class methods
 
++ (void)initialize
+{
+    [self exposeBinding:@"domain"];
+    [self exposeBinding:@"node"];
+    [self exposeBinding:@"resource"];
+}
+
 /*! return a new TNStropheJID
     @param aNode the node part of the JID
     @param aDomain the domain part of the JID
@@ -81,9 +88,10 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
 {
     if (self = [super init])
     {
-        _node       = aNode;
-        _domain     = aDomain;
-        _resource   = aResource;
+        [self setNode:aNode];
+        [self setDomain:aDomain];
+        [self setResource:aResource];
+
         _isServer   = (!aDomain && !aResource);
 
         if ((_node && _node.indexOf(" ") != -1) || (_domain && _domain.indexOf(" ") != -1) || (_resource && _resource.indexOf(" ") != -1))
@@ -153,8 +161,8 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
     if (!node || !domain)
         [CPException raise:TNStropheJIDExceptionJID reason:aBareJID + @" is not a valid JID"];
 
-    _node = node;
-    _domain = domain;
+    [self setNode:node];
+    [self setDomain:domain];
 }
 
 /*! return the full JID (node@domain/resource)
@@ -180,7 +188,7 @@ TNStropheJIDExceptionJID = @"TNStropheJIDExceptionJID";
     if (!resource)
         [CPException raise:TNStropheJIDExceptionJID reason:aFullJID + @" is not a valid JID"];
 
-    _resource = resource;
+    [self setResource:resource]
 }
 
 /*! description method
