@@ -146,8 +146,8 @@ var TNStropheContactImageOffline,
         if (aGroup)
             [_groups addObject:aGroup];
 
-        if (!_vCard && !_askingVCard)
-            [self getVCard];
+        // if (!_vCard && !_askingVCard)
+        //     [self getVCard];
     }
 
     return self;
@@ -276,8 +276,13 @@ var TNStropheContactImageOffline,
             else
                 _XMPPStatus = "Online";
 
-            if ([aStanza firstChildWithName:@"x"] && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update")
+            if ([aStanza firstChildWithName:@"x"]
+                && [[aStanza firstChildWithName:@"x"] valueForAttribute:@"xmlns"] == @"vcard-temp:x:update"
+                && ![aStanza firstChildWithName:@"delay"])
+            {
                 [self getVCard];
+            }
+
 
             break;
     }
