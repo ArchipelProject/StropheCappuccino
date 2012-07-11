@@ -46,15 +46,15 @@ TNStropheContactStanzaSentNotification              = @"TNStropheContactStanzaSe
 TNStropheContactSubscriptionUpdatedNotification     = @"TNStropheContactSubscriptionUpdatedNotification";
 TNStropheContactVCardReceivedNotification           = @"TNStropheContactVCardReceivedNotification";
 
-TNStropheContactDelegate_avatarForContact_          = 1 << 0;
+var TNStropheContactDelegate_avatarForContact_          = 1 << 0;
 
-var TNStropheContactImageOffline,
-    TNStropheContactImageOnline,
-    TNStropheContactImageBusy,
-    TNStropheContactImageAway,
-    TNStropheContactImageDND,
-    TNStropheContactImageNewMessage,
-    TNStropheContactImageNewError;
+TNStropheContactImageOffline = nil;
+TNStropheContactImageOnline = nil;
+TNStropheContactImageBusy = nil;
+TNStropheContactImageAway = nil;
+TNStropheContactImageDND = nil;
+TNStropheContactImageNewMessage = nil;
+TNStropheContactImageNewError = nil;
 
 
 /*! @ingroup strophecappuccino
@@ -124,13 +124,13 @@ var TNStropheContactImageOffline,
 {
     var bundle = [CPBundle bundleForClass:TNStropheContact];
 
-    TNStropheContactImageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Offline.png"]];
-    TNStropheContactImageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Available.png"]];
-    TNStropheContactImageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Away.png"]];
-    TNStropheContactImageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Idle.png"]];
-    TNStropheContactImageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Blocked.png"]];
-    TNStropheContactImageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"NewMessage.png"]];
-    TNStropheContactImageNewError      = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"Error.png"]];
+    TNStropheContactImageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"gray.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"green.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"red.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"orange.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"black.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blue.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageNewError      = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"error.png"] size:CPSizeMake(8.0, 8.0)];
 }
 
 
