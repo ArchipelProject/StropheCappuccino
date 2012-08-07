@@ -22,7 +22,7 @@
         1: use StropheCappuccino bypass system to use the Cappuccino event loop
     -->
     <key>TNStropheJSUseCappuccinoRunLoop</key>
-    <integer>1</integer>
+    <integer>0</integer>
     <!--
         be carefull with this one.
         it is the delay between two runs
