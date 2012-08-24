@@ -44,6 +44,8 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 @implementation TNStropheRoster : TNStropheRosterBase
 {
     CPDictionary    _pendingPresence    @accessors(getter=pendingPresence);
+
+    BOOL            _rosterRetrieved;
 }
 
 
@@ -87,6 +89,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 
     [_groupCache removeAllObjects];
     [_pendingPresence removeAllObjects];
+    _rosterRetrieved = NO;
     [super clear];
 }
 
@@ -194,8 +197,11 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
         if (!subscription || ![allowedSubs containsObject:subscription])
             [item setValue:@"none" forAttribute:@"subscription"];
 
-        [self _addContactFromRosterItem:item];
+        if (![self containsJID:[TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]]])
+            [self _addContactFromRosterItem:item];
     }
+
+    _rosterRetrieved = YES;
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheRosterRetrievedNotification object:self];
 
@@ -282,6 +288,9 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 */
 - (BOOL)_didReceiveRosterPush:(TNStropheStanzas)aStanza
 {
+    if (!_rosterRetrieved)
+        return;
+
     var item            = [aStanza firstChildWithName:@"item"],
         theJID          = [TNStropheJID stropheJIDWithString:[item valueForAttribute:@"jid"]],
         subscription    = [item valueForAttribute:@"subscription"],
