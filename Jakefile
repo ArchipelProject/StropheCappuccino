@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -112,7 +112,7 @@ task("test", function()
     var tests = new FileList('Test/*Test.j');
     var cmd = ["ojtest"].concat(tests.items());
     var cmdString = cmd.map(OS.enquote).join(" ");
-    
+
     var code = OS.system(cmdString);
     if (code !== 0)
         OS.exit(code);
@@ -129,7 +129,7 @@ task("build-strophe", function()
 task("build-strophe-release", ["build-strophe"], function()
 {
     var miniInput   = FILE.read(FILE.join("strophe.js"), { charset:"UTF-8" });
-    var minified    = require("minify/shrinksafe").compress(miniInput, { charset : "UTF-8", useServer : true });
+    var minified    = require("minify/yuicompressor").compress(miniInput, { charset : "UTF-8", useServer : true });
     FILE.path("Resources/Strophe").absolute().join("strophe.js").write(minified, { charset : "UTF-8" });
 });
 
