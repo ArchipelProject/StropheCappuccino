@@ -20,6 +20,7 @@
 
 @import <Foundation/Foundation.j>
 
+@import "Resources/Strophe/strophe.js"
 @import "Resources/Strophe/sha1.js"
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"

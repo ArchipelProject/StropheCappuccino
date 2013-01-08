@@ -21,6 +21,10 @@
 
 @import <Foundation/Foundation.j>
 
+@import "Resources/Strophe/strophe.js"
+@import "Resources/Strophe/sha1.js"
+
+
 /*! @ingroup strophecappuccino
     This is an implementation of a really basic XML node in Cappuccino
 */

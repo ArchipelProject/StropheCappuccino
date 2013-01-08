@@ -19,7 +19,7 @@
  */
 
 @import <Foundation/Foundation.j>
-
+@import <AppKit/CPImage.j>
 
 /*! @ingroup strophecappuccino
     @deperecated

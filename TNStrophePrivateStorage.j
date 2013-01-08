@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@import "Resources/Strophe/strophe.js"
+@import "Resources/Strophe/sha1.js"
 @import "TNStropheConnection.j"
 @import "TNStropheUtils.j"
 

@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+
 @import "Resources/Strophe/strophe.js"
 @import "Resources/Strophe/sha1.js"
 @import "TNStropheJID.j"
