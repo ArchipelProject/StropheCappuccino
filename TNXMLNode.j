@@ -23,7 +23,7 @@
 
 @import "Resources/Strophe/strophe.js"
 @import "Resources/Strophe/sha1.js"
-
+@import "TNStropheUtils.j"
 
 /*! @ingroup strophecappuccino
     This is an implementation of a really basic XML node in Cappuccino
@@ -157,7 +157,7 @@
 {
     if (_xmlNode.node && _xmlNode.node.parentNode)
     {
-        ret = _xmlNode.up();
+        _xmlNode.up();
         return YES;
     }
     return NO;

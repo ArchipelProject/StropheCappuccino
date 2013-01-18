@@ -119,7 +119,7 @@ TNStropheServerAdministrationUnregisterUserNotification         = @"TNStropheSer
     [stanza addChildWithName:@"value"];
     [stanza addTextNode:anAnnouncement];
 
-    [_connection registerSelector:_didSendAnnouncement ofObject:self withDict:params];
+    [_connection registerSelector:@selector(_didSendAnnouncement:) ofObject:self withDict:params];
     [_connection send:stanza];
 }
 

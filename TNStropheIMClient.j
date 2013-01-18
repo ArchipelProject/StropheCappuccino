@@ -167,10 +167,6 @@
     [super onStropheError:aConnection];
 }
 
-@end
-
-@implementation TNStropheClient (CPCoding)
-
 - (id)initWithCoder:(CPCoder)aCoder
 {
     self = [super initWithCoder:aCoder];

@@ -703,7 +703,6 @@ TNStropheContactImageNewError = nil;
         _statusIcon     = [aCoder decodeObjectForKey:@"_statusIcon"];
         _type           = [aCoder decodeObjectForKey:@"_type"];
         _vCard          = [aCoder decodeObjectForKey:@"_vCard"];
-        _messageQueue   = [aCoder decodeObjectForKey:@"_messagesQueue"];
         _numberOfEvents = [aCoder decodeObjectForKey:@"_numberOfEvents"];
     }
 

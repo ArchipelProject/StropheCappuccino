@@ -19,11 +19,14 @@
  */
 
 @import <Foundation/Foundation.j>
+@import <Foundation/CPNotificationCenter.j>
 
 @import "../Resources/Strophe/strophe.js"
 @import "../Resources/Strophe/sha1.js"
 @import "../TNStropheConnection.j"
 @import "../TNStropheStanza.j"
+
+@class TNStrophePubSubSubscriptionsRetrievedNotification
 
 
 TNStrophePubSubVarAccessModel               = @"pubsub#access_model";
@@ -581,25 +584,25 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
 
     if (options && [options count] > 0)
     {
-        [subscribeStanza up];
-        [subscribeStanza addChildWithName:@"options"];
-        [subscribeStanza addChildWithName:@"x" andAttributes:{"xmlns":Strophe.NS.X_DATA, "type":"submit"}];
-        [subscribeStanza addChildWithName:@"field" andAttributes:{"var":"FORM_TYPE", "type":"hidden"}];
-        [subscribeStanza addChildWithName:@"value"];
-        [subscribeStanza addTextNode:Strophe.NS.PUBSUB_SUBSCRIBE_OPTIONS];
-        [subscribeStanza up];
-        [subscribeStanza up];
+        [stanza up];
+        [stanza addChildWithName:@"options"];
+        [stanza addChildWithName:@"x" andAttributes:{"xmlns":Strophe.NS.X_DATA, "type":"submit"}];
+        [stanza addChildWithName:@"field" andAttributes:{"var":"FORM_TYPE", "type":"hidden"}];
+        [stanza addChildWithName:@"value"];
+        [stanza addTextNode:Strophe.NS.PUBSUB_SUBSCRIBE_OPTIONS];
+        [stanza up];
+        [stanza up];
 
         var keys = [options allKeys];
         for (var i = 0; i < [keys count]; i++)
         {
             var key     = [keys objectAtIndex:i],
                 value   = [options valueForKey:key];
-            [subscribeStanza addChildWithName:@"field" andAttributes:{"var":key}];
-            [subscribeStanza addChildWithName:@"value"];
-            [subscribeStanza addTextNode:value];
-            [subscribeStanza up];
-            [subscribeStanza up];
+            [stanza addChildWithName:@"field" andAttributes:{"var":key}];
+            [stanza addChildWithName:@"value"];
+            [stanza addTextNode:value];
+            [stanza up];
+            [stanza up];
         }
     }
 

@@ -19,12 +19,16 @@
  */
 
 @import <Foundation/Foundation.j>
+@import <AppKit/CPImage.j>
 
 @import "Resources/Strophe/strophe.js"
 @import "Resources/Strophe/sha1.js"
 @import "TNStropheConnection.j"
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
+
+@global TNStropheContactStatusOffline
+@global TNStropheContactStatusOnline
 
 
 TNStropheClientPasswordChangedNotification      = @"TNStropheClientPasswordChangedNotification";
@@ -292,7 +296,7 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
     if ([aStanza type] == @"result")
         CPLog.debug("Publish succeeded!");
     else
-        CPLog.error("Cannot publish the pubsub item in node with name: " + _nodeName);
+        CPLog.error("Cannot publish the pubsub item:" + [aStanza stringValue]);
 
     return NO;
 }
@@ -497,8 +501,6 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
         _password                   = [aCoder decodeObjectForKey:@"_password"];
         _delegate                   = [aCoder decodeObjectForKey:@"_delegate"];
         _connection                 = [aCoder decodeObjectForKey:@"_connection"];
-        _registeredHandlers         = [aCoder decodeObjectForKey:@"_registeredHandlers"];
-        _registeredTimedHandlers    = [aCoder decodeObjectForKey:@"_registeredTimedHandlers"];
     }
 
     return self;
@@ -510,8 +512,6 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
     [aCoder encodeObject:_JID forKey:@"_JID"];
     [aCoder encodeObject:_password forKey:@"_password"];
     [aCoder encodeObject:_connection forKey:@"_connection"];
-    [aCoder encodeObject:_registeredHandlers forKey:@"_registeredHandlers"];
-    [aCoder encodeObject:_registeredTimedHandlers forKey:@"_registeredTimedHandlers"];
 }
 
 @end

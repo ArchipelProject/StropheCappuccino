@@ -20,6 +20,7 @@
 
 @import <Foundation/Foundation.j>
 
+@global TNStropheRosterRosterDelimiter
 
 /*!
     @global
