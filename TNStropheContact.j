@@ -124,13 +124,13 @@ TNStropheContactImageNewError = nil;
 {
     var bundle = [CPBundle bundleForClass:TNStropheContact];
 
-    TNStropheContactImageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"gray.png"] size:CPSizeMake(8.0, 8.0)];
-    TNStropheContactImageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"green.png"] size:CPSizeMake(8.0, 8.0)];
-    TNStropheContactImageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"red.png"] size:CPSizeMake(8.0, 8.0)];
-    TNStropheContactImageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"orange.png"] size:CPSizeMake(8.0, 8.0)];
-    TNStropheContactImageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"black.png"] size:CPSizeMake(8.0, 8.0)];
-    TNStropheContactImageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blue.png"] size:CPSizeMake(8.0, 8.0)];
-    TNStropheContactImageNewError      = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"error.png"] size:CPSizeMake(8.0, 8.0)];
+    TNStropheContactImageOffline       = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"gray.png"] size:CGSizeMake(8.0, 8.0)];
+    TNStropheContactImageOnline        = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"green.png"] size:CGSizeMake(8.0, 8.0)];
+    TNStropheContactImageBusy          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"red.png"] size:CGSizeMake(8.0, 8.0)];
+    TNStropheContactImageAway          = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"orange.png"] size:CGSizeMake(8.0, 8.0)];
+    TNStropheContactImageDND           = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"black.png"] size:CGSizeMake(8.0, 8.0)];
+    TNStropheContactImageNewMessage    = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"blue.png"] size:CGSizeMake(8.0, 8.0)];
+    TNStropheContactImageNewError      = [[CPImage alloc] initWithContentsOfFile:[bundle pathForResource:@"error.png"] size:CGSizeMake(8.0, 8.0)];
 }
 
 

@@ -147,7 +147,7 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 
         if ([bundle objectForInfoDictionaryKey:@"TNStropheJSUseCappuccinoRunLoop"] == 1)
         {
-            CPLog.info("StropheCappuccino has been compiled to use the Cappuccino runloop. unsing interval of "+ _stropheJSRunloopInterval);
+            CPLog.info("StropheCappuccino has been compiled to use the Cappuccino runloop. unsing interval of " + _stropheJSRunloopInterval);
             Strophe.setTimeout = function(f, delay)
             {
                 [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
@@ -402,40 +402,40 @@ var TNStropheTimerRunLoopMode = @"TNStropheTimerRunLoopMode";
 - (id)registerSelector:(SEL)aSelector ofObject:(CPObject)anObject withDict:(id)aDict userInfo:(id)someUserInfo handlerDelegate:(id)aHandlerDelegate
 {
     var from = ([[aDict valueForKey:@"from"] isKindOfClass:CPString]) ? [aDict valueForKey:@"from"] : [[aDict valueForKey:@"from"] stringValue],
-        handlerId =  _connection.addHandler(function(stanza)
-            {
-                // seems to be a good practice to pump the runloop in async function
-                [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
+        handlerId = _connection.addHandler(function(stanza)
+        {
+            // seems to be a good practice to pump the runloop in async function
+            [[CPRunLoop currentRunLoop] limitDateForMode:CPDefaultRunLoopMode];
 
-                var stanzaObject    = [TNStropheStanza stanzaWithStanza:stanza],
-                    ret;
+            var stanzaObject = [TNStropheStanza stanzaWithStanza:stanza],
+                ret;
 
-                if (someUserInfo)
-                    ret = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
-                else
-                    ret = [anObject performSelector:aSelector withObject:stanzaObject];
+            if (someUserInfo)
+                ret = [anObject performSelector:aSelector withObject:stanzaObject withObject:someUserInfo];
+            else
+                ret = [anObject performSelector:aSelector withObject:stanzaObject];
 
-                CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
-                CPLog.trace(stanzaObject);
+            CPLog.trace("StropheCappuccino stanza received that trigger selector : " + [anObject class] + "." + aSelector);
+            CPLog.trace(stanzaObject);
 
-                // experimental thing
-                delete aDict.options;
-                delete someUserInfo;
+            // experimental thing
+            delete aDict.options;
+            delete someUserInfo;
 
-                if (aHandlerDelegate && [aHandlerDelegate respondsToSelector:@selector(stropheConnection:performedHandlerId:)])
-                    [aHandlerDelegate stropheConnection:self performedHandlerId:handlerId]
+            if (aHandlerDelegate && [aHandlerDelegate respondsToSelector:@selector(stropheConnection:performedHandlerId:)])
+                [aHandlerDelegate stropheConnection:self performedHandlerId:handlerId]
 
-                someUserInfo = nil;
+            someUserInfo = nil;
 
-                [_registeredHandlers removeObject:handlerId];
-                return ret;
-            },
-            [aDict valueForKey:@"namespace"],
-            [aDict valueForKey:@"name"],
-            [aDict valueForKey:@"type"],
-            [aDict valueForKey:@"id"],
-            from,
-            [aDict valueForKey:@"options"]);
+            [_registeredHandlers removeObject:handlerId];
+            return ret;
+        },
+        [aDict valueForKey:@"namespace"],
+        [aDict valueForKey:@"name"],
+        [aDict valueForKey:@"type"],
+        [aDict valueForKey:@"id"],
+        from,
+        [aDict valueForKey:@"options"]);
 
     [_registeredHandlers addObject:handlerId];
 

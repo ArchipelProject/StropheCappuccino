@@ -452,7 +452,7 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
 #pragma mark -
 #pragma mark Password management
 
-/*! Change the current user password using XEP-0077 (InBand Registration)
+/*! Change the current user password using XEP 0077 (InBand Registration)
     @param aPassword string containing the new password
 */
 - (void)changePassword:(CPString)aPassword
