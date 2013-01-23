@@ -19,6 +19,7 @@
  */
 
 @import <Foundation/Foundation.j>
+@import <AppKit/CPImage.j>
 
 @import "TNStropheConnection.j"
 @import "TNStropheGroup.j"

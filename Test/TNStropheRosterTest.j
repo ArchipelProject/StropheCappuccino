@@ -18,7 +18,6 @@
 
 
 @import <Foundation/Foundation.j>
-@import <AppKit/AppKit.j>
 
 @import "../Resources/Strophe/strophe.js"
 @import "../Resources/Strophe/sha1.js"
