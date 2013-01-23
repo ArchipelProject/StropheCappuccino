@@ -26,10 +26,10 @@
 @import "TNStropheConnection.j"
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
+@import "TNXMLNode.j"
 
 @global TNStropheContactStatusOffline
 @global TNStropheContactStatusOnline
-
 
 TNStropheClientPasswordChangedNotification      = @"TNStropheClientPasswordChangedNotification";
 TNStropheClientPasswordChangeErrorNotification  = @"TNStropheClientPasswordChangeErrorNotification";
