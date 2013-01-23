@@ -20,7 +20,9 @@
 
 @import <Foundation/Foundation.j>
 @import "../TNStropheRosterBase.j"
+@import "../TNStropheGroup.j"
 
+@class TNStropheMUCRoom
 
 TNStropheMUCContactJoinedNotification   = @"TNStropheMUCContactJoinedNotification";
 TNStropheMUCContactLeftNotification     = @"TNStropheMUCContactLeftNotification";
