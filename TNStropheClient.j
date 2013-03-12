@@ -27,6 +27,7 @@
 @import "TNStropheJID.j"
 @import "TNStropheStanza.j"
 @import "TNXMLNode.j"
+@import "TNStropheVCard.j"
 
 @global TNStropheContactStatusOffline
 @global TNStropheContactStatusOnline
@@ -48,7 +49,7 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
     id                  _delegate               @accessors(property=delegate);
     TNStropheConnection _connection             @accessors(property=connection);
     TNStropheJID        _JID                    @accessors(property=JID);
-    TNXMLNode           _vCard                  @accessors(getter=vCard);
+    TNStropheVCard      _vCard                  @accessors(getter=vCard);
     CPImage             _avatar                 @accessors(getter=avatar);
 
     CPString            _userPresenceShow;
@@ -373,17 +374,8 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
 {
     if ([aStanza type] == @"result")
     {
-        _vCard = [aStanza firstChildWithName:@"vCard"];
-
-        var photo = [_vCard firstChildWithName:@"PHOTO"];
-
-        if (photo)
-        {
-            var type = [[photo firstChildWithName:@"TYPE"] text],
-                binval = [[photo firstChildWithName:@"BINVAL"] text];
-
-            _avatar = [[CPImage alloc] initWithData:[CPData dataWithBase64:binval]];
-        }
+        _vCard = [[TNStropheVCard alloc] initWithXMLNode:[aStanza firstChildWithName:@"vCard"]];
+        _avatar = [_vCard photo];
     }
 
     [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheClientVCardReceivedNotification object:self userInfo:aStanza];
@@ -401,18 +393,11 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
 {
     var uid     = [_connection getUniqueId],
         stanza  = [TNStropheStanza iqWithAttributes:{@"id": uid, @"type": @"set"}],
-        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"],
-        photo   = [aVCard firstChildWithName:@"PHOTO"];
+        params  = [CPDictionary dictionaryWithObjectsAndKeys:uid, @"id"];
 
-    if (photo)
-    {
-        var binval = [[photo firstChildWithName:@"BINVAL"] text];
-
-        _avatar = [[CPImage alloc] initWithData:[CPData dataWithBase64:binval]];
-    }
     _vCard = aVCard;
 
-    [stanza addNode:aVCard];
+    [stanza addNode:[_vCard XMLNode]];
 
     [_connection registerSelector:@selector(notifyVCardUpdate:) ofObject:self withDict:params];
     [_connection registerSelector:aSelector ofObject:anObject withDict:params userInfo:someUserInfo];
@@ -497,10 +482,10 @@ TNStropheClientVCardReceivedNotification        = @"TNStropheClientVCardReceived
 
     if (self)
     {
-        _JID                        = [aCoder decodeObjectForKey:@"_JID"];
-        _password                   = [aCoder decodeObjectForKey:@"_password"];
-        _delegate                   = [aCoder decodeObjectForKey:@"_delegate"];
-        _connection                 = [aCoder decodeObjectForKey:@"_connection"];
+        _JID        = [aCoder decodeObjectForKey:@"_JID"];
+        _password   = [aCoder decodeObjectForKey:@"_password"];
+        _delegate   = [aCoder decodeObjectForKey:@"_delegate"];
+        _connection = [aCoder decodeObjectForKey:@"_connection"];
     }
 
     return self;

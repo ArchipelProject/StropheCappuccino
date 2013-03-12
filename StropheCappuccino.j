@@ -19,20 +19,22 @@
  */
 
 
-@import "Resources/Strophe/strophe.js"
+@import "MUC/TNStropheMUCRoom.j"
 @import "Resources/Strophe/sha1.js"
-@import "TNStropheJID.j"
-@import "TNStropheStanza.j"
-@import "TNStropheGroup.j"
-@import "TNStropheIMClient.j"
+@import "Resources/Strophe/strophe.js"
+@import "TNPubSub.j"
 @import "TNStropheClient.j"
 @import "TNStropheConnection.j"
 @import "TNStropheContact.j"
-@import "TNStropheRoster.j"
-@import "TNPubSub.j"
+@import "TNStropheGroup.j"
+@import "TNStropheIMClient.j"
+@import "TNStropheJID.j"
 @import "TNStrophePrivateStorage.j"
+@import "TNStropheRoster.j"
 @import "TNStropheServerAdministration.j"
-@import "MUC/TNStropheMUCRoom.j"
+@import "TNStropheStanza.j"
+@import "TNStropheVCard.j"
+
 
 
 [TNStropheClient addNamespaceWithName:@"CAPS" value:@"http://jabber.org/protocol/caps"];

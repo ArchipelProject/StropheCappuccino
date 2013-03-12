@@ -24,7 +24,7 @@
 @import "TNStropheConnection.j"
 @import "TNStropheGroup.j"
 @import "TNStropheJID.j"
-
+@import "TNStropheVCard.j"
 
 TNStropheContactStatusAway                          = @"away";
 TNStropheContactStatusBusy                          = @"xa";
@@ -66,19 +66,19 @@ TNStropheContactImageNewError = nil;
     CPArray             _groups         @accessors(property=groups);
     CPArray             _messagesQueue  @accessors(property=messagesQueue);
     CPArray             _resources      @accessors(property=resources);
+    CPImage             _avatar         @accessors(property=avatar);
     CPImage             _statusIcon     @accessors(property=statusIcon);
     CPNumber            _numberOfEvents @accessors(property=numberOfEvents);
     CPString            _nickname       @accessors(property=nickname);
     CPString            _nodeName       @accessors(property=nodeName);
     CPString            _subscription   @accessors(property=subscription);
     CPString            _type           @accessors(property=type);
-    CPString            _vCard          @accessors(property=vCard);
     CPString            _XMPPShow       @accessors(property=XMPPShow);
     CPString            _XMPPStatus     @accessors(property=XMPPStatus);
     id                  _delegate       @accessors(getter=delegate);
-    CPImage             _avatar         @accessors(property=avatar);
     TNStropheConnection _connection     @accessors(property=connection);
     TNStropheJID        _JID            @accessors(property=JID);
+    TNStropheVCard      _vCard          @accessors(property=vCard);
 
     BOOL                _askingVCard;
     BOOL                _isComposing;
@@ -89,19 +89,6 @@ TNStropheContactImageNewError = nil;
 
 #pragma mark -
 #pragma mark Class methods
-
-+ (void)initialize
-{
-    [self exposeBinding:@"statusIcon"];
-    [self exposeBinding:@"nickname"];
-    [self exposeBinding:@"subscription"];
-    [self exposeBinding:@"vCard"];
-    [self exposeBinding:@"XMPPShow"];
-    [self exposeBinding:@"XMPPStatus"];
-    [self exposeBinding:@"avatar"];
-    [self exposeBinding:@"JID"];
-    [self exposeBinding:@"resources"];
-}
 
 /*! create a contact using a given connection, JID and group
     @param aConnection TNStropheConnection to use
@@ -167,7 +154,7 @@ TNStropheContactImageNewError = nil;
 
 
 #pragma mark -
-#pragma mark Setters
+#pragma mark Setters and Getters
 
 /*! Set the delegate
     You should not use this yourself if you are
@@ -190,6 +177,11 @@ TNStropheContactImageNewError = nil;
 
     if ([_delegate respondsToSelector:@selector(avatarForContact:)])
         _implementedDelegateMethods |= TNStropheContactDelegate_avatarForContact_;
+}
+
+- (CPString)name
+{
+    return [_vCard fullName] || _nickname;
 }
 
 
@@ -420,35 +412,20 @@ TNStropheContactImageNewError = nil;
 
     if (aVCard)
     {
-        [self setVCard:aVCard];
+        var VCARD = [[TNStropheVCard alloc] initWithXMLNode:aVCard];
 
         if (!_nickname || (_nickname == [_JID bare]) || (_nickname == [_JID node]))
-        {
-            if ([aVCard firstChildWithName:@"FN"])
-                [self setNickname:[[aVCard firstChildWithName:@"FN"] text]];
-            else
-                [self setNickname:[_JID node]];
-        }
+            [self setNickname:[VCARD fullName] || [_JID node]]
 
-        var photoNode,
-            photoIDNode;
+        if ([VCARD photo])
+            [self setAvatar:[VCARD photo]];
+        else if (_implementedDelegateMethods & TNStropheContactDelegate_avatarForContact_)
+            [self setAvatar:[_delegate avatarForContact:self]];
 
-        if (photoNode = [aVCard firstChildWithName:@"PHOTO"])
-        {
-            var data = [[photoNode firstChildWithName:@"BINVAL"] text];
-
-            // the delegate will send the TNStropheContactVCardReceivedNotification when image will be ready
-            [self setAvatar:[[CPImage alloc] initWithData:[CPData dataWithBase64:data]]];
-            [_avatar setDelegate:self];
-
-        }
-        else
-        {
-            if (_implementedDelegateMethods & TNStropheContactDelegate_avatarForContact_)
-                [self setAvatar:[_delegate avatarForContact:self]];
-
-            [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
-        }
+        [self willChangeValueForKey:@"name"];
+        [self setVCard:VCARD];
+        [self didChangeValueForKey:@"name"];
+        [[CPNotificationCenter defaultCenter] postNotificationName:TNStropheContactVCardReceivedNotification object:self];
     }
 
     return NO;
