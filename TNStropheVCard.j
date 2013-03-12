@@ -24,16 +24,16 @@
 
 @implementation TNStropheVCard : CPObject
 {
+    CPImage     _photo              @accessors(property=photo);
+    CPString    _categories         @accessors(property=categories);
     CPString    _fullName           @accessors(property=fullName);
+    CPString    _locality           @accessors(property=locality);
     CPString    _organizationName   @accessors(property=organizationName);
     CPString    _organizationUnit   @accessors(property=organizationUnit);
-    CPString    _userID             @accessors(property=userID);
-    CPString    _locality           @accessors(property=locality);
-    CPString    _categories         @accessors(property=categories);
-    CPString    _type               @accessors(property=type);
     CPString    _role               @accessors(property=role);
     CPString    _title              @accessors(property=title);
-    CPImage     _photo              @accessors(property=photo);
+    CPString    _type               @accessors(property=type);
+    CPString    _userID             @accessors(property=userID);
 }
 
 
@@ -44,15 +44,15 @@
 {
     if (self = [super init])
     {
+        _categories       = [[aNode firstChildWithName:@"CATEGORIES"] text];
         _fullName         = [[aNode firstChildWithName:@"FN"] text];
+        _locality         = [[aNode firstChildWithName:@"LOCALITY"] text];
         _organizationName = [[aNode firstChildWithName:@"ORGNAME"] text];
         _organizationUnit = [[aNode firstChildWithName:@"ORGUNIT"] text];
-        _userID           = [[aNode firstChildWithName:@"USERID"] text];
-        _locality         = [[aNode firstChildWithName:@"LOCALITY"] text];
-        _categories       = [[aNode firstChildWithName:@"CATEGORIES"] text];
-        _type             = [[aNode firstChildWithName:@"TYPE"] text];
         _role             = [[aNode firstChildWithName:@"ROLE"] text];
         _title            = [[aNode firstChildWithName:@"TITLE"] text];
+        _type             = [[aNode firstChildWithName:@"TYPE"] text];
+        _userID           = [[aNode firstChildWithName:@"USERID"] text];
 
         var photoNode;
         if (photoNode = [aNode firstChildWithName:@"PHOTO"])
