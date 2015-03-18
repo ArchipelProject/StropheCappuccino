@@ -40,7 +40,7 @@
 #pragma mark -
 #pragma mark Initialization
 
-- (void)initWithXMLNode:(TNXMLNode)aNode
+- (id)initWithXMLNode:(TNXMLNode)aNode
 {
     if (self = [super init])
     {
