@@ -25,6 +25,7 @@
 @import "../Resources/Strophe/sha1.js"
 @import "../TNStropheConnection.j"
 @import "../TNStropheStanza.j"
+@import "../TNStropheJID.j"
 
 @class TNStrophePubSubSubscriptionsRetrievedNotification
 
@@ -87,7 +88,7 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
     CPDictionary            _affiliations       @accessors(getter=affiliations);
     CPString                _nodeName           @accessors(getter=name);
     id                      _delegate           @accessors(property=delegate);
-    TNStopheJID             _pubSubServer       @accessors(getter=server);
+    TNStropheJID            _pubSubServer       @accessors(getter=server);
 
     id                      _eventSelectorID;
     TNStropheConnection     _connection;

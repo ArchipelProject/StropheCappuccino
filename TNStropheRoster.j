@@ -54,7 +54,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
 #pragma mark -
 #pragma mark Class methods
 
-+ (TNStropheRoster)rosterWithConnection:(TNStropheConnection)aConnection
++ (id)rosterWithConnection:(TNStropheConnection)aConnection
 {
     return [[TNStropheRoster alloc] initWithConnection:aConnection];
 }

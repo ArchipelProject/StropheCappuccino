@@ -44,7 +44,7 @@ TNStropheMUCContactLeftNotification     = @"TNStropheMUCContactLeftNotification"
 #pragma mark -
 #pragma mark Class methods
 
-+ (TNStropheMUCRoster)rosterWithConnection:(TNStropheConnection)aConnection forRoom:(TNStropheMUCRoom)aRoom
++ (id)rosterWithConnection:(TNStropheConnection)aConnection forRoom:(TNStropheMUCRoom)aRoom
 {
     return [[TNStropheMUCRoster alloc] initWithConnection:aConnection forRoom:aRoom];
 }

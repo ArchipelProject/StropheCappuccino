@@ -42,7 +42,7 @@
 #pragma mark -
 #pragma mark Class methods
 
-+ (TNStropheRosterBase)rosterWithConnection:(TNStropheConnection)aConnection
++ (id)rosterWithConnection:(TNStropheConnection)aConnection
 {
     return [[TNStropheRosterBase alloc] initWithConnection:aConnection];
 }

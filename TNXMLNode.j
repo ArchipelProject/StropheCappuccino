@@ -30,7 +30,7 @@
 */
 @implementation TNXMLNode : CPObject
 {
-    XMLElement  _xmlNode     @accessors(readonly, getter=xmlNode);
+    id  _xmlNode     @accessors(readonly, getter=xmlNode);
 }
 
 #pragma mark -
