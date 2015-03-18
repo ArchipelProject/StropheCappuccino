@@ -48,7 +48,7 @@ TNStropheServerAdministrationUnregisterUserNotification         = @"TNStropheSer
     @param aConnection a TNStropheConnection
     @param aServer the target XMPP server
 */
-- (void)initWithConnection:(TNStropheConnection)aConnection server:(TNStropheJID)aServer
+- (id)initWithConnection:(TNStropheConnection)aConnection server:(TNStropheJID)aServer
 {
     if (self = [super init])
     {
