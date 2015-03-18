@@ -394,7 +394,7 @@ TNStrophePubSubNodeUnsubscribedNotification = @"TNStrophePubSubNodeUnsubscribedN
 
     [stanza addChildWithName:@"pubsub" andAttributes:{@"xmlns": Strophe.NS.PUBSUB}];
     [stanza addChildWithName:@"publish" andAttributes:{@"node": _nodeName}];
-    [stanza addChildWithName:@"item"];
+    [stanza addChildWithName:@"item" andAttributes:{@"id": [CPString UUID]}];
     [stanza addNode:anItem];
 
     [_connection registerSelector:@selector(_didPublishPubSubItem:) ofObject:self withDict:params];
