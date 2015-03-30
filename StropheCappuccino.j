@@ -20,7 +20,6 @@
 
 
 @import "MUC/TNStropheMUCRoom.j"
-@import "Resources/Strophe/sha1.js"
 @import "Resources/Strophe/strophe.js"
 @import "TNPubSub.j"
 @import "TNStropheClient.j"

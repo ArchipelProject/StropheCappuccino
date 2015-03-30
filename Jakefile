@@ -120,7 +120,7 @@ task("test", function()
 
 task("build-strophe", function()
 {
-    var cmdString = "cd strophejs && make normal && mv strophe.js ../ && cd ../";
+    var cmdString = "cd strophejs && make && cp strophe.js ../strophe.js && cd ../";
     var code = OS.system(cmdString);
     if (code !== 0)
         OS.exit(code);
@@ -131,7 +131,7 @@ task("build-strophe-release", ["build-strophe"], function()
     // var miniInput   = FILE.read(FILE.join("strophe.js"), { charset:"UTF-8" });
     // var minified    = require("minify/yuicompressor").compress(miniInput, { charset : "UTF-8", useServer : true });
     // FILE.path("Resources/Strophe").absolute().join("strophe.js").write(minified, { charset : "UTF-8" });
-    var cmdString = "mv strophe.js Resources/Strophe/strophe.js";
+    var cmdString = "cp strophe.js Resources/Strophe/strophe.js";
     var code = OS.system(cmdString);
     if (code !== 0)
        OS.exit(code);
