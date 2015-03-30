@@ -22,7 +22,6 @@
 @import <Foundation/CPNotificationCenter.j>
 
 @import "../Resources/Strophe/strophe.js"
-@import "../Resources/Strophe/sha1.js"
 @import "../TNStropheConnection.j"
 @import "../TNStropheStanza.j"
 @import "../TNStropheJID.j"
