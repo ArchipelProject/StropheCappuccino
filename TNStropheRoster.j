@@ -236,7 +236,7 @@ TNStropheRosterSubGroupDelimiterReceivedNotification    = @"TNStropheRosterSubGr
     for (var i = 0; i < [contents count]; i++)
     {
         var contact = [contents objectAtIndex:i];
-        [stanza addChildWithName:@"item" andAttributes:{"JID": [[contact JID] bare], "name": [contact nickname]}];
+        [stanza addChildWithName:@"item" andAttributes:{"jid": [[contact JID] bare], "name": [contact nickname]}];
 
         for (var j = 0; j < [[contact groups] count]; j++)
         {
